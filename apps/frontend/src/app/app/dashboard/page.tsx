@@ -406,29 +406,33 @@ export default function DashboardPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {summary?.lowStockItems && summary.lowStockItems.length > 0 ? (
-                  summary.lowStockItems.slice(0, 5).map((item: any) => (
-                    <tr key={item.id} className="hover:bg-surface-muted/50 transition-colors">
-                      <td className="px-4 py-3">
-                        <div className="font-semibold text-text truncate max-w-[180px]">{item.name}</div>
-                        <div className="font-mono text-[10px] text-text-muted">{item.sku}</div>
-                      </td>
-                      <td className="px-4 py-3 text-right font-mono font-bold text-amber-500">
-                        {item.totalOnHand} {item.unit}
-                      </td>
-                      <td className="px-4 py-3 text-right font-mono text-text-muted">
-                        {item.reorderLevel} {item.unit}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <Link href="/app/purchases/new">
-                          <Button size="sm" variant="outline" className="text-[11px] h-7 px-2">
-                            Restock
-                          </Button>
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
+                  summary.lowStockItems.slice(0, 5).map((item: any, idx: number) => {
+                    const itemId = item.productId || item.id || item.sku || `low-stock-${idx}`;
+                    const qtyOnHand = item.quantityOnHand ?? item.totalOnHand ?? 0;
+                    return (
+                      <tr key={itemId} className="hover:bg-surface-muted/50 transition-colors">
+                        <td className="px-4 py-3">
+                          <div className="font-semibold text-text truncate max-w-[180px]">{item.name}</div>
+                          <div className="text-[10px] text-text-muted">{item.sku}</div>
+                        </td>
+                        <td className="px-4 py-3 text-right tabular-nums font-bold text-amber-500">
+                          {qtyOnHand} <span className="text-[10px] font-medium text-text-muted uppercase">{item.unit}</span>
+                        </td>
+                        <td className="px-4 py-3 text-right tabular-nums text-text-muted">
+                          {item.reorderLevel} <span className="text-[10px] text-text-muted uppercase">{item.unit}</span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <Link href={`/app/purchases/new?productId=${item.productId || item.id || ''}`}>
+                            <Button size="sm" variant="outline" className="text-[11px] h-7 px-2">
+                              Restock
+                            </Button>
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
-                  <tr>
+                  <tr key="empty-low-stock">
                     <td colSpan={4} className="px-4 py-8 text-center text-xs text-text-muted">
                       All inventory items are currently above established safety thresholds.
                     </td>
@@ -469,24 +473,27 @@ export default function DashboardPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {summary?.recentMovements && summary.recentMovements.length > 0 ? (
-                  summary.recentMovements.slice(0, 5).map((m: any) => {
+                  summary.recentMovements.slice(0, 5).map((m: any, idx: number) => {
                     const delta = Number(m.quantityDelta);
+                    const movementId = m.id || m.seq || `mov-${idx}`;
+                    const prodName = m.productName || m.product?.name || 'Item';
+                    const prodSku = m.productSku || m.product?.sku || '';
                     return (
-                      <tr key={m.id} className="hover:bg-surface-muted/50 transition-colors">
-                        <td className="px-4 py-3 font-mono text-[10px] text-text-muted">
+                      <tr key={movementId} className="hover:bg-surface-muted/50 transition-colors">
+                        <td className="px-4 py-3 text-[10px] text-text-muted tabular-nums">
                           {new Date(m.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                         </td>
                         <td className="px-4 py-3">
-                          <div className="font-semibold text-text truncate max-w-[150px]">{m.product?.name || 'Item'}</div>
-                          <div className="font-mono text-[10px] text-text-muted">{m.product?.sku}</div>
+                          <div className="font-semibold text-text truncate max-w-[150px]">{prodName}</div>
+                          {prodSku && <div className="text-[10px] text-text-muted">{prodSku}</div>}
                         </td>
                         <td className="px-4 py-3">
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium border border-border bg-surface-muted text-text">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium border border-border bg-surface-muted text-text">
                             {m.movementType}
                           </span>
                         </td>
                         <td
-                          className={`px-4 py-3 text-right font-mono font-bold ${
+                          className={`px-4 py-3 text-right tabular-nums font-bold ${
                             delta > 0 ? 'text-ok' : 'text-danger'
                           }`}
                         >
@@ -496,7 +503,7 @@ export default function DashboardPage() {
                     );
                   })
                 ) : (
-                  <tr>
+                  <tr key="empty-recent-movements">
                     <td colSpan={4} className="px-4 py-8 text-center text-xs text-text-muted">
                       No stock movements recorded yet.
                     </td>

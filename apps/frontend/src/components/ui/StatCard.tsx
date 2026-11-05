@@ -52,7 +52,7 @@ export function StatCard({
           </div>
         )}
       </div>
-      <div className="text-2xl sm:text-3xl font-bold tracking-tight text-text font-mono">
+      <div className="text-2xl sm:text-3xl font-bold tracking-tight text-text tabular-nums">
         {value !== null && value !== undefined ? value : '—'}
       </div>
       {subtext && <div className="text-xs text-text-muted mt-2 leading-tight">{subtext}</div>}

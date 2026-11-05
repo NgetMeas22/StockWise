@@ -340,9 +340,9 @@ export default function ProductsPage() {
 
                       {/* SKU / Barcode */}
                       <td className="px-4 py-3">
-                        <div className="font-mono font-semibold text-text text-xs">{p.sku}</div>
+                        <div className="font-semibold text-text text-xs tracking-tight">{p.sku}</div>
                         {p.barcode && (
-                          <div className="font-mono text-[10px] text-text-muted mt-0.5">{p.barcode}</div>
+                          <div className="text-[10px] text-text-muted mt-0.5 tracking-tight">{p.barcode}</div>
                         )}
                       </td>
 
@@ -356,27 +356,28 @@ export default function ProductsPage() {
                       {/* Stock Level with Pill Badge */}
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          <span className="font-mono font-bold text-text">
-                            {qty} {p.unit}
+                          <span className="font-semibold text-text tabular-nums text-xs">
+                            {qty} <span className="text-[10px] font-medium text-text-muted uppercase">{p.unit}</span>
                           </span>
                           <StockBadge quantity={qty} reorderLevel={reorder} />
                         </div>
                       </td>
 
                       {/* Reorder Level */}
-                      <td className="px-4 py-3 text-right font-mono text-text-muted">
-                        {reorder} {p.unit}
+                      <td className="px-4 py-3 text-right tabular-nums text-xs">
+                        <span className="font-medium text-text-muted">{reorder}</span>{' '}
+                        <span className="text-[10px] text-text-muted uppercase">{p.unit}</span>
                       </td>
 
                       {/* Cost Price */}
                       {canViewCost && (
-                        <td className="px-4 py-3 text-right font-mono text-text-muted">
+                        <td className="px-4 py-3 text-right text-xs tabular-nums text-text-muted font-medium">
                           {p.costPrice ? `$${Number(p.costPrice).toFixed(2)}` : '—'}
                         </td>
                       )}
 
                       {/* Selling Price */}
-                      <td className="px-4 py-3 text-right font-mono font-bold text-text">
+                      <td className="px-4 py-3 text-right text-xs tabular-nums font-semibold text-text">
                         ${Number(p.sellingPrice).toFixed(2)}
                       </td>
 

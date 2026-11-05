@@ -244,13 +244,13 @@ export default function ReportsPage() {
                           <td className="px-4 py-3 font-semibold text-text">
                             {valuationGroupBy === 'category' ? row.categoryName : row.warehouseName}
                           </td>
-                          <td className="px-4 py-3 text-right font-mono text-text">
+                          <td className="px-4 py-3 text-right tabular-nums font-medium text-text">
                             {row.itemCount}
                           </td>
-                          <td className="px-4 py-3 text-right font-mono text-text">
+                          <td className="px-4 py-3 text-right tabular-nums font-medium text-text">
                             {Number(row.totalQuantity).toLocaleString()}
                           </td>
-                          <td className="px-4 py-3 text-right font-mono font-bold text-accent">
+                          <td className="px-4 py-3 text-right tabular-nums font-bold text-accent">
                             ${Number(row.totalValuation).toFixed(2)}
                           </td>
                         </tr>
@@ -259,15 +259,15 @@ export default function ReportsPage() {
                     <tfoot>
                       <tr className="bg-surface-muted font-bold border-t-2 border-border">
                         <td className="px-4 py-3 text-text">{t('reports.totalValuation')}</td>
-                        <td className="px-4 py-3 text-right font-mono text-text">
+                        <td className="px-4 py-3 text-right tabular-nums text-text">
                           {valuationData.reduce((s, r) => s + Number(r.itemCount), 0)}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono text-text">
+                        <td className="px-4 py-3 text-right tabular-nums text-text">
                           {valuationData
                             .reduce((s, r) => s + Number(r.totalQuantity), 0)
                             .toLocaleString()}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono text-accent text-sm">
+                        <td className="px-4 py-3 text-right tabular-nums text-accent text-sm">
                           ${totalValuationSum.toFixed(2)}
                         </td>
                       </tr>
@@ -311,19 +311,19 @@ export default function ReportsPage() {
 
                       return (
                         <tr key={idx} className="hover:bg-amber-500/10 transition-colors">
-                          <td className="px-4 py-3 font-mono font-semibold text-text">
+                          <td className="px-4 py-3 font-semibold text-text">
                             {item.sku}
                           </td>
                           <td className="px-4 py-3 font-medium text-text">{item.name}</td>
                           <td className="px-4 py-3 text-text-muted">{item.category_name}</td>
-                          <td className="px-4 py-3 text-right font-mono font-bold text-amber-600 dark:text-amber-400">
-                            {onHand} {item.unit}
+                          <td className="px-4 py-3 text-right tabular-nums font-bold text-amber-600 dark:text-amber-400">
+                            {onHand} <span className="text-[10px] font-medium uppercase">{item.unit}</span>
                           </td>
-                          <td className="px-4 py-3 text-right font-mono text-text-muted">
-                            {reorder} {item.unit}
+                          <td className="px-4 py-3 text-right tabular-nums text-text-muted">
+                            {reorder} <span className="text-[10px] uppercase">{item.unit}</span>
                           </td>
-                          <td className="px-4 py-3 text-right font-mono font-semibold text-accent">
-                            +{deficit + 10} {item.unit}
+                          <td className="px-4 py-3 text-right tabular-nums font-semibold text-accent">
+                            +{deficit + 10} <span className="text-[10px] uppercase">{item.unit}</span>
                           </td>
                         </tr>
                       );
@@ -361,16 +361,16 @@ export default function ReportsPage() {
                   <tbody className="divide-y divide-border">
                     {outOfStockData.map((item, idx) => (
                       <tr key={idx} className="hover:bg-rose-500/10 transition-colors">
-                        <td className="px-4 py-3 font-mono font-semibold text-text">
+                        <td className="px-4 py-3 font-semibold text-text">
                           {item.sku}
                         </td>
                         <td className="px-4 py-3 font-medium text-text">{item.name}</td>
                         <td className="px-4 py-3 text-text-muted">{item.category_name}</td>
-                        <td className="px-4 py-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">
-                          0 {item.unit}
+                        <td className="px-4 py-3 text-right tabular-nums font-bold text-rose-600 dark:text-rose-400">
+                          0 <span className="text-[10px] font-medium uppercase">{item.unit}</span>
                         </td>
-                        <td className="px-4 py-3 text-right font-mono text-text-muted">
-                          {item.reorder_level} {item.unit}
+                        <td className="px-4 py-3 text-right tabular-nums text-text-muted">
+                          {item.reorder_level} <span className="text-[10px] uppercase">{item.unit}</span>
                         </td>
                       </tr>
                     ))}

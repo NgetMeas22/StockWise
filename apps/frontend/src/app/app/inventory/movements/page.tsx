@@ -285,8 +285,8 @@ export default function StockMovementsPage() {
                   return (
                     <tr key={m.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="px-4 py-3">
-                        <div className="font-mono font-bold text-text">#{m.seq}</div>
-                        <div className="font-mono text-[10px] text-text-muted">
+                        <div className="font-bold text-text tabular-nums">#{m.seq}</div>
+                        <div className="text-[10px] text-text-muted tabular-nums">
                           {new Date(m.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}{' '}
                           {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
@@ -300,26 +300,26 @@ export default function StockMovementsPage() {
                         <div className="font-semibold text-text truncate max-w-[160px]" title={m.productName}>
                           {m.productName}
                         </div>
-                        <div className="font-mono text-[10px] text-text-muted">{m.productSku}</div>
+                        <div className="text-[10px] text-text-muted">{m.productSku}</div>
                       </td>
 
                       <td className="px-4 py-3">
                         <div className="font-medium text-text">{m.warehouseName || m.warehouseId}</div>
-                        <div className="font-mono text-[10px] text-text-muted">{m.warehouseId.slice(0, 8)}</div>
+                        <div className="text-[10px] text-text-muted">{m.warehouseId.slice(0, 8)}</div>
                       </td>
 
-                      <td className={`px-4 py-3 text-right font-mono font-bold text-xs ${
+                      <td className={`px-4 py-3 text-right tabular-nums font-bold text-xs ${
                         deltaNum > 0 ? 'text-ok' : 'text-danger'
                       }`}>
                         {deltaNum > 0 ? `+${m.quantityDelta}` : m.quantityDelta}
                       </td>
 
-                      <td className="px-4 py-3 text-right font-mono font-medium text-text text-xs">
+                      <td className="px-4 py-3 text-right tabular-nums font-medium text-text text-xs">
                         {m.quantityAfter}
                       </td>
 
                       {canViewCost && (
-                        <td className="px-4 py-3 text-right font-mono text-[11px] text-text-muted">
+                        <td className="px-4 py-3 text-right tabular-nums text-xs text-text-muted font-medium">
                           {m.unitCost ? `$${Number(m.unitCost).toFixed(2)}` : '—'}
                         </td>
                       )}

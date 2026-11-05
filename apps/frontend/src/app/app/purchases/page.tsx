@@ -238,7 +238,7 @@ export default function PurchaseOrdersPage() {
                     <td className="px-4 py-3">
                       <Link
                         href={`/app/purchases/${po.id}`}
-                        className="font-mono font-bold text-accent hover:underline block"
+                        className="font-bold text-accent hover:underline block"
                       >
                         {po.poNumber}
                       </Link>
@@ -258,16 +258,16 @@ export default function PurchaseOrdersPage() {
                       </div>
                     </td>
 
-                    <td className="px-4 py-3 font-mono text-text-muted">
+                    <td className="px-4 py-3 tabular-nums text-text-muted text-xs">
                       {new Date(po.orderDate).toLocaleDateString()}
                     </td>
 
-                    <td className="px-4 py-3 font-mono text-text-muted">
+                    <td className="px-4 py-3 tabular-nums text-text-muted text-xs">
                       {po.expectedDate ? new Date(po.expectedDate).toLocaleDateString() : '—'}
                     </td>
 
                     {canViewCost && (
-                      <td className="px-4 py-3 text-right font-mono font-bold text-text">
+                      <td className="px-4 py-3 text-right tabular-nums font-bold text-text text-xs">
                         {po.totalCost ? `$${Number(po.totalCost).toFixed(2)}` : '—'}
                       </td>
                     )}

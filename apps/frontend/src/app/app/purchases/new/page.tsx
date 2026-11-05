@@ -354,7 +354,7 @@ export default function NewPurchaseOrderPage() {
                   )}
 
                   {canViewCost && (
-                    <div className="w-28 text-right font-mono font-semibold text-xs text-text">
+                    <div className="w-28 text-right tabular-nums font-semibold text-xs text-text">
                       ${lineTotal.toFixed(2)}
                     </div>
                   )}
@@ -386,7 +386,7 @@ export default function NewPurchaseOrderPage() {
             {canViewCost && (
               <div className="text-right mt-2 sm:mt-0">
                 <span className="text-xs text-text-muted block">Estimated Purchase Total</span>
-                <span className="text-xl font-mono font-bold text-accent">
+                <span className="text-xl tabular-nums font-bold text-accent">
                   ${totalCost.toFixed(2)}
                 </span>
               </div>

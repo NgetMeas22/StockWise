@@ -108,7 +108,7 @@ export default function PublicProductDetailPage() {
 
             {product.sku && (
               <div className="mt-2 text-xs text-text-muted">
-                {t('catalog.itemCode')}: <span className="font-mono text-text font-semibold">{product.sku}</span>
+                {t('catalog.itemCode')}: <span className="text-text font-semibold">{product.sku}</span>
               </div>
             )}
 
@@ -117,7 +117,7 @@ export default function PublicProductDetailPage() {
               <div>
                 <span className="text-xs text-text-muted block">{t('catalog.referencePrice')}</span>
                 {product.price ? (
-                  <span className="text-2xl font-bold font-mono text-text">
+                  <span className="text-2xl font-bold tabular-nums text-text">
                     ${product.price} {product.currency || 'USD'}
                   </span>
                 ) : (

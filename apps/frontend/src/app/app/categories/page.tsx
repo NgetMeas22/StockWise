@@ -207,15 +207,15 @@ export default function CategoriesPage() {
               </div>
             </div>
           </td>
-          <td className="px-4 py-3 font-mono text-[11px] text-text-muted">
+          <td className="px-4 py-3 text-[11px] text-text-muted">
             /{cat.slug}
           </td>
-          <td className="px-4 py-3 text-center font-mono">
+          <td className="px-4 py-3 text-center tabular-nums">
             <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-semibold">
               {cat.productCount ?? 0}
             </span>
           </td>
-          <td className="px-4 py-3 text-center font-mono text-text-muted text-xs">
+          <td className="px-4 py-3 text-center tabular-nums text-text-muted text-xs">
             {cat.sortOrder ?? 0}
           </td>
           <td className="px-4 py-3 text-center">

@@ -250,13 +250,13 @@ function CatalogContent() {
                           {prod.name}
                         </h3>
                         <div className="text-[11px] text-text-muted mt-1">
-                          {t('catalog.itemCode')}: <span className="font-mono text-text font-medium">{prod.sku}</span>
+                          {t('catalog.itemCode')}: <span className="text-text font-medium">{prod.sku}</span>
                         </div>
                       </div>
 
                       <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
                         {prod.price ? (
-                          <div className="text-base font-bold font-mono text-text">
+                          <div className="text-base font-bold tabular-nums text-text">
                             ${prod.price}
                           </div>
                         ) : (

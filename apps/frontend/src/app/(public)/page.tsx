@@ -171,7 +171,7 @@ export default function HomePage() {
 
                 <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
                   {prod.price ? (
-                    <div className="text-base font-bold font-mono text-text">
+                    <div className="text-base font-bold tabular-nums text-text">
                       ${prod.price}
                     </div>
                   ) : (

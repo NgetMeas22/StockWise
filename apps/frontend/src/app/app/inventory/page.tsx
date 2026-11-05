@@ -385,7 +385,7 @@ export default function InventoryBalancesPage() {
                         >
                           {b.productName}
                         </Link>
-                        <span className="font-mono text-[11px] text-text-muted">{b.productSku}</span>
+                        <span className="text-[11px] text-text-muted">{b.productSku}</span>
                       </td>
 
                       <td className="px-4 py-3">
@@ -393,19 +393,20 @@ export default function InventoryBalancesPage() {
                           <Building2 className="w-3.5 h-3.5 text-text-muted" />
                           <span className="font-medium">{b.warehouseName}</span>
                         </div>
-                        <span className="font-mono text-[10px] text-text-muted ml-5">
+                        <span className="text-[10px] text-text-muted ml-5">
                           {b.warehouseId.slice(0, 8)}
                         </span>
                       </td>
 
                       <td className="px-4 py-3 text-right">
-                        <span className="font-mono text-sm font-bold text-text">
-                          {qty.toFixed(2)} {b.unit}
+                        <span className="tabular-nums text-xs font-bold text-text">
+                          {qty.toFixed(2)} <span className="text-[10px] font-medium text-text-muted uppercase">{b.unit}</span>
                         </span>
                       </td>
 
-                      <td className="px-4 py-3 text-right font-mono text-text-muted">
-                        {reorder.toFixed(2)} {b.unit}
+                      <td className="px-4 py-3 text-right tabular-nums text-xs text-text-muted">
+                        <span className="font-medium text-text">{reorder.toFixed(2)}</span>{' '}
+                        <span className="text-[10px] uppercase">{b.unit}</span>
                       </td>
 
                       <td className="px-4 py-3 text-center">

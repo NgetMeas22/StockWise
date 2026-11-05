@@ -197,7 +197,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
           </Link>
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl font-bold tracking-tight text-text font-mono">
+              <h1 className="text-2xl font-bold tracking-tight text-text">
                 {po.poNumber}
               </h1>
               {getStatusBadge(po.status)}
@@ -341,18 +341,18 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
 
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                      <td className="px-4 py-3 font-mono text-text-muted">#{item.lineNumber}</td>
+                      <td className="px-4 py-3 text-text-muted tabular-nums">#{item.lineNumber}</td>
 
                       <td className="px-4 py-3">
                         <div className="font-semibold text-text">{item.productName}</div>
-                        <div className="font-mono text-[10px] text-text-muted">{item.productSku}</div>
+                        <div className="text-[10px] text-text-muted">{item.productSku}</div>
                       </td>
 
-                      <td className="px-4 py-3 text-right font-mono font-medium text-text">
+                      <td className="px-4 py-3 text-right tabular-nums font-medium text-text">
                         {ordered}
                       </td>
 
-                      <td className="px-4 py-3 text-right font-mono font-semibold text-emerald-700 dark:text-emerald-400">
+                      <td className="px-4 py-3 text-right tabular-nums font-semibold text-emerald-700 dark:text-emerald-400">
                         {received}
                       </td>
 
@@ -363,17 +363,17 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
                             style={{ width: `${pct}%` }}
                           ></div>
                         </div>
-                        <span className="text-[10px] text-text-muted font-mono">{pct}%</span>
+                        <span className="text-[10px] text-text-muted tabular-nums font-medium">{pct}%</span>
                       </td>
 
                       {canViewCost && (
-                        <td className="px-4 py-3 text-right font-mono text-text-muted">
+                        <td className="px-4 py-3 text-right tabular-nums text-text-muted">
                           {item.unitCost ? `$${Number(item.unitCost).toFixed(2)}` : '—'}
                         </td>
                       )}
 
                       {canViewCost && (
-                        <td className="px-4 py-3 text-right font-mono font-bold text-text">
+                        <td className="px-4 py-3 text-right tabular-nums font-bold text-text">
                           {item.lineTotal ? `$${Number(item.lineTotal).toFixed(2)}` : '—'}
                         </td>
                       )}
@@ -388,7 +388,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
             <div className="flex justify-end p-3 text-right">
               <div>
                 <span className="text-xs text-text-muted block">Grand Total</span>
-                <span className="text-xl font-mono font-bold text-accent">
+                <span className="text-xl tabular-nums font-bold text-accent">
                   ${Number(po.totalCost).toFixed(2)}
                 </span>
               </div>
