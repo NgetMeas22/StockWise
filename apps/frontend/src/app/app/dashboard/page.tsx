@@ -14,12 +14,13 @@ import {
   ArrowRight,
   Plus,
   RefreshCw,
-  ExternalLink,
+  TrendingUp,
 } from 'lucide-react';
 import { StatCard } from '../../../components/ui/StatCard';
 import { Button } from '../../../components/ui/Button';
-import { Badge } from '../../../components/ui/Badge';
 import { Can } from '../../../components/auth/Can';
+import { useTranslation } from '../../../i18n/i18n-context';
+import { useTheme } from '../../../lib/theme-context';
 import {
   ResponsiveContainer,
   BarChart,
@@ -33,6 +34,10 @@ import {
 } from 'recharts';
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['dashboard-summary'],
     queryFn: () => apiRequest<DashboardSummaryDTO>('/reports/summary'),
@@ -41,14 +46,20 @@ export default function DashboardPage() {
   const summary = data?.data;
   const metrics = summary?.metrics;
 
+  const chartTextColor = isDark ? '#94A3B8' : '#475569';
+  const chartGridColor = isDark ? '#1E293B' : '#F1F5F9';
+  const tooltipBg = isDark ? '#1E293B' : '#FFFFFF';
+  const tooltipBorder = isDark ? '#334155' : '#E2E8F0';
+  const tooltipText = isDark ? '#F8FAFC' : '#0F172A';
+
   return (
     <div className="space-y-8">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-text">Operations Dashboard</h1>
+          <h1 className="text-xl font-bold tracking-tight text-text">{t('dashboard.title')}</h1>
           <p className="text-xs text-text-muted mt-0.5">
-            Real-time inventory levels, ledger metrics, and stock movement telemetry
+            {t('dashboard.subtitle')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -57,15 +68,16 @@ export default function DashboardPage() {
             size="sm"
             onClick={() => refetch()}
             isLoading={isRefetching}
+            loadingText="Refreshing..."
           >
             <RefreshCw className="w-3.5 h-3.5 mr-1" />
-            Refresh Data
+            <span>{t('actions.refresh')}</span>
           </Button>
           <Can permission="inventory:receive">
             <Link href="/app/inventory">
               <Button size="sm">
                 <Plus className="w-4 h-4 mr-1" />
-                Receive Stock
+                <span>{t('dashboard.receiveStock')}</span>
               </Button>
             </Link>
           </Can>
@@ -75,21 +87,21 @@ export default function DashboardPage() {
       {/* 5 Primary Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard
-          label="Active Products"
+          label={t('dashboard.activeProducts')}
           value={metrics?.activeProductsCount ?? null}
           subtext="Catalog items enabled"
           icon={Boxes}
           isLoading={isLoading}
         />
         <StatCard
-          label="Total Stock"
+          label={t('dashboard.totalStockUnits')}
           value={metrics?.totalStockQuantity ? Number(metrics.totalStockQuantity).toLocaleString() : null}
           subtext="Units on hand (all hubs)"
           icon={Package}
           isLoading={isLoading}
         />
         <StatCard
-          label="Inventory Valuation"
+          label={t('dashboard.inventoryValuation')}
           value={
             metrics?.inventoryValuation !== null && metrics?.inventoryValuation !== undefined
               ? `$${Number(metrics.inventoryValuation).toLocaleString()}`
@@ -101,7 +113,7 @@ export default function DashboardPage() {
           isLoading={isLoading}
         />
         <StatCard
-          label="Low Stock Items"
+          label={t('dashboard.lowStockAlerts')}
           value={metrics?.lowStockCount ?? null}
           subtext="At or below reorder level"
           icon={AlertTriangle}
@@ -109,7 +121,7 @@ export default function DashboardPage() {
           isLoading={isLoading}
         />
         <StatCard
-          label="Out of Stock"
+          label={t('dashboard.outOfStock')}
           value={metrics?.outOfStockCount ?? null}
           subtext="Zero balance recorded"
           icon={XCircle}
@@ -123,7 +135,7 @@ export default function DashboardPage() {
         {/* Stock by Category Bar Chart */}
         <div className="bg-surface p-5 rounded-[8px] border border-border shadow-sm flex flex-col justify-between">
           <div className="mb-4">
-            <h3 className="text-sm font-semibold text-text">Stock Distribution by Category</h3>
+            <h3 className="text-sm font-semibold text-text">{t('dashboard.stockByCategory')}</h3>
             <p className="text-xs text-text-muted mt-0.5">Total unit count across active divisions</p>
           </div>
           <div className="h-64 w-full">
@@ -132,21 +144,22 @@ export default function DashboardPage() {
                 <BarChart data={summary.stockByCategory} margin={{ top: 10, right: 10, left: -20, bottom: 25 }}>
                   <XAxis
                     dataKey="categoryName"
-                    tick={{ fontSize: 11, fill: '#475569' }}
+                    tick={{ fontSize: 11, fill: chartTextColor }}
                     interval={0}
                     angle={-15}
                     textAnchor="end"
                   />
-                  <YAxis tick={{ fontSize: 11, fill: '#475569' }} />
+                  <YAxis tick={{ fontSize: 11, fill: chartTextColor }} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#FFFFFF',
-                      borderColor: '#E2E8F0',
+                      backgroundColor: tooltipBg,
+                      borderColor: tooltipBorder,
+                      color: tooltipText,
                       borderRadius: '6px',
                       fontSize: '12px',
                     }}
                   />
-                  <Bar dataKey="totalQuantity" fill="#0F766E" radius={[4, 4, 0, 0]} name="Quantity on Hand" />
+                  <Bar dataKey="totalQuantity" fill="#0D9488" radius={[4, 4, 0, 0]} name="Quantity on Hand" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -160,26 +173,27 @@ export default function DashboardPage() {
         {/* Movements per Day Area Chart */}
         <div className="bg-surface p-5 rounded-[8px] border border-border shadow-sm flex flex-col justify-between">
           <div className="mb-4">
-            <h3 className="text-sm font-semibold text-text">Movement Velocity (Last 14 Days)</h3>
+            <h3 className="text-sm font-semibold text-text">{t('dashboard.stockVelocity')}</h3>
             <p className="text-xs text-text-muted mt-0.5">Daily volume of receipts, issues and adjustments</p>
           </div>
           <div className="h-64 w-full">
             {summary?.movementsPerDay && summary.movementsPerDay.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={summary.movementsPerDay} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#475569' }} />
-                  <YAxis tick={{ fontSize: 11, fill: '#475569' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: chartTextColor }} />
+                  <YAxis tick={{ fontSize: 11, fill: chartTextColor }} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#FFFFFF',
-                      borderColor: '#E2E8F0',
+                      backgroundColor: tooltipBg,
+                      borderColor: tooltipBorder,
+                      color: tooltipText,
                       borderRadius: '6px',
                       fontSize: '12px',
                     }}
                   />
-                  <Area type="monotone" dataKey="receipts" stackId="1" stroke="#0F766E" fill="#CCFBF1" name="Receipts" />
-                  <Area type="monotone" dataKey="issues" stackId="1" stroke="#B45309" fill="#FEF3C7" name="Issues" />
+                  <Area type="monotone" dataKey="receipts" stackId="1" stroke="#0D9488" fill="#CCFBF1" fillOpacity={isDark ? 0.2 : 0.6} name="Receipts" />
+                  <Area type="monotone" dataKey="issues" stackId="1" stroke="#F59E0B" fill="#FEF3C7" fillOpacity={isDark ? 0.2 : 0.6} name="Issues" />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
@@ -199,12 +213,12 @@ export default function DashboardPage() {
             <div>
               <h3 className="text-sm font-semibold text-text flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-warn" />
-                Low Stock Alerts
+                <span>{t('dashboard.lowStockAlerts')}</span>
               </h3>
               <p className="text-xs text-text-muted mt-0.5">Supplies at or below target reorder thresholds</p>
             </div>
             <Link href="/app/inventory" className="text-xs text-accent font-semibold hover:underline flex items-center gap-1">
-              View All <ArrowRight className="w-3.5 h-3.5" />
+              {t('common.view')} {t('common.all')} <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -221,7 +235,7 @@ export default function DashboardPage() {
               <tbody className="divide-y divide-border">
                 {summary?.lowStockItems && summary.lowStockItems.length > 0 ? (
                   summary.lowStockItems.map((item) => (
-                    <tr key={item.productId} className="hover:bg-slate-50 transition-colors">
+                    <tr key={item.productId} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="px-4 py-3">
                         <div className="font-semibold text-text">{item.name}</div>
                         <div className="text-[11px] font-mono text-text-muted">{item.sku}</div>
@@ -235,7 +249,7 @@ export default function DashboardPage() {
                       <td className="px-4 py-3 text-center">
                         <Link href="/app/purchases/new">
                           <Button variant="outline" size="sm" className="h-7 text-xs">
-                            Order
+                            {t('dashboard.newPurchaseOrder')}
                           </Button>
                         </Link>
                       </td>
@@ -259,12 +273,12 @@ export default function DashboardPage() {
             <div>
               <h3 className="text-sm font-semibold text-text flex items-center gap-2">
                 <Package className="w-4 h-4 text-accent" />
-                Recent Ledger Activity
+                <span>{t('dashboard.recentMovements')}</span>
               </h3>
               <p className="text-xs text-text-muted mt-0.5">Last 10 immutable stock movement records</p>
             </div>
             <Link href="/app/inventory/movements" className="text-xs text-accent font-semibold hover:underline flex items-center gap-1">
-              Audit Ledger <ArrowRight className="w-3.5 h-3.5" />
+              <span>{t('dashboard.viewAllMovements')}</span> <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -282,7 +296,7 @@ export default function DashboardPage() {
               <tbody className="divide-y divide-border">
                 {summary?.recentMovements && summary.recentMovements.length > 0 ? (
                   summary.recentMovements.map((mov) => (
-                    <tr key={mov.id} className="hover:bg-slate-50 transition-colors">
+                    <tr key={mov.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="px-4 py-3 font-mono text-[11px] text-text-muted">
                         {new Date(mov.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </td>
@@ -290,10 +304,10 @@ export default function DashboardPage() {
                         <span
                           className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                             mov.movementType === 'RECEIPT'
-                              ? 'bg-emerald-50 text-ok border border-emerald-200'
+                              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-ok border border-emerald-200 dark:border-emerald-800'
                               : mov.movementType === 'ISSUE'
-                              ? 'bg-amber-50 text-warn border border-amber-200'
-                              : 'bg-sky-50 text-info border border-sky-200'
+                              ? 'bg-amber-50 dark:bg-amber-950/40 text-warn border border-amber-200 dark:border-amber-800'
+                              : 'bg-sky-50 dark:bg-sky-950/40 text-info border border-sky-200 dark:border-sky-800'
                           }`}
                         >
                           {mov.movementType}
