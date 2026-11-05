@@ -889,7 +889,7 @@ export default function SettingsPage() {
                   <tbody className="divide-y divide-border">
                     {warehouses.map((w) => (
                       <tr key={w.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
-                        <td className="px-4 py-3 font-mono font-bold text-text">
+                        <td className="px-4 py-3 font-bold text-text">
                           {w.code}
                         </td>
 

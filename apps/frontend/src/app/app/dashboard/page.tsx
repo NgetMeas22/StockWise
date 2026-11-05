@@ -242,8 +242,13 @@ export default function DashboardPage() {
 
           {/* Smooth Dual-Tone Curved Spline Chart */}
           <div className="h-72 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 15, right: 10, left: -20, bottom: 0 }}>
+            {isLoading ? (
+              <div className="h-full w-full rounded-lg bg-surface-muted/60 animate-pulse flex items-center justify-center">
+                <RefreshCw className="w-5 h-5 text-accent animate-spin opacity-50" />
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData} margin={{ top: 15, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="purpleGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#6366F1" stopOpacity={0.3} />
@@ -312,6 +317,7 @@ export default function DashboardPage() {
                 />
               </AreaChart>
             </ResponsiveContainer>
+            )}
           </div>
         </div>
 
@@ -342,30 +348,36 @@ export default function DashboardPage() {
 
           {/* Mini 7-Day Rounded Bar Chart with Peak Day Highlight (Pic 1) */}
           <div className="h-40 w-full pt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={carryingCostWeekly} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
-                <XAxis dataKey="day" tick={{ fontSize: 10, fill: chartTextColor }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  cursor={{ fill: 'transparent' }}
-                  contentStyle={{
-                    backgroundColor: tooltipBg,
-                    borderColor: tooltipBorder,
-                    color: tooltipText,
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                  }}
-                  formatter={(val: any) => [`$${Number(val) * 60}`, 'Cost']}
-                />
-                <Bar dataKey="amount" radius={[8, 8, 4, 4]}>
-                  {carryingCostWeekly.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.isPeak ? '#6366F1' : isDark ? '#2E2E38' : '#E0E7FF'}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            {isLoading ? (
+              <div className="h-full w-full rounded-lg bg-surface-muted/60 animate-pulse flex items-center justify-center">
+                <RefreshCw className="w-4 h-4 text-accent animate-spin opacity-50" />
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={carryingCostWeekly} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
+                  <XAxis dataKey="day" tick={{ fontSize: 10, fill: chartTextColor }} axisLine={false} tickLine={false} />
+                  <Tooltip
+                    cursor={{ fill: 'transparent' }}
+                    contentStyle={{
+                      backgroundColor: tooltipBg,
+                      borderColor: tooltipBorder,
+                      color: tooltipText,
+                      borderRadius: '6px',
+                      fontSize: '11px',
+                    }}
+                    formatter={(val: any) => [`$${Number(val) * 60}`, 'Cost']}
+                  />
+                  <Bar dataKey="amount" radius={[8, 8, 4, 4]}>
+                    {carryingCostWeekly.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.isPeak ? '#6366F1' : isDark ? '#2E2E38' : '#E0E7FF'}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
       </div>

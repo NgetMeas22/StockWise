@@ -7,6 +7,7 @@ import { ThemeProvider } from '../lib/theme-context';
 import { I18nProvider } from '../i18n/i18n-context';
 import { ToastProvider } from '../lib/toast-context';
 import { AosInitializer } from '../components/AosInitializer';
+import { NavigationProgressBar } from '../components/NavigationProgressBar';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -27,6 +28,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <I18nProvider>
           <AuthProvider>
             <ToastProvider>
+              <NavigationProgressBar />
               <AosInitializer />
               {children}
             </ToastProvider>
