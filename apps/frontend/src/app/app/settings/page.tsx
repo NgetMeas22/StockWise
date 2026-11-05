@@ -13,7 +13,7 @@ import { Input } from '../../../components/ui/Input';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
 import { useToast } from '../../../lib/toast-context';
 import { useTranslation } from '../../../i18n/i18n-context';
-import { useTheme, AccentColor, InterfaceDensity, Theme } from '../../../lib/theme-context';
+import { useTheme, AccentColor, InterfaceDensity, Theme, ACCENT_PRESETS } from '../../../lib/theme-context';
 import {
   Settings,
   Building2,
@@ -42,7 +42,16 @@ export default function SettingsPage() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const { t, language, setLanguage, languages } = useTranslation();
-  const { theme, setTheme, accentColor, setAccentColor, density, setDensity } = useTheme();
+  const {
+    theme,
+    setTheme,
+    accentColor,
+    setAccentColor,
+    customColor,
+    setCustomColor,
+    density,
+    setDensity,
+  } = useTheme();
 
   const [activeTab, setActiveTab] = useState<'appearance' | 'language' | 'notifications' | 'system' | 'warehouses'>('appearance');
 
@@ -212,15 +221,6 @@ export default function SettingsPage() {
     });
   };
 
-  // Accent Colors list
-  const ACCENT_OPTIONS: { id: AccentColor; name: string; color: string; border: string }[] = [
-    { id: 'teal', name: 'StockWise Teal', color: 'bg-[#0D9488]', border: 'border-[#0D9488]' },
-    { id: 'emerald', name: 'Emerald Green', color: 'bg-[#059669]', border: 'border-[#059669]' },
-    { id: 'blue', name: 'Classic Blue', color: 'bg-[#2563EB]', border: 'border-[#2563EB]' },
-    { id: 'indigo', name: 'Modern Indigo', color: 'bg-[#4F46E5]', border: 'border-[#4F46E5]' },
-    { id: 'violet', name: 'Royal Violet', color: 'bg-[#7C3AED]', border: 'border-[#7C3AED]' },
-  ];
-
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
@@ -335,9 +335,12 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* Dark Mode Card */}
+              {/* Dark Mode Card (Pic 4 Style Matte Charcoal/Zinc) */}
               <div
-                onClick={() => setTheme('dark')}
+                onClick={() => {
+                  setTheme('dark');
+                  toast.info('Dark Mode Activated', 'Sleek neutral dark palette applied.');
+                }}
                 className={`relative p-4 rounded-[8px] border-2 cursor-pointer transition-all ${
                   theme === 'dark'
                     ? 'border-accent bg-accent/5 ring-1 ring-accent'
@@ -355,17 +358,20 @@ export default function SettingsPage() {
                     </span>
                   )}
                 </div>
-                {/* Mini Dark Mockup */}
-                <div className="h-16 rounded border border-slate-800 bg-[#0F172A] p-2 flex flex-col gap-1.5 shadow-sm">
-                  <div className="h-2 w-1/3 bg-slate-700 rounded"></div>
-                  <div className="h-2 w-full bg-slate-800 rounded"></div>
-                  <div className="h-2 w-2/3 bg-slate-800 rounded"></div>
+                {/* Mini Dark Mockup (Pic 4 Style) */}
+                <div className="h-16 rounded border border-[#2e2e33] bg-[#121214] p-2 flex flex-col gap-1.5 shadow-sm">
+                  <div className="h-2 w-1/3 bg-[#2e2e33] rounded"></div>
+                  <div className="h-2 w-full bg-[#18181b] rounded"></div>
+                  <div className="h-2 w-2/3 bg-[#18181b] rounded"></div>
                 </div>
               </div>
 
               {/* System Mode Card */}
               <div
-                onClick={() => setTheme('system')}
+                onClick={() => {
+                  setTheme('system');
+                  toast.info('System Theme Sync', 'Theme will follow your device preferences.');
+                }}
                 className={`relative p-4 rounded-[8px] border-2 cursor-pointer transition-all ${
                   theme === 'system'
                     ? 'border-accent bg-accent/5 ring-1 ring-accent'
@@ -389,42 +395,80 @@ export default function SettingsPage() {
                     <div className="h-2 w-2/3 bg-slate-200 rounded"></div>
                     <div className="h-2 w-full bg-slate-100 rounded"></div>
                   </div>
-                  <div className="w-1/2 bg-[#0F172A] p-2 flex flex-col gap-1.5">
-                    <div className="h-2 w-2/3 bg-slate-700 rounded"></div>
-                    <div className="h-2 w-full bg-slate-800 rounded"></div>
+                  <div className="w-1/2 bg-[#121214] p-2 flex flex-col gap-1.5">
+                    <div className="h-2 w-2/3 bg-[#2e2e33] rounded"></div>
+                    <div className="h-2 w-full bg-[#18181b] rounded"></div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Accent Color Selection */}
+          {/* Accent Color Selection (12 Presets + Custom Color Picker) */}
           <div className="bg-surface rounded-[8px] border border-border p-6 shadow-subtle space-y-4">
             <div>
               <h2 className="text-base font-semibold text-text">{t('settings.accentColorLabel')}</h2>
               <p className="text-xs text-text-muted mt-0.5">
-                Select your preferred brand accent color for primary buttons, active badges, and focus rings.
+                Select your preferred brand accent color or configure a custom hex palette for primary buttons, active badges, and focus rings.
               </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
-              {ACCENT_OPTIONS.map((opt) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-7 gap-3 pt-2">
+              {ACCENT_PRESETS.map((opt) => (
                 <button
-                  key={opt.id}
+                  key={opt.key}
                   type="button"
-                  onClick={() => setAccentColor(opt.id)}
+                  onClick={() => {
+                    setAccentColor(opt.key);
+                    toast.success('Accent color updated', `Brand accent set to ${opt.name}.`);
+                  }}
                   className={`flex flex-col items-center gap-2 p-3 rounded-[8px] border transition-all text-center ${
-                    accentColor === opt.id
-                      ? 'border-accent bg-accent/5 ring-1 ring-accent'
-                      : 'border-border bg-surface-muted/20 hover:border-border-strong'
+                    accentColor === opt.key
+                      ? 'border-accent bg-accent/5 ring-2 ring-accent'
+                      : 'border-border bg-surface-muted/20 hover:border-text-muted/40'
                   }`}
                 >
-                  <div className={`w-8 h-8 rounded-full ${opt.color} flex items-center justify-center shadow-sm`}>
-                    {accentColor === opt.id && <Check className="w-4 h-4 text-white" />}
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-transform hover:scale-105"
+                    style={{ backgroundColor: opt.color }}
+                  >
+                    {accentColor === opt.key && <Check className="w-4 h-4 text-white" />}
                   </div>
-                  <span className="text-xs font-semibold text-text">{opt.name}</span>
+                  <span className="text-xs font-semibold text-text truncate max-w-full">{opt.name}</span>
                 </button>
               ))}
+
+              {/* Custom Hex Color Picker Card */}
+              <div
+                className={`flex flex-col items-center gap-2 p-3 rounded-[8px] border transition-all text-center relative ${
+                  accentColor === 'custom'
+                    ? 'border-accent bg-accent/5 ring-2 ring-accent'
+                    : 'border-border bg-surface-muted/20 hover:border-text-muted/40'
+                }`}
+              >
+                <div className="relative w-8 h-8 rounded-full shadow-sm overflow-hidden flex items-center justify-center border border-border">
+                  <input
+                    type="color"
+                    value={customColor}
+                    onChange={(e) => {
+                      setCustomColor(e.target.value);
+                      toast.success('Custom color applied', `Hex: ${e.target.value.toUpperCase()}`);
+                    }}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    title="Click to pick any custom color"
+                  />
+                  <div
+                    className="w-full h-full flex items-center justify-center"
+                    style={{ backgroundColor: customColor }}
+                  >
+                    {accentColor === 'custom' && <Check className="w-4 h-4 text-white" />}
+                  </div>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-xs font-semibold text-text">Custom Hex</span>
+                  <span className="text-[10px] font-mono text-text-muted uppercase">{customColor}</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -439,7 +483,10 @@ export default function SettingsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div
-                onClick={() => setDensity('comfortable')}
+                onClick={() => {
+                  setDensity('comfortable');
+                  toast.info('Density set to Comfortable', 'Spacious padding applied.');
+                }}
                 className={`p-4 rounded-[8px] border-2 cursor-pointer transition-all flex items-start gap-3 ${
                   density === 'comfortable'
                     ? 'border-accent bg-accent/5 ring-1 ring-accent'
@@ -461,7 +508,10 @@ export default function SettingsPage() {
               </div>
 
               <div
-                onClick={() => setDensity('compact')}
+                onClick={() => {
+                  setDensity('compact');
+                  toast.info('Density set to Compact', 'High data density padding applied.');
+                }}
                 className={`p-4 rounded-[8px] border-2 cursor-pointer transition-all flex items-start gap-3 ${
                   density === 'compact'
                     ? 'border-accent bg-accent/5 ring-1 ring-accent'

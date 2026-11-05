@@ -5,6 +5,14 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        source: '/en/:path*',
+        destination: '/:path*',
+      },
+      {
+        source: '/kh/:path*',
+        destination: '/:path*',
+      },
+      {
         source: '/api/:path*',
         destination: 'http://localhost:4000/api/:path*',
       },
@@ -17,4 +25,3 @@ const nextConfig = {
 };
 
 export default nextConfig;
-

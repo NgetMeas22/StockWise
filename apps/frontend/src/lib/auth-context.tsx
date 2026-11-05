@@ -31,11 +31,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user: UserDTO;
         role: RoleKey;
         permissions: PermissionKey[];
+        csrfToken?: string;
       }>('/auth/me');
 
       setUser(res.data.user);
       setRole(res.data.role);
       setPermissions(res.data.permissions || []);
+      if (res.data.csrfToken) {
+        setCsrfToken(res.data.csrfToken);
+      }
     } catch {
       setUser(null);
       setRole(null);

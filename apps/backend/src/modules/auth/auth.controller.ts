@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { authService } from './auth.service.js';
 import { sendSuccess } from '../../http/response.js';
 import { env } from '../../config/env.js';
+import { prisma } from '../../lib/prisma.js';
+import { generateCsrfToken, hashCsrfToken } from '../../lib/tokens.js';
 
 export class AuthController {
   public async login(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -62,10 +64,21 @@ export class AuthController {
 
   public async getMe(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      let csrfToken: string | undefined;
+      if (req.session) {
+        csrfToken = generateCsrfToken();
+        const csrfHash = hashCsrfToken(csrfToken);
+        await prisma.session.update({
+          where: { id: req.session.id },
+          data: { csrfHash },
+        });
+      }
+
       sendSuccess(res, {
         user: req.user,
         role: req.role,
         permissions: req.permissions,
+        csrfToken,
       });
     } catch (err) {
       next(err);

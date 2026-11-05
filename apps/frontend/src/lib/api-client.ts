@@ -16,10 +16,21 @@ let csrfTokenInMemory: string | null = null;
 
 export function setCsrfToken(token: string | null) {
   csrfTokenInMemory = token;
+  if (typeof window !== 'undefined') {
+    if (token) {
+      sessionStorage.setItem('sw_csrf_token', token);
+    } else {
+      sessionStorage.removeItem('sw_csrf_token');
+    }
+  }
 }
 
 export function getCsrfToken(): string | null {
-  return csrfTokenInMemory;
+  if (csrfTokenInMemory) return csrfTokenInMemory;
+  if (typeof window !== 'undefined') {
+    return sessionStorage.getItem('sw_csrf_token');
+  }
+  return null;
 }
 
 export async function apiRequest<T = any>(
@@ -35,8 +46,9 @@ export async function apiRequest<T = any>(
 
   // Attach CSRF Token for state-changing requests
   const method = (options.method || 'GET').toUpperCase();
-  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && csrfTokenInMemory) {
-    headers['X-CSRF-Token'] = csrfTokenInMemory;
+  const activeCsrf = getCsrfToken();
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && activeCsrf) {
+    headers['X-CSRF-Token'] = activeCsrf;
   }
 
   // If body is FormData, delete Content-Type to allow browser boundary calculation

@@ -78,7 +78,7 @@ export default function LoginPage() {
           {t('auth.login')}
         </h2>
         <p className="mt-1 text-center text-xs text-text-muted">
-          Enterprise inventory, ledger auditing & purchasing access
+          {t('auth.subtitle')}
         </p>
       </div>
 
@@ -124,9 +124,9 @@ export default function LoginPage() {
               type="submit"
               className="w-full mt-2"
               isLoading={isSubmitting}
-              loadingText="Signing in..."
+              loadingText={t('auth.signingIn')}
             >
-              <span>{t('auth.login')}</span>
+              <span>{t('auth.signIn')}</span>
               <ArrowRight className="w-4 h-4" />
             </Button>
           </form>
@@ -134,7 +134,7 @@ export default function LoginPage() {
           {/* Quick Demo Credentials */}
           <div className="mt-8 pt-6 border-t border-border">
             <div className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 text-center">
-              Quick Role Test Credentials
+              {t('auth.demoAccounts')}
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <button
@@ -175,7 +175,7 @@ export default function LoginPage() {
 
         <div className="mt-6 text-center text-xs text-text-muted">
           <Link href="/" className="hover:text-accent transition-colors">
-            ← Back to Public Product Catalog
+            {t('auth.backToCatalog')}
           </Link>
         </div>
       </div>

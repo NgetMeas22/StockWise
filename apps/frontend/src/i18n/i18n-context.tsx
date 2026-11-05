@@ -20,14 +20,22 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('stockwise_lang') as Language | null;
-      if (stored && (stored === 'en' || stored === 'kh')) {
-        setLanguageState(stored);
+      const path = window.location.pathname;
+      if (path.startsWith('/en')) {
+        setLanguageState('en');
+        localStorage.setItem('stockwise_lang', 'en');
+      } else if (path.startsWith('/kh')) {
+        setLanguageState('kh');
+        localStorage.setItem('stockwise_lang', 'kh');
       } else {
-        // Check browser language
-        const browserLang = navigator.language.toLowerCase();
-        if (browserLang.startsWith('km') || browserLang.startsWith('kh')) {
-          setLanguageState('kh');
+        const stored = localStorage.getItem('stockwise_lang') as Language | null;
+        if (stored && (stored === 'en' || stored === 'kh')) {
+          setLanguageState(stored);
+        } else {
+          const browserLang = navigator.language.toLowerCase();
+          if (browserLang.startsWith('km') || browserLang.startsWith('kh')) {
+            setLanguageState('kh');
+          }
         }
       }
     } catch {}
@@ -43,8 +51,19 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     setLanguageState(newLang);
     try {
       localStorage.setItem('stockwise_lang', newLang);
+      document.documentElement.lang = newLang === 'kh' ? 'km' : 'en';
+
+      // Update URL prefix smoothly if desired
+      if (typeof window !== 'undefined') {
+        const currentPath = window.location.pathname;
+        let cleanPath = currentPath;
+        if (cleanPath.startsWith('/en')) cleanPath = cleanPath.slice(3) || '/';
+        else if (cleanPath.startsWith('/kh')) cleanPath = cleanPath.slice(3) || '/';
+
+        const newPath = newLang === 'en' ? `/en${cleanPath === '/' ? '' : cleanPath}` : `/kh${cleanPath === '/' ? '' : cleanPath}`;
+        window.history.replaceState(null, '', newPath + window.location.search);
+      }
     } catch {}
-    document.documentElement.lang = newLang === 'kh' ? 'km' : 'en';
   };
 
   const t = useCallback(
@@ -93,4 +112,3 @@ export function useTranslation() {
   }
   return context;
 }
-

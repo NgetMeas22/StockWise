@@ -241,6 +241,16 @@ export const translations: Record<Language, TranslationDict> = {
       noOutOfStockData: 'No depleted items',
       noOutOfStockDesc: 'Zero products are currently completely out of stock.',
     },
+    auth: {
+      login: 'Sign In to StockWise',
+      subtitle: 'Enterprise inventory, ledger auditing & purchasing access',
+      email: 'Email Address',
+      password: 'Password',
+      signIn: 'Sign In',
+      signingIn: 'Signing in...',
+      demoAccounts: 'Quick Role Test Credentials',
+      backToCatalog: '← Back to Public Product Catalog',
+    },
     catalog: {
       heroBadge: 'Verified Medical & Lab Supplies Catalog',
       heroTitle: 'Precision Inventory & Quality Supplies',
@@ -648,6 +658,16 @@ export const translations: Record<Language, TranslationDict> = {
       noLowStockDesc: 'ទំនិញទាំងអស់ក្នុងស្តុកបច្ចុប្បន្នគឺលើសពីកម្រិតកំណត់នៃការបញ្ជាទិញឡើងវិញ។',
       noOutOfStockData: 'គ្មានទំនិញអស់ពីស្តុកទេ',
       noOutOfStockDesc: 'គ្មានផលិតផលណាមួយអស់ពីស្តុកទាំងស្រុងនៅពេលនេះទេ។',
+    },
+    auth: {
+      login: 'ចូលគណនី StockWise',
+      subtitle: 'ការគ្រប់គ្រងស្តុកទំនិញ សវនកម្មកំណត់ហេតុ & សិទ្ធិបញ្ជាទិញទំនិញ',
+      email: 'អាសយដ្ឋានអ៊ីមែល',
+      password: 'ពាក្យសម្ងាត់',
+      signIn: 'ចូលប្រព័ន្ធ',
+      signingIn: 'កំពុងចូល...',
+      demoAccounts: 'គណនីសាកល្បងតាមតួនាទីរហ័ស',
+      backToCatalog: '← ត្រឡប់ទៅកាតាឡុកផលិតផលសាធារណៈ',
     },
     catalog: {
       heroBadge: 'កាតាឡុកសម្ភារៈវេជ្ជសាស្ត្រ & មន្ទីរពិសោធន៍ដែលបានផ្ទៀងផ្ទាត់',

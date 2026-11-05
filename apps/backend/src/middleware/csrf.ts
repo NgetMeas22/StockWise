@@ -10,6 +10,12 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction):
     return next();
   }
 
+  // Login endpoint establishes a new session and must never be blocked by an existing session's CSRF token
+  const url = req.originalUrl || req.url || '';
+  if (url.includes('/auth/login')) {
+    return next();
+  }
+
   // Allow unauthenticated routes like login or public endpoints to proceed past CSRF token check,
   // but verify Origin if present
   const origin = req.headers.origin || req.headers.referer;

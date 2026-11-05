@@ -6,6 +6,7 @@ import { AuthProvider } from '../lib/auth-context';
 import { ThemeProvider } from '../lib/theme-context';
 import { I18nProvider } from '../i18n/i18n-context';
 import { ToastProvider } from '../lib/toast-context';
+import { AosInitializer } from '../components/AosInitializer';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -25,7 +26,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <ThemeProvider>
         <I18nProvider>
           <AuthProvider>
-            <ToastProvider>{children}</ToastProvider>
+            <ToastProvider>
+              <AosInitializer />
+              {children}
+            </ToastProvider>
           </AuthProvider>
         </I18nProvider>
       </ThemeProvider>

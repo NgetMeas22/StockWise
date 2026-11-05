@@ -4,8 +4,43 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export type Theme = 'light' | 'dark' | 'system';
 export type ResolvedTheme = 'light' | 'dark';
-export type AccentColor = 'teal' | 'emerald' | 'blue' | 'indigo' | 'violet';
+export type AccentColor =
+  | 'teal'
+  | 'emerald'
+  | 'cyan'
+  | 'blue'
+  | 'indigo'
+  | 'violet'
+  | 'purple'
+  | 'rose'
+  | 'amber'
+  | 'coral'
+  | 'crimson'
+  | 'slate'
+  | 'custom';
+
 export type InterfaceDensity = 'comfortable' | 'compact';
+
+export interface AccentPreset {
+  key: AccentColor;
+  name: string;
+  color: string;
+}
+
+export const ACCENT_PRESETS: AccentPreset[] = [
+  { key: 'teal', name: 'StockWise Teal', color: '#0F766E' },
+  { key: 'emerald', name: 'Emerald Green', color: '#10B981' },
+  { key: 'cyan', name: 'Ocean Cyan', color: '#06B6D4' },
+  { key: 'blue', name: 'Classic Blue', color: '#2563EB' },
+  { key: 'indigo', name: 'Modern Indigo', color: '#4F46E5' },
+  { key: 'violet', name: 'Royal Violet', color: '#7C3AED' },
+  { key: 'purple', name: 'Vibrant Purple', color: '#9333EA' },
+  { key: 'rose', name: 'Velvet Rose', color: '#E11D48' },
+  { key: 'amber', name: 'Amber Gold', color: '#D97706' },
+  { key: 'coral', name: 'Sunset Coral', color: '#EA580C' },
+  { key: 'crimson', name: 'Crimson Red', color: '#DC2626' },
+  { key: 'slate', name: 'Titanium Slate', color: '#475569' },
+];
 
 interface ThemeContextType {
   theme: Theme;
@@ -14,16 +49,29 @@ interface ThemeContextType {
   toggleTheme: () => void;
   accentColor: AccentColor;
   setAccentColor: (accent: AccentColor) => void;
+  customColor: string;
+  setCustomColor: (hex: string) => void;
   density: InterfaceDensity;
   setDensity: (density: InterfaceDensity) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+function hexToRgba(hex: string, alpha: number): string {
+  const cleanHex = hex.replace('#', '');
+  if (cleanHex.length !== 6 && cleanHex.length !== 3) return hex;
+  const num = parseInt(cleanHex.length === 3 ? cleanHex.split('').map(c => c + c).join('') : cleanHex, 16);
+  const r = (num >> 16) & 255;
+  const g = (num >> 8) & 255;
+  const b = num & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('system');
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('light');
   const [accentColor, setAccentColorState] = useState<AccentColor>('teal');
+  const [customColor, setCustomColorState] = useState<string>('#0F766E');
   const [density, setDensityState] = useState<InterfaceDensity>('comfortable');
   const [mounted, setMounted] = useState(false);
 
@@ -36,8 +84,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       }
 
       const storedAccent = localStorage.getItem('stockwise_accent') as AccentColor | null;
-      if (storedAccent && ['teal', 'emerald', 'blue', 'indigo', 'violet'].includes(storedAccent)) {
+      if (storedAccent) {
         setAccentColorState(storedAccent);
+      }
+
+      const storedCustomColor = localStorage.getItem('stockwise_custom_color');
+      if (storedCustomColor && /^#[0-9A-Fa-f]{6}$/.test(storedCustomColor)) {
+        setCustomColorState(storedCustomColor);
       }
 
       const storedDensity = localStorage.getItem('stockwise_density') as InterfaceDensity | null;
@@ -75,6 +128,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Apply accent color
     root.setAttribute('data-accent', accentColor);
 
+    if (accentColor === 'custom') {
+      root.style.setProperty('--accent', customColor);
+      root.style.setProperty('--accent-hover', customColor);
+      root.style.setProperty('--accent-soft', hexToRgba(customColor, resolved === 'dark' ? 0.2 : 0.15));
+    } else {
+      root.style.removeProperty('--accent');
+      root.style.removeProperty('--accent-hover');
+      root.style.removeProperty('--accent-soft');
+    }
+
     // Apply density
     root.setAttribute('data-density', density);
 
@@ -94,7 +157,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
-  }, [theme, accentColor, density, mounted]);
+  }, [theme, accentColor, customColor, density, mounted]);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
@@ -115,6 +178,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   };
 
+  const setCustomColor = (hex: string) => {
+    setCustomColorState(hex);
+    setAccentColorState('custom');
+    try {
+      localStorage.setItem('stockwise_custom_color', hex);
+      localStorage.setItem('stockwise_accent', 'custom');
+    } catch {}
+  };
+
   const setDensity = (newDensity: InterfaceDensity) => {
     setDensityState(newDensity);
     try {
@@ -131,6 +203,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         toggleTheme,
         accentColor,
         setAccentColor,
+        customColor,
+        setCustomColor,
         density,
         setDensity,
       }}
@@ -147,4 +221,3 @@ export function useTheme() {
   }
   return context;
 }
-
