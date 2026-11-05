@@ -8,7 +8,6 @@ import { apiRequest } from '../../../../lib/api-client';
 import {
   PurchaseOrderDTO,
   PurchaseOrderStatus,
-  GoodsReceiptDTO,
 } from '@stockwise/shared';
 import { useAuth } from '../../../../lib/auth-context';
 import { Can } from '../../../../components/auth/Can';
@@ -17,6 +16,8 @@ import { Badge } from '../../../../components/ui/Badge';
 import { Modal } from '../../../../components/ui/Modal';
 import { FormField } from '../../../../components/ui/FormField';
 import { Input } from '../../../../components/ui/Input';
+import { useToast } from '../../../../lib/toast-context';
+import { useTranslation } from '../../../../i18n/i18n-context';
 import {
   ArrowLeft,
   Truck,
@@ -27,9 +28,7 @@ import {
   PackageCheck,
   Printer,
   AlertCircle,
-  Clock,
   CheckCircle2,
-  FileText,
 } from 'lucide-react';
 
 interface PurchaseOrderDetailProps {
@@ -41,6 +40,8 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
   const poId = resolvedParams.id;
   const router = useRouter();
   const queryClient = useQueryClient();
+  const toast = useToast();
+  const { t } = useTranslation();
   const { hasPermission } = useAuth();
   const canViewCost = hasPermission('products:view_cost');
 
@@ -69,6 +70,10 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchase-order-detail', poId] });
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
+      toast.success(t('toasts.orderSubmitted'));
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to submit order.');
     },
   });
 
@@ -83,8 +88,12 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
       queryClient.invalidateQueries({ queryKey: ['purchase-order-detail', poId] });
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
       setShowCancelModal(false);
+      toast.success(t('toasts.orderCancelled'));
     },
-    onError: (err: any) => setCancelError(err.message || 'Failed to cancel order.'),
+    onError: (err: any) => {
+      setCancelError(err.message || 'Failed to cancel order.');
+      toast.error(err.message || 'Failed to cancel order.');
+    },
   });
 
   // Receive Goods Mutation
@@ -99,8 +108,12 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
       queryClient.invalidateQueries({ queryKey: ['inventory-balances'] });
       setShowReceiveModal(false);
+      toast.success(t('toasts.orderReceived'));
     },
-    onError: (err: any) => setReceiveError(err.message || 'Failed to record receipt.'),
+    onError: (err: any) => {
+      setReceiveError(err.message || 'Failed to record receipt.');
+      toast.error(err.message || 'Failed to record receipt.');
+    },
   });
 
   const openReceiveDialog = () => {
@@ -119,78 +132,71 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
 
   const handleReceiveSubmit = () => {
     setReceiveError(null);
-    const linesToSubmit = Object.entries(receiveLines)
+    const itemsToReceive = Object.entries(receiveLines)
       .filter(([_, qty]) => Number(qty) > 0)
-      .map(([itemId, qty]) => ({
-        purchaseOrderItemId: itemId,
-        quantityReceived: Number(qty),
+      .map(([orderItemId, quantityReceived]) => ({
+        orderItemId,
+        quantityReceived: Number(quantityReceived),
       }));
 
-    if (linesToSubmit.length === 0) {
-      setReceiveError('Please enter a quantity greater than 0 for at least one item.');
+    if (itemsToReceive.length === 0) {
+      setReceiveError('Please enter at least one quantity greater than zero.');
       return;
     }
 
     receiveMutation.mutate({
-      deliveryNoteRef: deliveryNoteRef.trim() || null,
-      notes: receiveNotes.trim() || null,
-      lines: linesToSubmit,
+      items: itemsToReceive,
+      deliverySlipRef: deliveryNoteRef.trim() || undefined,
+      notes: receiveNotes.trim() || undefined,
     });
+  };
+
+  const getStatusBadge = (status: PurchaseOrderStatus) => {
+    switch (status) {
+      case 'DRAFT':
+        return <Badge variant="neutral">{t('purchases.draft')}</Badge>;
+      case 'ORDERED':
+        return <Badge variant="info">{t('purchases.ordered')}</Badge>;
+      case 'PARTIALLY_RECEIVED':
+        return <Badge variant="warning">{t('purchases.partiallyReceived')}</Badge>;
+      case 'RECEIVED':
+        return <Badge variant="success">{t('purchases.received')}</Badge>;
+      case 'CANCELLED':
+        return <Badge variant="danger">{t('purchases.cancelled')}</Badge>;
+      default:
+        return <Badge variant="neutral">{status}</Badge>;
+    }
   };
 
   if (isLoading) {
     return (
-      <div className="p-8 text-center text-text-muted">
-        <div className="animate-pulse space-y-4 max-w-4xl mx-auto">
-          <div className="h-8 bg-slate-200 rounded w-1/3"></div>
-          <div className="h-64 bg-slate-200 rounded"></div>
-        </div>
+      <div className="max-w-5xl mx-auto p-12 text-center text-text-muted">
+        {t('common.loading')}
       </div>
     );
   }
 
   if (error || !po) {
     return (
-      <div className="max-w-xl mx-auto p-8 text-center space-y-4">
-        <AlertCircle className="w-12 h-12 text-danger mx-auto" />
-        <h2 className="text-xl font-bold text-text">Purchase Order not found</h2>
-        <Link href="/app/purchases">
-          <Button variant="outline">Back to Orders</Button>
-        </Link>
+      <div className="max-w-5xl mx-auto p-12 text-center text-danger">
+        Purchase order not found.
       </div>
     );
   }
 
-  const getStatusBadge = (status: PurchaseOrderStatus) => {
-    switch (status) {
-      case 'DRAFT':
-        return <Badge variant="neutral">Draft</Badge>;
-      case 'ORDERED':
-        return <Badge variant="info">Ordered</Badge>;
-      case 'PARTIALLY_RECEIVED':
-        return <Badge variant="warning">Partially Received</Badge>;
-      case 'RECEIVED':
-        return <Badge variant="success">Received</Badge>;
-      case 'CANCELLED':
-        return <Badge variant="danger">Cancelled</Badge>;
-      default:
-        return <Badge variant="neutral">{status}</Badge>;
-    }
-  };
-
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      {/* Top Header & Actions Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 print:hidden">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link
             href="/app/purchases"
-            className="p-2 rounded-[6px] border border-border bg-surface text-text-muted hover:text-text hover:bg-slate-50 transition-colors"
+            className="p-2 rounded-[6px] border border-border bg-surface text-text-muted hover:text-text hover:bg-surface-muted transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <h1 className="text-2xl font-bold tracking-tight text-text font-mono">
                 {po.poNumber}
               </h1>
@@ -202,15 +208,15 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
           </div>
         </div>
 
-        {/* Action Buttons based on Status */}
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => window.print()}
             className="flex items-center gap-1.5"
           >
-            <Printer className="w-4 h-4" />
+            <Printer className="w-3.5 h-3.5" />
             <span>Print PO</span>
           </Button>
 
@@ -220,9 +226,10 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
                 size="sm"
                 onClick={() => submitMutation.mutate()}
                 isLoading={submitMutation.isPending}
+                loadingText="Submitting..."
                 className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-3.5 h-3.5" />
                 <span>Submit to Supplier</span>
               </Button>
             </Can>
@@ -236,67 +243,59 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
                 className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700"
               >
                 <PackageCheck className="w-4 h-4" />
-                <span>Receive Goods</span>
+                <span>Record Goods Receipt</span>
               </Button>
             </Can>
           )}
 
-          {(po.status === 'DRAFT' || po.status === 'ORDERED') && (
-            <Can permission="purchases:cancel">
+          {po.status !== 'CANCELLED' && po.status !== 'RECEIVED' && (
+            <Can permission="purchases:manage">
               <Button
-                variant="danger"
+                variant="outline"
                 size="sm"
                 onClick={() => {
                   setCancelReason('');
                   setCancelError(null);
                   setShowCancelModal(true);
                 }}
-                className="flex items-center gap-1.5"
+                className="text-danger hover:bg-red-50 dark:hover:bg-red-950/40 border-danger/30"
               >
-                <XCircle className="w-4 h-4" />
-                <span>Cancel PO</span>
+                <XCircle className="w-3.5 h-3.5 mr-1" />
+                <span>Cancel Order</span>
               </Button>
             </Can>
           )}
         </div>
       </div>
 
-      {/* PO Overview Card */}
+      {/* Main Order Card */}
       <div className="bg-surface rounded-[8px] border border-border p-6 shadow-subtle space-y-6">
-        {/* Printable Header */}
-        <div className="flex justify-between items-start border-b border-border pb-6">
+        {/* Parties Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pb-6 border-b border-border">
           <div>
-            <div className="text-xl font-bold text-text">StockWise IMS</div>
-            <div className="text-xs text-text-muted mt-1">Official Purchase Order</div>
-            <div className="text-base font-mono font-bold text-accent mt-2">{po.poNumber}</div>
-          </div>
-          <div className="text-right">
-            <span className="text-xs text-text-muted block">Order Status</span>
-            <div className="mt-1">{getStatusBadge(po.status)}</div>
-          </div>
-        </div>
-
-        {/* Vendor & Delivery Info Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-xs">
-          <div className="space-y-1">
-            <span className="text-text-muted uppercase tracking-wider font-semibold block">
+            <span className="text-xs uppercase font-semibold text-text-muted tracking-wider block mb-1">
               Supplier / Vendor
             </span>
-            <div className="font-bold text-sm text-text">{po.supplierName}</div>
-            <div className="text-text-muted">Vendor ID: {po.supplierId.slice(0, 8)}</div>
+            <div className="flex items-center gap-2 font-semibold text-text">
+              <Truck className="w-4 h-4 text-accent" />
+              <span>{po.supplierName}</span>
+            </div>
           </div>
 
-          <div className="space-y-1">
-            <span className="text-text-muted uppercase tracking-wider font-semibold block">
-              Ship-to Warehouse
+          <div>
+            <span className="text-xs uppercase font-semibold text-text-muted tracking-wider block mb-1">
+              Destination Warehouse
             </span>
-            <div className="font-bold text-sm text-text">{po.warehouseName}</div>
-            <div className="text-text-muted">Facility ID: {po.warehouseId.slice(0, 8)}</div>
+            <div className="flex items-center gap-2 font-semibold text-text">
+              <Building2 className="w-4 h-4 text-accent" />
+              <span>{po.warehouseName}</span>
+            </div>
+            <p className="text-xs text-text-muted mt-1">Direct inventory receiving destination</p>
           </div>
 
-          <div className="space-y-1">
-            <span className="text-text-muted uppercase tracking-wider font-semibold block">
-              Timeline & Delivery
+          <div className="text-xs space-y-1">
+            <span className="uppercase font-semibold text-text-muted tracking-wider block mb-1">
+              Key Dates
             </span>
             <div>
               <span className="text-text-muted">Order Date:</span>{' '}
@@ -312,7 +311,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
         </div>
 
         {po.notes && (
-          <div className="p-3 bg-slate-50 border border-border rounded-[6px] text-xs">
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/50 border border-border rounded-[6px] text-xs">
             <span className="font-semibold text-text block mb-1">Notes & Instructions:</span>
             <p className="text-text-muted">{po.notes}</p>
           </div>
@@ -324,7 +323,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
           <div className="overflow-x-auto border border-border rounded-[6px]">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-border bg-slate-50 text-text-muted uppercase font-semibold text-[11px]">
+                <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted uppercase font-semibold text-[11px]">
                   <th className="px-4 py-2.5">Line #</th>
                   <th className="px-4 py-2.5">Product SKU / Name</th>
                   <th className="px-4 py-2.5 text-right">Ordered</th>
@@ -341,7 +340,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
                   const pct = Math.min(100, Math.round((received / (ordered || 1)) * 100));
 
                   return (
-                    <tr key={item.id} className="hover:bg-slate-50/50">
+                    <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
                       <td className="px-4 py-3 font-mono text-text-muted">#{item.lineNumber}</td>
 
                       <td className="px-4 py-3">
@@ -353,12 +352,12 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
                         {ordered}
                       </td>
 
-                      <td className="px-4 py-3 text-right font-mono font-semibold text-emerald-700">
+                      <td className="px-4 py-3 text-right font-mono font-semibold text-emerald-700 dark:text-emerald-400">
                         {received}
                       </td>
 
                       <td className="px-4 py-3 text-center">
-                        <div className="w-24 mx-auto bg-slate-200 h-2 rounded-full overflow-hidden">
+                        <div className="w-24 mx-auto bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                           <div
                             className={`h-full ${pct >= 100 ? 'bg-emerald-600' : 'bg-accent'}`}
                             style={{ width: `${pct}%` }}
@@ -407,28 +406,29 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowReceiveModal(false)}>
-              Cancel
+              {t('actions.cancel')}
             </Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700"
               onClick={handleReceiveSubmit}
               isLoading={receiveMutation.isPending}
+              loadingText="Recording Receipt..."
             >
-              Confirm Receipt
+              {t('purchases.confirmReceipt')}
             </Button>
           </div>
         }
       >
         <div className="space-y-4">
           {receiveError && (
-            <div className="p-3 bg-red-50 border border-red-200 text-danger text-xs rounded-[6px] flex items-center gap-2">
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-xs rounded-[6px] flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{receiveError}</span>
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Delivery Slip / Vendor Bill of Lading" hint="Optional reference number">
+            <FormField label={t('purchases.deliverySlipRef')} hint="Optional reference number">
               <Input
                 placeholder="e.g. BL-89218"
                 value={deliveryNoteRef}
@@ -447,7 +447,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
 
           <div className="space-y-2 border-t border-border pt-3">
             <label className="text-xs font-semibold text-text block">
-              Quantities Received by Line Item
+              {t('purchases.quantitiesToReceive')}
             </label>
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {po.items?.map((item) => {
@@ -458,7 +458,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
                 return (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between p-2.5 rounded-[6px] bg-slate-50 border border-border text-xs"
+                    className="flex items-center justify-between p-2.5 rounded-[6px] bg-slate-50 dark:bg-slate-800/50 border border-border text-xs"
                   >
                     <div>
                       <div className="font-semibold text-text">{item.productName}</div>
@@ -500,7 +500,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowCancelModal(false)}>
-              Back
+              {t('actions.cancel')}
             </Button>
             <Button
               variant="danger"
@@ -512,6 +512,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
                 cancelMutation.mutate(cancelReason.trim());
               }}
               isLoading={cancelMutation.isPending}
+              loadingText="Cancelling..."
             >
               Confirm Cancel
             </Button>
@@ -520,7 +521,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
       >
         <div className="space-y-4">
           {cancelError && (
-            <div className="p-3 bg-red-50 border border-red-200 text-danger text-xs rounded-[6px] flex items-center gap-2">
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-xs rounded-[6px] flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{cancelError}</span>
             </div>
@@ -543,4 +544,3 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
     </div>
   );
 }
-

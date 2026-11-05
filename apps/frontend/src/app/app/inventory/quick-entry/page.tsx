@@ -6,9 +6,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../../../../lib/api-client';
 import { ProductDTO, WarehouseDTO, ReasonCode } from '@stockwise/shared';
 import { Button } from '../../../../components/ui/Button';
-import { StockBadge } from '../../../../components/ui/StockBadge';
 import { FormField } from '../../../../components/ui/FormField';
 import { Input } from '../../../../components/ui/Input';
+import { useToast } from '../../../../lib/toast-context';
+import { useTranslation } from '../../../../i18n/i18n-context';
 import {
   ArrowLeft,
   QrCode,
@@ -17,8 +18,6 @@ import {
   Plus,
   Minus,
   Sliders,
-  Building2,
-  Package,
 } from 'lucide-react';
 
 interface QuickEntryLog {
@@ -32,6 +31,8 @@ interface QuickEntryLog {
 
 export default function QuickEntryPage() {
   const queryClient = useQueryClient();
+  const toast = useToast();
+  const { t } = useTranslation();
   const barcodeInputRef = useRef<HTMLInputElement>(null);
 
   const [scanCode, setScanCode] = useState('');
@@ -66,14 +67,17 @@ export default function QuickEntryPage() {
       if (res?.data) {
         setFoundProduct(res.data);
         setFeedbackMessage(null);
+        toast.info(`Found: ${res.data.name} (${res.data.sku})`);
       } else {
         setFoundProduct(null);
         setFeedbackMessage({ text: `No product found for code "${scanCode}"`, isError: true });
+        toast.warning(`No product found for code "${scanCode}"`);
       }
     },
     onError: () => {
       setFoundProduct(null);
       setFeedbackMessage({ text: `Failed to find product for code "${scanCode}"`, isError: true });
+      toast.error(`Lookup failed for code "${scanCode}"`);
     },
   });
 
@@ -140,10 +144,12 @@ export default function QuickEntryPage() {
         ]);
       }
 
+      const msg = `Successfully executed ${actionType} of ${quantity} unit(s) for ${foundProduct?.sku}`;
       setFeedbackMessage({
-        text: `Successfully executed ${actionType} of ${quantity} unit(s) for ${foundProduct?.sku}`,
+        text: msg,
         isError: false,
       });
+      toast.success(msg);
 
       // Clear & refocus scan input for continuous entry
       setScanCode('');
@@ -152,10 +158,12 @@ export default function QuickEntryPage() {
       barcodeInputRef.current?.focus();
     },
     onError: (err: any) => {
+      const msg = err.message || `Failed to process ${actionType}`;
       setFeedbackMessage({
-        text: err.message || `Failed to process ${actionType}`,
+        text: msg,
         isError: true,
       });
+      toast.error(msg);
     },
   });
 
@@ -166,7 +174,7 @@ export default function QuickEntryPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/app/inventory"
-            className="p-2 rounded-[6px] border border-border bg-surface text-text-muted hover:text-text hover:bg-slate-50 transition-colors"
+            className="p-2 rounded-[6px] border border-border bg-surface text-text-muted hover:text-text hover:bg-surface-muted transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
@@ -187,7 +195,7 @@ export default function QuickEntryPage() {
             <select
               value={selectedWarehouseId}
               onChange={(e) => setSelectedWarehouseId(e.target.value)}
-              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
               {warehouses.map((w) => (
                 <option key={w.id} value={w.id}>
@@ -208,7 +216,7 @@ export default function QuickEntryPage() {
                 className={`px-3 py-2 text-xs font-semibold rounded-[6px] flex items-center justify-center gap-1.5 transition-colors ${
                   actionType === 'RECEIVE'
                     ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-100 text-text-muted hover:text-text'
+                    : 'bg-slate-100 dark:bg-slate-800 text-text-muted hover:text-text'
                 }`}
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -221,7 +229,7 @@ export default function QuickEntryPage() {
                 className={`px-3 py-2 text-xs font-semibold rounded-[6px] flex items-center justify-center gap-1.5 transition-colors ${
                   actionType === 'ISSUE'
                     ? 'bg-rose-600 text-white'
-                    : 'bg-slate-100 text-text-muted hover:text-text'
+                    : 'bg-slate-100 dark:bg-slate-800 text-text-muted hover:text-text'
                 }`}
               >
                 <Minus className="w-3.5 h-3.5" />
@@ -233,8 +241,8 @@ export default function QuickEntryPage() {
                 onClick={() => setActionType('ADJUST')}
                 className={`px-3 py-2 text-xs font-semibold rounded-[6px] flex items-center justify-center gap-1.5 transition-colors ${
                   actionType === 'ADJUST'
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-slate-100 text-text-muted hover:text-text'
+                    ? 'bg-accent text-white'
+                    : 'bg-slate-100 dark:bg-slate-800 text-text-muted hover:text-text'
                 }`}
               >
                 <Sliders className="w-3.5 h-3.5" />
@@ -259,10 +267,14 @@ export default function QuickEntryPage() {
                 value={scanCode}
                 onChange={(e) => setScanCode(e.target.value)}
                 autoFocus
-                className="w-full pl-10 pr-4 py-2.5 text-base font-mono rounded-[6px] border-2 border-accent/40 bg-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
+                className="w-full pl-10 pr-4 py-2.5 text-base font-mono rounded-[6px] border-2 border-accent/40 bg-surface text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
               />
             </div>
-            <Button type="submit" isLoading={lookupMutation.isPending}>
+            <Button
+              type="submit"
+              isLoading={lookupMutation.isPending}
+              loadingText="Looking up..."
+            >
               Lookup
             </Button>
           </div>
@@ -273,8 +285,8 @@ export default function QuickEntryPage() {
           <div
             className={`p-3 rounded-[6px] text-xs flex items-center gap-2 ${
               feedbackMessage.isError
-                ? 'bg-red-50 border border-red-200 text-danger'
-                : 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+                ? 'bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger'
+                : 'bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-emerald-800 dark:text-emerald-300'
             }`}
           >
             {feedbackMessage.isError ? (
@@ -340,6 +352,7 @@ export default function QuickEntryPage() {
               <Button
                 onClick={() => executeMutation.mutate()}
                 isLoading={executeMutation.isPending}
+                loadingText="Executing..."
                 className={`flex items-center gap-2 ${
                   actionType === 'RECEIVE'
                     ? 'bg-emerald-600 hover:bg-emerald-700'
@@ -394,4 +407,3 @@ export default function QuickEntryPage() {
     </div>
   );
 }
-

@@ -9,7 +9,6 @@ import {
   WarehouseDTO,
   ProductDTO,
   MovementType,
-  ReasonCode,
 } from '@stockwise/shared';
 import { useAuth } from '../../../../lib/auth-context';
 import { Can } from '../../../../components/auth/Can';
@@ -20,11 +19,12 @@ import { FormField } from '../../../../components/ui/FormField';
 import { Input } from '../../../../components/ui/Input';
 import { TableSkeleton } from '../../../../components/ui/TableSkeleton';
 import { EmptyState } from '../../../../components/ui/EmptyState';
+import { useToast } from '../../../../lib/toast-context';
+import { useTranslation } from '../../../../i18n/i18n-context';
 import {
   History,
   RotateCcw,
   Search,
-  Filter,
   RefreshCw,
   Building2,
   Package,
@@ -36,6 +36,8 @@ import {
 
 export default function StockMovementsPage() {
   const queryClient = useQueryClient();
+  const toast = useToast();
+  const { t } = useTranslation();
   const { hasPermission } = useAuth();
   const canViewCost = hasPermission('products:view_cost');
 
@@ -101,9 +103,11 @@ export default function StockMovementsPage() {
       queryClient.invalidateQueries({ queryKey: ['inventory-balances'] });
       setReversalTarget(null);
       setReversalReason('');
+      toast.success(t('toasts.movementReversed'));
     },
     onError: (err: any) => {
       setReversalError(err.message || 'Failed to reverse movement.');
+      toast.error(err.message || 'Failed to reverse movement.');
     },
   });
 
@@ -118,16 +122,18 @@ export default function StockMovementsPage() {
 
   const getMovementTypeBadge = (type: MovementType) => {
     switch (type) {
-      case 'RECEIPT':
-      case 'TRANSFER_IN':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">{type}</span>;
-      case 'ISSUE':
-      case 'TRANSFER_OUT':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-rose-50 text-rose-700 border border-rose-200">{type}</span>;
-      case 'ADJUSTMENT':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-amber-50 text-amber-700 border border-amber-200">{type}</span>;
+      case MovementType.RECEIPT:
+        return <Badge variant="success">RECEIPT</Badge>;
+      case MovementType.ISSUE:
+        return <Badge variant="danger">ISSUE</Badge>;
+      case MovementType.ADJUSTMENT:
+        return <Badge variant="warning">ADJUSTMENT</Badge>;
+      case MovementType.TRANSFER_IN:
+        return <Badge variant="neutral">TRANSFER IN</Badge>;
+      case MovementType.TRANSFER_OUT:
+        return <Badge variant="neutral">TRANSFER OUT</Badge>;
       default:
-        return <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-slate-100 text-slate-700">{type}</span>;
+        return <Badge variant="neutral">{type}</Badge>;
     }
   };
 
@@ -138,37 +144,30 @@ export default function StockMovementsPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/app/inventory"
-            className="p-2 rounded-[6px] border border-border bg-surface text-text-muted hover:text-text hover:bg-slate-50 transition-colors"
+            className="p-2 rounded-[6px] border border-border bg-surface text-text-muted hover:text-text hover:bg-surface-muted transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-text">Stock Movement Ledger</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-text">{t('inventory.movementLedger')}</h1>
             <p className="text-sm text-text-muted mt-0.5">
-              Append-only audit trail of every stock increase, decrease, adjustment, and transfer.
+              Append-only audit ledger of every stock transaction and reversal
             </p>
           </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Link href="/app/inventory">
-            <Button variant="outline" size="sm">
-              Current Balances
-            </Button>
-          </Link>
         </div>
       </div>
 
       {/* Filters Bar */}
       <div className="bg-surface rounded-[8px] border border-border p-4 shadow-subtle space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          {/* Product Filter */}
           <div>
             <select
               value={selectedProduct}
               onChange={(e) => { setSelectedProduct(e.target.value); setPage(1); }}
-              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
-              <option value="">All Products</option>
+              <option value="">{t('common.all')} Products</option>
               {products.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name} ({p.sku})
@@ -177,13 +176,14 @@ export default function StockMovementsPage() {
             </select>
           </div>
 
+          {/* Warehouse Filter */}
           <div>
             <select
               value={selectedWarehouse}
               onChange={(e) => { setSelectedWarehouse(e.target.value); setPage(1); }}
-              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
-              <option value="">All Warehouses</option>
+              <option value="">{t('common.all')} Warehouses</option>
               {warehouses.map((w) => (
                 <option key={w.id} value={w.id}>
                   {w.name} ({w.code})
@@ -192,92 +192,90 @@ export default function StockMovementsPage() {
             </select>
           </div>
 
+          {/* Type Filter */}
           <div>
             <select
               value={selectedType}
               onChange={(e) => { setSelectedType(e.target.value); setPage(1); }}
-              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
               <option value="">All Movement Types</option>
-              <option value="RECEIPT">RECEIPT (+)</option>
-              <option value="ISSUE">ISSUE (-)</option>
-              <option value="ADJUSTMENT">ADJUSTMENT (+/-)</option>
-              <option value="TRANSFER_IN">TRANSFER_IN (+)</option>
-              <option value="TRANSFER_OUT">TRANSFER_OUT (-)</option>
+              <option value="RECEIPT">Receipt</option>
+              <option value="ISSUE">Issue</option>
+              <option value="ADJUSTMENT">Adjustment</option>
+              <option value="TRANSFER_IN">Transfer In</option>
+              <option value="TRANSFER_OUT">Transfer Out</option>
             </select>
           </div>
 
+          {/* Date From */}
           <div>
             <input
               type="date"
               value={dateFrom}
               onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
-              title="From date"
+              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent font-mono"
             />
           </div>
 
+          {/* Date To */}
           <div>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
-              title="To date"
+              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent font-mono"
             />
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-xs text-text-muted pt-2 border-t border-border">
-          <div className="flex items-center gap-2">
-            {(selectedProduct || selectedWarehouse || selectedType || dateFrom || dateTo) && (
-              <button
-                onClick={() => {
-                  setSelectedProduct('');
-                  setSelectedWarehouse('');
-                  setSelectedType('');
-                  setDateFrom('');
-                  setDateTo('');
-                  setPage(1);
-                }}
-                className="text-accent hover:underline font-medium"
-              >
-                Clear all filters
-              </button>
-            )}
+        <div className="flex items-center justify-between pt-2 border-t border-border text-xs text-text-muted">
+          <div>
+            {isFetching && <RefreshCw className="w-3.5 h-3.5 animate-spin mr-1.5 text-accent inline" />}
+            Showing {movements.length} of {meta.total} movements
           </div>
-          <div className="flex items-center gap-1.5">
-            {isFetching && <RefreshCw className="w-3.5 h-3.5 animate-spin text-accent" />}
-            <span>Total records: {meta.total}</span>
-          </div>
+          {(selectedProduct || selectedWarehouse || selectedType || dateFrom || dateTo) && (
+            <button
+              onClick={() => {
+                setSelectedProduct('');
+                setSelectedWarehouse('');
+                setSelectedType('');
+                setDateFrom('');
+                setDateTo('');
+                setPage(1);
+              }}
+              className="text-accent hover:underline font-medium"
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
       </div>
 
       {/* Movements Table */}
       <div className="bg-surface rounded-[8px] border border-border shadow-subtle overflow-hidden">
         {isLoading ? (
-          <TableSkeleton rows={10} columns={8} />
+          <TableSkeleton rows={10} columns={canViewCost ? 9 : 8} />
         ) : movements.length === 0 ? (
           <EmptyState
             icon={History}
-            title="No movements found"
-            description="Stock movements will appear here once inventory transactions are recorded."
+            title={t('common.noData')}
+            description="No inventory movement records match your search criteria."
           />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-border bg-slate-50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="px-4 py-3">Seq #</th>
-                  <th className="px-4 py-3">Timestamp</th>
+                <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
+                  <th className="px-4 py-3">Seq / Time</th>
                   <th className="px-4 py-3">Type</th>
-                  <th className="px-4 py-3">Product</th>
+                  <th className="px-4 py-3">{t('products.productName')}</th>
                   <th className="px-4 py-3">Warehouse</th>
                   <th className="px-4 py-3 text-right">Delta</th>
                   <th className="px-4 py-3 text-right">Balance After</th>
                   {canViewCost && <th className="px-4 py-3 text-right">Unit Cost</th>}
-                  <th className="px-4 py-3">Performed By</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+                  <th className="px-4 py-3">Actor / Reason</th>
+                  <th className="px-4 py-3 text-right">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -285,16 +283,13 @@ export default function StockMovementsPage() {
                   const deltaNum = Number(m.quantityDelta);
 
                   return (
-                    <tr key={m.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="px-4 py-3 font-mono text-text-muted text-[11px]">
-                        #{m.seq}
-                      </td>
-
-                      <td className="px-4 py-3 font-mono text-[11px] text-text whitespace-nowrap">
-                        {new Date(m.createdAt).toLocaleDateString()}{' '}
-                        <span className="text-text-muted">
+                    <tr key={m.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="font-mono font-bold text-text">#{m.seq}</div>
+                        <div className="font-mono text-[10px] text-text-muted">
+                          {new Date(m.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}{' '}
                           {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
+                        </div>
                       </td>
 
                       <td className="px-4 py-3">
@@ -309,7 +304,7 @@ export default function StockMovementsPage() {
                       </td>
 
                       <td className="px-4 py-3">
-                        <div className="font-medium text-text">{m.warehouseName}</div>
+                        <div className="font-medium text-text">{m.warehouseName || m.warehouseId}</div>
                         <div className="font-mono text-[10px] text-text-muted">{m.warehouseId.slice(0, 8)}</div>
                       </td>
 
@@ -343,7 +338,7 @@ export default function StockMovementsPage() {
                           <button
                             onClick={() => setDetailMovement(m)}
                             title="Inspect Details"
-                            className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 transition-colors"
+                            className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                           >
                             <Info className="w-3.5 h-3.5" />
                           </button>
@@ -357,7 +352,7 @@ export default function StockMovementsPage() {
                                   setReversalError(null);
                                 }}
                                 title="Reverse this movement"
-                                className="p-1.5 text-text-muted hover:text-danger rounded hover:bg-slate-100 transition-colors"
+                                className="p-1.5 text-text-muted hover:text-danger rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                               >
                                 <RotateCcw className="w-3.5 h-3.5" />
                               </button>
@@ -375,7 +370,7 @@ export default function StockMovementsPage() {
 
         {/* Pagination Footer */}
         {meta.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-slate-50 text-xs text-text-muted">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-slate-50 dark:bg-slate-800/50 text-xs text-text-muted">
             <div>
               Page <span className="font-semibold text-text">{meta.page}</span> of{' '}
               <span className="font-semibold text-text">{meta.totalPages}</span>
@@ -387,7 +382,7 @@ export default function StockMovementsPage() {
                 disabled={meta.page <= 1}
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
               >
-                Previous
+                {t('common.previous')}
               </Button>
               <Button
                 variant="outline"
@@ -395,7 +390,7 @@ export default function StockMovementsPage() {
                 disabled={meta.page >= meta.totalPages}
                 onClick={() => setPage((prev) => Math.min(meta.totalPages, prev + 1))}
               >
-                Next
+                {t('common.next')}
               </Button>
             </div>
           </div>
@@ -411,14 +406,14 @@ export default function StockMovementsPage() {
         footer={
           <div className="flex justify-end">
             <Button variant="outline" onClick={() => setDetailMovement(null)}>
-              Close
+              {t('actions.close')}
             </Button>
           </div>
         }
       >
         {detailMovement && (
           <div className="space-y-4 text-xs">
-            <div className="grid grid-cols-2 gap-3 p-3 rounded-[6px] bg-slate-50 border border-border">
+            <div className="grid grid-cols-2 gap-3 p-3 rounded-[6px] bg-slate-50 dark:bg-slate-800/50 border border-border">
               <div>
                 <span className="text-text-muted block">Movement ID</span>
                 <span className="font-mono text-text break-all">{detailMovement.id}</span>
@@ -437,7 +432,7 @@ export default function StockMovementsPage() {
               </div>
               <div>
                 <span className="text-text-muted block">Warehouse</span>
-                <span className="font-medium text-text">{detailMovement.warehouseName}</span>
+                <span className="font-medium text-text">{detailMovement.warehouseName || detailMovement.warehouseId}</span>
               </div>
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
                 <div>
@@ -463,7 +458,7 @@ export default function StockMovementsPage() {
                 </div>
               )}
               {detailMovement.reversesMovementId && (
-                <div className="pt-2 border-t border-border p-2 bg-amber-50 rounded text-amber-900">
+                <div className="pt-2 border-t border-border p-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded text-amber-900 dark:text-amber-200">
                   <span className="font-semibold block">Reversal Transaction</span>
                   <span>Reverses Movement ID: {detailMovement.reversesMovementId}</span>
                 </div>
@@ -482,12 +477,13 @@ export default function StockMovementsPage() {
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setReversalTarget(null)}>
-              Cancel
+              {t('actions.cancel')}
             </Button>
             <Button
               variant="danger"
               onClick={handleReverseConfirm}
               isLoading={reverseMutation.isPending}
+              loadingText="Reversing..."
             >
               Confirm Reversal
             </Button>
@@ -496,7 +492,7 @@ export default function StockMovementsPage() {
       >
         <div className="space-y-4">
           {reversalError && (
-            <div className="p-3 bg-red-50 border border-red-200 text-danger text-xs rounded-[6px] flex items-center gap-2">
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-xs rounded-[6px] flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{reversalError}</span>
             </div>
@@ -507,7 +503,7 @@ export default function StockMovementsPage() {
             {reversalTarget?.movementType}) of <strong>{reversalTarget?.productName}</strong>.
           </p>
 
-          <div className="p-3 bg-slate-50 border border-border rounded-[6px] text-xs space-y-1">
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/50 border border-border rounded-[6px] text-xs space-y-1">
             <div className="flex justify-between">
               <span className="text-text-muted">Original Delta:</span>
               <span className="font-mono font-semibold">{reversalTarget?.quantityDelta}</span>

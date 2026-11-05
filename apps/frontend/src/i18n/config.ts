@@ -16,3 +16,4 @@ export const SUPPORTED_LANGUAGES: LanguageOption[] = [
     flag: '🇰🇭',
   },
 ];
+

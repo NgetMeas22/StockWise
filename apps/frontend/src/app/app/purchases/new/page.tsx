@@ -15,15 +15,14 @@ import { useAuth } from '../../../../lib/auth-context';
 import { Button } from '../../../../components/ui/Button';
 import { FormField } from '../../../../components/ui/FormField';
 import { Input } from '../../../../components/ui/Input';
+import { useToast } from '../../../../lib/toast-context';
+import { useTranslation } from '../../../../i18n/i18n-context';
 import {
   ArrowLeft,
   Plus,
   Trash2,
   Save,
   AlertCircle,
-  Truck,
-  Building2,
-  Calendar,
 } from 'lucide-react';
 
 interface POItemDraft {
@@ -34,6 +33,8 @@ interface POItemDraft {
 
 export default function NewPurchaseOrderPage() {
   const router = useRouter();
+  const toast = useToast();
+  const { t } = useTranslation();
   const { hasPermission } = useAuth();
   const canViewCost = hasPermission('products:view_cost');
 
@@ -126,6 +127,7 @@ export default function NewPurchaseOrderPage() {
       });
     },
     onSuccess: (res) => {
+      toast.success(t('toasts.orderCreated'));
       if (res?.data?.id) {
         router.push(`/app/purchases/${res.data.id}`);
       } else {
@@ -133,7 +135,9 @@ export default function NewPurchaseOrderPage() {
       }
     },
     onError: (err: any) => {
-      setFormError(err.message || 'Failed to create purchase order.');
+      const msg = err.message || 'Failed to create purchase order.';
+      setFormError(msg);
+      toast.error(msg);
     },
   });
 
@@ -179,12 +183,12 @@ export default function NewPurchaseOrderPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/app/purchases"
-            className="p-2 rounded-[6px] border border-border bg-surface text-text-muted hover:text-text hover:bg-slate-50 transition-colors"
+            className="p-2 rounded-[6px] border border-border bg-surface text-text-muted hover:text-text hover:bg-surface-muted transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-text">New Purchase Order</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-text">{t('purchases.newPO')}</h1>
             <p className="text-sm text-text-muted mt-0.5">
               Draft a replenishment order for goods to be delivered to a warehouse.
             </p>
@@ -193,7 +197,7 @@ export default function NewPurchaseOrderPage() {
       </div>
 
       {formError && (
-        <div className="p-4 rounded-[6px] bg-red-50 border border-red-200 text-danger text-sm flex items-start gap-2.5">
+        <div className="p-4 rounded-[6px] bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-sm flex items-start gap-2.5">
           <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
           <div>{formError}</div>
         </div>
@@ -207,11 +211,11 @@ export default function NewPurchaseOrderPage() {
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <FormField label="Supplier / Vendor" required>
+            <FormField label={t('purchases.supplier')} required>
               <select
                 value={supplierId}
                 onChange={(e) => setSupplierId(e.target.value)}
-                className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
                 required
               >
                 <option value="">Select supplier...</option>
@@ -227,7 +231,7 @@ export default function NewPurchaseOrderPage() {
               <select
                 value={warehouseId}
                 onChange={(e) => setWarehouseId(e.target.value)}
-                className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
                 required
               >
                 <option value="">Select warehouse...</option>
@@ -239,20 +243,22 @@ export default function NewPurchaseOrderPage() {
               </select>
             </FormField>
 
-            <FormField label="Order Date" required>
+            <FormField label={t('purchases.orderDate')} required>
               <Input
                 type="date"
                 value={orderDate}
                 onChange={(e) => setOrderDate(e.target.value)}
+                className="font-mono text-xs"
                 required
               />
             </FormField>
 
-            <FormField label="Expected Delivery Date">
+            <FormField label={t('purchases.expectedDate')}>
               <Input
                 type="date"
                 value={expectedDate}
                 onChange={(e) => setExpectedDate(e.target.value)}
+                className="font-mono text-xs"
               />
             </FormField>
 
@@ -263,7 +269,7 @@ export default function NewPurchaseOrderPage() {
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Terms, freight instructions, delivery dock contact..."
-                  className="w-full rounded-[6px] border border-border bg-white px-3 py-2 text-sm text-text placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full rounded-[6px] border border-border bg-surface text-text px-3 py-2 text-sm placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
                 />
               </FormField>
             </div>
@@ -299,7 +305,7 @@ export default function NewPurchaseOrderPage() {
               return (
                 <div
                   key={index}
-                  className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 rounded-[6px] border border-border bg-slate-50/50"
+                  className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 rounded-[6px] border border-border bg-slate-50/50 dark:bg-slate-800/30"
                 >
                   <span className="font-mono text-xs text-text-muted w-6">#{index + 1}</span>
 
@@ -307,7 +313,7 @@ export default function NewPurchaseOrderPage() {
                     <select
                       value={item.productId}
                       onChange={(e) => handleProductChange(index, e.target.value)}
-                      className="w-full h-9 px-3 text-xs rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+                      className="w-full h-9 px-3 text-xs rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
                       required
                     >
                       <option value="">Select product to purchase...</option>
@@ -367,7 +373,7 @@ export default function NewPurchaseOrderPage() {
           </div>
 
           {/* Totals Summary Card */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-[6px] bg-slate-100 border border-border mt-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-[6px] bg-slate-100 dark:bg-slate-800/60 border border-border mt-4">
             <div className="space-y-1 text-xs text-text-muted">
               <div>
                 Total Item Lines: <strong className="text-text">{items.length}</strong>
@@ -392,20 +398,20 @@ export default function NewPurchaseOrderPage() {
         <div className="flex items-center justify-end gap-3 pt-2">
           <Link href="/app/purchases">
             <Button variant="outline" type="button">
-              Cancel
+              {t('actions.cancel')}
             </Button>
           </Link>
           <Button
             type="submit"
             className="flex items-center gap-2"
             isLoading={createMutation.isPending}
+            loadingText="Creating Purchase Order..."
           >
             <Save className="w-4 h-4" />
-            <span>Create Purchase Order</span>
+            <span>{t('purchases.newPO')}</span>
           </Button>
         </div>
       </form>
     </div>
   );
 }
-

@@ -3,13 +3,18 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../../lib/auth-context';
-import { Package, Lock, Mail, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Package, Lock, Mail, AlertCircle, ArrowRight, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { FormField } from '../../../components/ui/FormField';
+import { useTheme } from '../../../lib/theme-context';
+import { useTranslation } from '../../../i18n/i18n-context';
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const { resolvedTheme, toggleTheme } = useTheme();
+  const { t, language, setLanguage } = useTranslation();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -36,7 +41,32 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-surface-muted">
+    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-surface-muted relative">
+      {/* Top Controls: Theme & Language Switchers */}
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setLanguage(language === 'en' ? 'kh' : 'en')}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] border border-border bg-surface text-text hover:bg-surface-muted transition-colors text-xs font-medium"
+        >
+          <Globe className="w-3.5 h-3.5 text-text-muted" />
+          <span>{language === 'en' ? 'ភាសាខ្មែរ 🇰🇭' : 'English 🇺🇸'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="p-1.5 rounded-[6px] border border-border bg-surface text-text hover:bg-surface-muted transition-colors"
+          title="Toggle Dark / Light Theme"
+        >
+          {resolvedTheme === 'dark' ? (
+            <Sun className="w-4 h-4 text-amber-500" />
+          ) : (
+            <Moon className="w-4 h-4 text-slate-600" />
+          )}
+        </button>
+      </div>
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Link href="/" className="flex items-center justify-center gap-2.5 mb-4">
           <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center text-white shadow-sm">
@@ -45,7 +75,7 @@ export default function LoginPage() {
           <span className="font-bold text-xl tracking-tight text-text">StockWise IMS</span>
         </Link>
         <h2 className="text-center text-xl font-bold tracking-tight text-text">
-          Sign in to Staff Portal
+          {t('auth.login')}
         </h2>
         <p className="mt-1 text-center text-xs text-text-muted">
           Enterprise inventory, ledger auditing & purchasing access
@@ -55,14 +85,14 @@ export default function LoginPage() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-surface py-8 px-6 sm:px-10 rounded-[8px] border border-border shadow-sm">
           {errorMsg && (
-            <div className="mb-6 p-3 rounded-[6px] bg-red-50 border border-red-200 text-danger text-xs flex items-start gap-2.5">
+            <div className="mb-6 p-3 rounded-[6px] bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-xs flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <FormField label="Email address" required>
+            <FormField label={t('auth.email')} required>
               <div className="relative">
                 <Mail className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
                 <Input
@@ -76,7 +106,7 @@ export default function LoginPage() {
               </div>
             </FormField>
 
-            <FormField label="Password" required>
+            <FormField label={t('auth.password')} required>
               <div className="relative">
                 <Lock className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
                 <Input
@@ -90,8 +120,13 @@ export default function LoginPage() {
               </div>
             </FormField>
 
-            <Button type="submit" className="w-full mt-2" isLoading={isSubmitting}>
-              Sign In
+            <Button
+              type="submit"
+              className="w-full mt-2"
+              isLoading={isSubmitting}
+              loadingText="Signing in..."
+            >
+              <span>{t('auth.login')}</span>
               <ArrowRight className="w-4 h-4" />
             </Button>
           </form>
@@ -147,4 +182,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

@@ -12,11 +12,13 @@ import { FormField } from '../../../../components/ui/FormField';
 import { Input } from '../../../../components/ui/Input';
 import { TableSkeleton } from '../../../../components/ui/TableSkeleton';
 import { EmptyState } from '../../../../components/ui/EmptyState';
+import { ConfirmModal } from '../../../../components/ui/ConfirmModal';
+import { useToast } from '../../../../lib/toast-context';
+import { useTranslation } from '../../../../i18n/i18n-context';
 import {
   Users,
   UserPlus,
   KeyRound,
-  Shield,
   Edit2,
   CheckCircle,
   XCircle,
@@ -26,11 +28,13 @@ import {
   Search,
   RefreshCw,
   AlertCircle,
-  Clock,
 } from 'lucide-react';
 
 export default function UsersAdminPage() {
   const queryClient = useQueryClient();
+  const toast = useToast();
+  const { t } = useTranslation();
+
   const [page, setPage] = useState(1);
   const [pageSize] = useState(15);
   const [searchTerm, setSearchTerm] = useState('');
@@ -91,6 +95,7 @@ export default function UsersAdminPage() {
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['users-admin-list'] });
       setShowCreateModal(false);
+      toast.success(t('toasts.userCreated'));
       if (res?.data?.temporaryPassword) {
         setRevealedPassword({
           userName: res.data.fullName,
@@ -99,7 +104,11 @@ export default function UsersAdminPage() {
         });
       }
     },
-    onError: (err: any) => setCreateError(err.message || 'Failed to create user.'),
+    onError: (err: any) => {
+      const msg = err.message || 'Failed to create user.';
+      setCreateError(msg);
+      toast.error(msg);
+    },
   });
 
   // Edit Mutation
@@ -113,8 +122,13 @@ export default function UsersAdminPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users-admin-list'] });
       setEditingUser(null);
+      toast.success(t('toasts.userUpdated'));
     },
-    onError: (err: any) => setEditError(err.message || 'Failed to update user.'),
+    onError: (err: any) => {
+      const msg = err.message || 'Failed to update user.';
+      setEditError(msg);
+      toast.error(msg);
+    },
   });
 
   // Activate / Deactivate
@@ -123,9 +137,13 @@ export default function UsersAdminPage() {
       const endpoint = activate ? `/users/${id}/activate` : `/users/${id}/deactivate`;
       return apiRequest(endpoint, { method: 'POST' });
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['users-admin-list'] });
       setToggleTarget(null);
+      toast.success(variables.activate ? t('toasts.userActivated') : t('toasts.userDeactivated'));
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to change user status.');
     },
   });
 
@@ -141,8 +159,12 @@ export default function UsersAdminPage() {
           email: resetTarget.email,
           password: res.data.temporaryPassword,
         });
+        toast.success(t('admin.tempPasswordTitle'));
       }
       setResetTarget(null);
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to reset password.');
     },
   });
 
@@ -153,6 +175,10 @@ export default function UsersAdminPage() {
     },
     onSuccess: () => {
       setRevokeTarget(null);
+      toast.success(t('toasts.sessionsRevoked'));
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to revoke sessions.');
     },
   });
 
@@ -160,6 +186,7 @@ export default function UsersAdminPage() {
     if (!revealedPassword) return;
     navigator.clipboard.writeText(revealedPassword.password);
     setCopied(true);
+    toast.info('Password copied to clipboard');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -182,9 +209,9 @@ export default function UsersAdminPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-text">User Accounts & Access</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-text">{t('admin.usersTitle')}</h1>
           <p className="text-sm text-text-muted mt-1">
-            Manage authenticated user identities, role assignments, and session security.
+            {t('admin.usersSubtitle')}
           </p>
         </div>
 
@@ -200,7 +227,7 @@ export default function UsersAdminPage() {
             className="flex items-center gap-2"
           >
             <UserPlus className="w-4 h-4" />
-            <span>Add User</span>
+            <span>{t('admin.addUser')}</span>
           </Button>
         </Can>
       </div>
@@ -212,19 +239,19 @@ export default function UsersAdminPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
             <input
               type="text"
-              placeholder="Search user name or email..."
+              placeholder={`${t('common.search')} user name or email...`}
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-[6px] border border-border bg-white placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-[6px] border border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
 
           <select
             value={selectedRole}
             onChange={(e) => { setSelectedRole(e.target.value); setPage(1); }}
-            className="px-3 py-1.5 text-xs rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+            className="px-3 py-1.5 text-xs rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
           >
-            <option value="">All Roles</option>
+            <option value="">{t('common.all')} Roles</option>
             <option value="ADMIN">ADMIN</option>
             <option value="MANAGER">MANAGER</option>
             <option value="INVENTORY_STAFF">INVENTORY_STAFF</option>
@@ -234,9 +261,9 @@ export default function UsersAdminPage() {
           <select
             value={selectedStatus}
             onChange={(e) => { setSelectedStatus(e.target.value); setPage(1); }}
-            className="px-3 py-1.5 text-xs rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+            className="px-3 py-1.5 text-xs rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
           >
-            <option value="">All Statuses</option>
+            <option value="">{t('common.all')} Statuses</option>
             <option value="ACTIVE">Active</option>
             <option value="INACTIVE">Inactive / Locked</option>
           </select>
@@ -255,25 +282,25 @@ export default function UsersAdminPage() {
         ) : users.length === 0 ? (
           <EmptyState
             icon={Users}
-            title="No users found"
+            title={t('common.noData')}
             description="Adjust your search filters or create a new user account."
           />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-border bg-slate-50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="px-4 py-3">Full Name & Email</th>
-                  <th className="px-4 py-3">Assigned Role</th>
-                  <th className="px-4 py-3 text-center">Status</th>
-                  <th className="px-4 py-3">Last Login</th>
-                  <th className="px-4 py-3">Created</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+                <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
+                  <th className="px-4 py-3">{t('admin.fullName')} & {t('admin.email')}</th>
+                  <th className="px-4 py-3">{t('admin.assignedRole')}</th>
+                  <th className="px-4 py-3 text-center">{t('common.status')}</th>
+                  <th className="px-4 py-3">{t('admin.lastLogin')}</th>
+                  <th className="px-4 py-3">{t('admin.created')}</th>
+                  <th className="px-4 py-3 text-right">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-50/70 transition-colors">
+                  <tr key={u.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="px-4 py-3">
                       <div className="font-semibold text-text">{u.fullName}</div>
                       <div className="text-[11px] font-mono text-text-muted">{u.email}</div>
@@ -290,7 +317,7 @@ export default function UsersAdminPage() {
                         <Badge variant="danger">Inactive</Badge>
                       )}
                       {u.mustChangePassword && (
-                        <span className="block mt-1 text-[10px] text-amber-700 font-medium">
+                        <span className="block mt-1 text-[10px] text-amber-700 dark:text-amber-400 font-medium">
                           Temp Password
                         </span>
                       )}
@@ -323,32 +350,32 @@ export default function UsersAdminPage() {
                               setEditRole(u.roleKey);
                               setEditError(null);
                             }}
-                            title="Edit User"
-                            className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 transition-colors"
+                            title={t('admin.editUser')}
+                            className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
 
                           <button
                             onClick={() => setResetTarget(u)}
-                            title="Reset Temporary Password"
-                            className="p-1.5 text-text-muted hover:text-amber-600 rounded hover:bg-slate-100 transition-colors"
+                            title={t('admin.resetPassword')}
+                            className="p-1.5 text-text-muted hover:text-amber-600 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                           >
                             <KeyRound className="w-3.5 h-3.5" />
                           </button>
 
                           <button
                             onClick={() => setRevokeTarget(u)}
-                            title="Revoke Active Sessions"
-                            className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 transition-colors"
+                            title={t('admin.revokeSessions')}
+                            className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                           >
                             <LogOut className="w-3.5 h-3.5" />
                           </button>
 
                           <button
                             onClick={() => setToggleTarget(u)}
-                            title={u.isActive ? 'Deactivate User' : 'Activate User'}
-                            className="p-1.5 text-text-muted hover:text-danger rounded hover:bg-slate-100 transition-colors"
+                            title={u.isActive ? t('admin.deactivateUser') : t('admin.activateUser')}
+                            className="p-1.5 text-text-muted hover:text-danger rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                           >
                             {u.isActive ? (
                               <XCircle className="w-3.5 h-3.5 text-rose-600" />
@@ -368,7 +395,7 @@ export default function UsersAdminPage() {
 
         {/* Pagination Footer */}
         {meta.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-slate-50 text-xs text-text-muted">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-slate-50 dark:bg-slate-800/50 text-xs text-text-muted">
             <div>
               Page <span className="font-semibold text-text">{meta.page}</span> of{' '}
               <span className="font-semibold text-text">{meta.totalPages}</span>
@@ -380,7 +407,7 @@ export default function UsersAdminPage() {
                 disabled={meta.page <= 1}
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
               >
-                Previous
+                {t('common.previous')}
               </Button>
               <Button
                 variant="outline"
@@ -388,7 +415,7 @@ export default function UsersAdminPage() {
                 disabled={meta.page >= meta.totalPages}
                 onClick={() => setPage((prev) => Math.min(meta.totalPages, prev + 1))}
               >
-                Next
+                {t('common.next')}
               </Button>
             </div>
           </div>
@@ -399,12 +426,12 @@ export default function UsersAdminPage() {
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title="Add New User Account"
+        title={t('admin.addUser')}
         maxWidth="md"
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowCreateModal(false)}>
-              Cancel
+              {t('actions.cancel')}
             </Button>
             <Button
               onClick={() => {
@@ -424,21 +451,22 @@ export default function UsersAdminPage() {
                 });
               }}
               isLoading={createMutation.isPending}
+              loadingText="Creating..."
             >
-              Create User
+              {t('admin.addUser')}
             </Button>
           </div>
         }
       >
         <div className="space-y-4">
           {createError && (
-            <div className="p-3 bg-red-50 border border-red-200 text-danger text-xs rounded-[6px] flex items-center gap-2">
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-xs rounded-[6px] flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{createError}</span>
             </div>
           )}
 
-          <FormField label="Full Name" required>
+          <FormField label={t('admin.fullName')} required>
             <Input
               value={createName}
               onChange={(e) => setCreateName(e.target.value)}
@@ -447,7 +475,7 @@ export default function UsersAdminPage() {
             />
           </FormField>
 
-          <FormField label="Email Address" required>
+          <FormField label={t('admin.email')} required>
             <Input
               type="email"
               value={createEmail}
@@ -457,11 +485,11 @@ export default function UsersAdminPage() {
             />
           </FormField>
 
-          <FormField label="Assign System Role" required>
+          <FormField label={t('admin.assignedRole')} required>
             <select
               value={createRole}
               onChange={(e) => setCreateRole(e.target.value as RoleKey)}
-              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
               <option value="VIEWER">VIEWER (Read-only catalog & reports)</option>
               <option value="INVENTORY_STAFF">INVENTORY_STAFF (Manage stock movements & scans)</option>
@@ -470,7 +498,7 @@ export default function UsersAdminPage() {
             </select>
           </FormField>
 
-          <div className="p-3 bg-slate-50 border border-border rounded-[6px] text-xs text-text-muted space-y-1">
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/50 border border-border rounded-[6px] text-xs text-text-muted space-y-1">
             <span className="font-semibold text-text block">Temporary Password Security:</span>
             <p>
               A high-entropy 16-character temporary password will be cryptographically generated. The user will be required to change it on their first login.
@@ -483,16 +511,16 @@ export default function UsersAdminPage() {
       <Modal
         isOpen={!!revealedPassword}
         onClose={() => setRevealedPassword(null)}
-        title="Temporary Credentials Generated"
+        title={t('admin.tempPasswordTitle')}
         maxWidth="md"
         footer={
           <div className="flex justify-end">
-            <Button onClick={() => setRevealedPassword(null)}>Done</Button>
+            <Button onClick={() => setRevealedPassword(null)}>{t('actions.close')}</Button>
           </div>
         }
       >
         <div className="space-y-4">
-          <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-[6px]">
+          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs rounded-[6px]">
             Credentials generated for <strong>{revealedPassword?.userName}</strong> ({revealedPassword?.email}).
           </div>
 
@@ -504,7 +532,7 @@ export default function UsersAdminPage() {
               <input
                 readOnly
                 value={revealedPassword?.password || ''}
-                className="w-full px-3 py-2 font-mono text-sm font-bold bg-slate-100 rounded-[6px] border border-border text-accent select-all"
+                className="w-full px-3 py-2 font-mono text-sm font-bold bg-slate-100 dark:bg-slate-800 rounded-[6px] border border-border text-accent select-all"
               />
               <Button
                 variant="outline"
@@ -517,7 +545,7 @@ export default function UsersAdminPage() {
               </Button>
             </div>
             <p className="text-[11px] text-text-muted mt-1">
-              Store or securely share this password with the user now. It will not be shown again.
+              {t('admin.tempPasswordHint')}
             </p>
           </div>
         </div>
@@ -527,12 +555,12 @@ export default function UsersAdminPage() {
       <Modal
         isOpen={!!editingUser}
         onClose={() => setEditingUser(null)}
-        title={`Edit ${editingUser?.fullName}`}
+        title={`${t('admin.editUser')}: ${editingUser?.fullName}`}
         maxWidth="md"
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setEditingUser(null)}>
-              Cancel
+              {t('actions.cancel')}
             </Button>
             <Button
               onClick={() => {
@@ -543,21 +571,22 @@ export default function UsersAdminPage() {
                 });
               }}
               isLoading={editMutation.isPending}
+              loadingText="Saving..."
             >
-              Save Changes
+              {t('actions.save')} Changes
             </Button>
           </div>
         }
       >
         <div className="space-y-4">
           {editError && (
-            <div className="p-3 bg-red-50 border border-red-200 text-danger text-xs rounded-[6px] flex items-center gap-2">
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-xs rounded-[6px] flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{editError}</span>
             </div>
           )}
 
-          <FormField label="Full Name" required>
+          <FormField label={t('admin.fullName')} required>
             <Input
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
@@ -565,11 +594,11 @@ export default function UsersAdminPage() {
             />
           </FormField>
 
-          <FormField label="Assign System Role" required>
+          <FormField label={t('admin.assignedRole')} required>
             <select
               value={editRole}
               onChange={(e) => setEditRole(e.target.value as RoleKey)}
-              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
               <option value="VIEWER">VIEWER</option>
               <option value="INVENTORY_STAFF">INVENTORY_STAFF</option>
@@ -581,96 +610,48 @@ export default function UsersAdminPage() {
       </Modal>
 
       {/* Reset Password Modal */}
-      <Modal
+      <ConfirmModal
         isOpen={!!resetTarget}
         onClose={() => setResetTarget(null)}
-        title="Reset User Password"
-        maxWidth="md"
-        footer={
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setResetTarget(null)}>
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              onClick={() => {
-                if (resetTarget) resetPasswordMutation.mutate(resetTarget.id);
-              }}
-              isLoading={resetPasswordMutation.isPending}
-            >
-              Generate New Password
-            </Button>
-          </div>
-        }
-      >
-        <p className="text-sm text-text">
-          Are you sure you want to reset the password for <strong>{resetTarget?.fullName}</strong> ({resetTarget?.email})?
-        </p>
-        <p className="text-xs text-text-muted mt-2">
-          Their current active sessions will be revoked and a new temporary password will be generated for them.
-        </p>
-      </Modal>
+        onConfirm={() => {
+          if (resetTarget) resetPasswordMutation.mutate(resetTarget.id);
+        }}
+        title={t('admin.resetPassword')}
+        message={`Reset password for "${resetTarget?.fullName}" (${resetTarget?.email})? Active sessions will be terminated and a temporary password will be generated.`}
+        confirmLabel="Generate New Password"
+        variant="warning"
+        isLoading={resetPasswordMutation.isPending}
+      />
 
       {/* Revoke Sessions Modal */}
-      <Modal
+      <ConfirmModal
         isOpen={!!revokeTarget}
         onClose={() => setRevokeTarget(null)}
-        title="Revoke Active Sessions"
-        maxWidth="md"
-        footer={
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setRevokeTarget(null)}>
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              onClick={() => {
-                if (revokeTarget) revokeMutation.mutate(revokeTarget.id);
-              }}
-              isLoading={revokeMutation.isPending}
-            >
-              Revoke All Sessions
-            </Button>
-          </div>
-        }
-      >
-        <p className="text-sm text-text">
-          Revoke all active browser sessions for <strong>{revokeTarget?.fullName}</strong>?
-          They will immediately be logged out and required to sign in again.
-        </p>
-      </Modal>
+        onConfirm={() => {
+          if (revokeTarget) revokeMutation.mutate(revokeTarget.id);
+        }}
+        title={t('admin.revokeSessions')}
+        message={`Revoke all active browser sessions for "${revokeTarget?.fullName}"? They will be signed out immediately.`}
+        confirmLabel={t('admin.revokeSessions')}
+        variant="danger"
+        isLoading={revokeMutation.isPending}
+      />
 
       {/* Toggle Status Modal */}
-      <Modal
+      <ConfirmModal
         isOpen={!!toggleTarget}
         onClose={() => setToggleTarget(null)}
-        title={toggleTarget?.isActive ? 'Deactivate User' : 'Activate User'}
-        maxWidth="md"
-        footer={
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setToggleTarget(null)}>
-              Cancel
-            </Button>
-            <Button
-              variant={toggleTarget?.isActive ? 'danger' : 'primary'}
-              onClick={() => {
-                if (toggleTarget) {
-                  toggleMutation.mutate({ id: toggleTarget.id, activate: !toggleTarget.isActive });
-                }
-              }}
-              isLoading={toggleMutation.isPending}
-            >
-              {toggleTarget?.isActive ? 'Deactivate' : 'Activate'}
-            </Button>
-          </div>
-        }
-      >
-        <p className="text-sm text-text">
-          Are you sure you want to {toggleTarget?.isActive ? 'deactivate' : 'activate'}{' '}
-          <strong>{toggleTarget?.fullName}</strong>?
-        </p>
-      </Modal>
+        onConfirm={() => {
+          if (toggleTarget) {
+            toggleMutation.mutate({ id: toggleTarget.id, activate: !toggleTarget.isActive });
+          }
+        }}
+        title={toggleTarget?.isActive ? t('admin.deactivateUser') : t('admin.activateUser')}
+        message={`Are you sure you want to ${toggleTarget?.isActive ? 'deactivate' : 'activate'} "${toggleTarget?.fullName}"?`}
+        confirmLabel={toggleTarget?.isActive ? t('admin.deactivateUser') : t('admin.activateUser')}
+        variant={toggleTarget?.isActive ? 'danger' : 'primary'}
+        isLoading={toggleMutation.isPending}
+      />
     </div>
   );
 }
-

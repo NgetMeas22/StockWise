@@ -8,25 +8,25 @@ import { Button } from '../../../components/ui/Button';
 import { Badge } from '../../../components/ui/Badge';
 import { FormField } from '../../../components/ui/FormField';
 import { Input } from '../../../components/ui/Input';
+import { useToast } from '../../../lib/toast-context';
+import { useTranslation } from '../../../i18n/i18n-context';
 import {
-  User,
   Shield,
   KeyRound,
-  CheckCircle2,
   AlertCircle,
-  Clock,
   Lock,
 } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user, role, permissions } = useAuth();
+  const toast = useToast();
+  const { t } = useTranslation();
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
 
   const changePasswordMutation = useMutation({
     mutationFn: (body: any) =>
@@ -35,23 +35,22 @@ export default function ProfilePage() {
         body: JSON.stringify(body),
       }),
     onSuccess: () => {
-      setPasswordSuccess('Password changed successfully! Keep your credentials secure.');
+      toast.success(t('toasts.passwordChanged'));
       setPasswordError(null);
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      setTimeout(() => setPasswordSuccess(null), 5000);
     },
     onError: (err: any) => {
-      setPasswordError(err.message || 'Failed to update password.');
-      setPasswordSuccess(null);
+      const msg = err.message || 'Failed to update password.';
+      setPasswordError(msg);
+      toast.error(msg);
     },
   });
 
   const handleChangePassword = (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordError(null);
-    setPasswordSuccess(null);
 
     if (!currentPassword) {
       setPasswordError('Current password is required');
@@ -106,9 +105,9 @@ export default function ProfilePage() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-text">Account & Security</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-text">{t('profile.title')}</h1>
         <p className="text-sm text-text-muted mt-1">
-          Review your profile details, system credentials, and active role permissions.
+          {t('profile.subtitle')}
         </p>
       </div>
 
@@ -134,7 +133,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <span className="block text-[10px] uppercase font-semibold">Status</span>
-                <span className="text-emerald-700 font-medium">Active Account</span>
+                <span className="text-emerald-700 dark:text-emerald-400 font-medium">Active Account</span>
               </div>
             </div>
           </div>
@@ -144,14 +143,14 @@ export default function ProfilePage() {
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-accent" />
               <h3 className="text-xs font-bold text-text uppercase tracking-wider">
-                Granted Privileges ({permissions.length})
+                {t('profile.grantedPrivileges')} ({permissions.length})
               </h3>
             </div>
             <div className="flex flex-wrap gap-1 max-h-60 overflow-y-auto">
               {permissions.map((p) => (
                 <span
                   key={p}
-                  className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700"
+                  className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
                 >
                   {p}
                 </span>
@@ -166,29 +165,22 @@ export default function ProfilePage() {
             <div className="flex items-center gap-2 border-b border-border pb-3">
               <KeyRound className="w-5 h-5 text-accent" />
               <div>
-                <h2 className="text-base font-semibold text-text">Change Account Password</h2>
+                <h2 className="text-base font-semibold text-text">{t('profile.changePassword')}</h2>
                 <p className="text-xs text-text-muted">
-                  Update your credentials using Argon2id high-grade key derivation.
+                  {t('profile.changePasswordDesc')}
                 </p>
               </div>
             </div>
 
-            {passwordSuccess && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-[6px] flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0" />
-                <span>{passwordSuccess}</span>
-              </div>
-            )}
-
             {passwordError && (
-              <div className="p-3 bg-red-50 border border-red-200 text-danger text-xs rounded-[6px] flex items-center gap-2">
+              <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-xs rounded-[6px] flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{passwordError}</span>
               </div>
             )}
 
             <form onSubmit={handleChangePassword} className="space-y-4">
-              <FormField label="Current Password" required>
+              <FormField label={t('profile.currentPassword')} required>
                 <Input
                   type="password"
                   value={currentPassword}
@@ -199,9 +191,9 @@ export default function ProfilePage() {
               </FormField>
 
               <FormField
-                label="New Password"
+                label={t('profile.newPassword')}
                 required
-                hint="At least 12 characters, with uppercase, lowercase, number, and special character"
+                hint={t('profile.passwordRequirement')}
               >
                 <Input
                   type="password"
@@ -212,7 +204,7 @@ export default function ProfilePage() {
                 />
               </FormField>
 
-              <FormField label="Confirm New Password" required>
+              <FormField label={t('profile.confirmNewPassword')} required>
                 <Input
                   type="password"
                   value={confirmPassword}
@@ -227,6 +219,7 @@ export default function ProfilePage() {
                   type="submit"
                   className="flex items-center gap-2"
                   isLoading={changePasswordMutation.isPending}
+                  loadingText="Updating Password..."
                 >
                   <Lock className="w-4 h-4" />
                   <span>Update Password</span>
@@ -239,4 +232,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-

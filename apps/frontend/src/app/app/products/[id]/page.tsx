@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '../../../../lib/api-client';
 import { ProductDTO, StockMovementDTO } from '@stockwise/shared';
 import { useAuth } from '../../../../lib/auth-context';
+import { useTranslation } from '../../../../i18n/i18n-context';
 import { Can } from '../../../../components/auth/Can';
 import { Button } from '../../../../components/ui/Button';
 import { StockBadge } from '../../../../components/ui/StockBadge';
@@ -36,6 +37,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const productId = resolvedParams.id;
   const router = useRouter();
   const { hasPermission } = useAuth();
+  const { t } = useTranslation();
   const canViewCost = hasPermission('products:view_cost');
 
   const { data: productRes, isLoading, error } = useQuery({
@@ -56,8 +58,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     return (
       <div className="p-8 text-center text-text-muted">
         <div className="animate-pulse space-y-4 max-w-4xl mx-auto">
-          <div className="h-8 bg-slate-200 rounded w-1/3"></div>
-          <div className="h-64 bg-slate-200 rounded"></div>
+          <div className="h-8 bg-surface-muted rounded w-1/3"></div>
+          <div className="h-64 bg-surface-muted rounded"></div>
         </div>
       </div>
     );
@@ -72,7 +74,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           The requested product does not exist or you may not have permission to view it.
         </p>
         <Link href="/app/products">
-          <Button variant="outline">Back to Products</Button>
+          <Button variant="outline">{t('common.back')} to {t('nav.products')}</Button>
         </Link>
       </div>
     );
@@ -88,7 +90,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         <div className="flex items-center gap-3">
           <Link
             href="/app/products"
-            className="p-2 rounded-[6px] border border-border bg-surface text-text-muted hover:text-text hover:bg-slate-50 transition-colors"
+            className="p-2 rounded-[6px] border border-border bg-surface text-text-muted hover:text-text hover:bg-surface-muted transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
@@ -96,7 +98,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold tracking-tight text-text">{product.name}</h1>
               <StockBadge quantity={qty} reorderLevel={reorder} />
-              {product.status === 'ARCHIVED' && <Badge variant="neutral">Archived</Badge>}
+              {product.status === 'ARCHIVED' && <Badge variant="neutral">{t('common.archived')}</Badge>}
             </div>
             <div className="flex items-center gap-3 mt-1 text-xs text-text-muted">
               <span className="font-mono font-medium text-text">{product.sku}</span>
@@ -117,7 +119,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             <Link href={`/app/products/${product.id}/edit`}>
               <Button variant="outline" className="flex items-center gap-2">
                 <Edit2 className="w-3.5 h-3.5" />
-                <span>Edit Product</span>
+                <span>{t('products.editProduct')}</span>
               </Button>
             </Link>
           </Can>
@@ -127,13 +129,13 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Total Stock on Hand"
+          label={t('products.stockOnHand')}
           value={`${qty} ${product.unit}`}
           subtext={`Reorder alert at ≤ ${reorder} ${product.unit}`}
           icon={Layers}
         />
         <StatCard
-          label="Selling Price"
+          label={t('products.sellingPrice')}
           value={`$${Number(product.sellingPrice).toFixed(2)}`}
           subtext="Per standard unit"
           icon={DollarSign}
@@ -155,7 +157,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         )}
         <StatCard
           label="Catalog Status"
-          value={product.isPublished ? 'Published' : 'Hidden'}
+          value={product.isPublished ? t('common.published') : 'Hidden'}
           subtext={product.isPublished ? 'Visible in buyer portal' : 'Internal only'}
           icon={Tag}
         />
@@ -170,7 +172,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-accent" />
-                <h2 className="text-base font-semibold text-text">Stock Distribution by Warehouse</h2>
+                <h2 className="text-base font-semibold text-text">{t('products.stockDistribution')}</h2>
               </div>
               <span className="text-xs text-text-muted">
                 {product.balances?.length || 0} locations active
@@ -191,7 +193,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                       <div className="text-base font-mono font-bold text-text">
                         {b.quantityOnHand} {product.unit}
                       </div>
-                      <span className="text-[10px] text-text-muted">On Hand</span>
+                      <span className="text-[10px] text-text-muted">{t('products.stockOnHand')}</span>
                     </div>
                   </div>
                 ))
@@ -208,7 +210,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
                 <History className="w-4 h-4 text-accent" />
-                <h2 className="text-base font-semibold text-text">Recent Stock Movements</h2>
+                <h2 className="text-base font-semibold text-text">{t('products.recentMovements')}</h2>
               </div>
               <Link href={`/app/inventory/movements?productId=${product.id}`}>
                 <span className="text-xs text-accent hover:underline font-medium">
@@ -222,9 +224,9 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="border-b border-border text-text-muted uppercase text-[10px]">
-                      <th className="py-2">Time</th>
+                      <th className="py-2">{t('common.timestamp')}</th>
                       <th className="py-2">Type</th>
-                      <th className="py-2">Reason</th>
+                      <th className="py-2">{t('inventory.reasonCode')}</th>
                       <th className="py-2 text-right">Delta</th>
                       <th className="py-2 text-right">After</th>
                     </tr>
@@ -233,13 +235,13 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                     {movements.map((m) => {
                       const deltaNum = Number(m.quantityDelta);
                       return (
-                        <tr key={m.id} className="hover:bg-slate-50/50">
+                        <tr key={m.id} className="hover:bg-surface-muted/50 transition-colors">
                           <td className="py-2.5 font-mono text-[11px] text-text-muted">
                             {new Date(m.createdAt).toLocaleDateString()}{' '}
                             {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </td>
                           <td className="py-2.5">
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-slate-100 text-slate-800">
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-surface-muted text-text border border-border">
                               {m.movementType}
                             </span>
                           </td>
@@ -272,36 +274,36 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         <div className="space-y-6">
           <div className="bg-surface rounded-[8px] border border-border p-6 shadow-subtle space-y-4">
             <h3 className="text-sm font-semibold text-text border-b border-border pb-2">
-              Product Overview
+              {t('products.overview')}
             </h3>
 
             <div className="space-y-3 text-xs">
               <div>
-                <span className="text-text-muted block">Description</span>
+                <span className="text-text-muted block">{t('categories.description')}</span>
                 <p className="text-text mt-1 leading-relaxed">
                   {product.description || 'No description provided.'}
                 </p>
               </div>
 
               <div className="pt-2 border-t border-border">
-                <span className="text-text-muted block">SKU Code</span>
+                <span className="text-text-muted block">{t('products.sku')}</span>
                 <span className="font-mono font-semibold text-text">{product.sku}</span>
               </div>
 
               {product.barcode && (
                 <div className="pt-2 border-t border-border">
-                  <span className="text-text-muted block">Barcode</span>
+                  <span className="text-text-muted block">{t('products.barcode')}</span>
                   <span className="font-mono text-text">{product.barcode}</span>
                 </div>
               )}
 
               <div className="pt-2 border-t border-border">
-                <span className="text-text-muted block">URL Slug</span>
+                <span className="text-text-muted block">{t('products.urlSlug')}</span>
                 <span className="font-mono text-text">{product.slug}</span>
               </div>
 
               <div className="pt-2 border-t border-border">
-                <span className="text-text-muted block">Category</span>
+                <span className="text-text-muted block">{t('products.category')}</span>
                 <span className="text-text font-medium">{product.categoryName}</span>
               </div>
 
@@ -323,4 +325,3 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     </div>
   );
 }
-

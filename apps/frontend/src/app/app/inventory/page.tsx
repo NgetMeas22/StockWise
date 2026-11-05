@@ -19,6 +19,8 @@ import { FormField } from '../../../components/ui/FormField';
 import { Input } from '../../../components/ui/Input';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
 import { EmptyState } from '../../../components/ui/EmptyState';
+import { useToast } from '../../../lib/toast-context';
+import { useTranslation } from '../../../i18n/i18n-context';
 import {
   Layers,
   ArrowDownLeft,
@@ -26,10 +28,8 @@ import {
   Sliders,
   ArrowRightLeft,
   Search,
-  Filter,
   RefreshCw,
   Building2,
-  Package,
   AlertCircle,
   History,
   QrCode,
@@ -37,6 +37,8 @@ import {
 
 export default function InventoryBalancesPage() {
   const queryClient = useQueryClient();
+  const toast = useToast();
+  const { t } = useTranslation();
   const { hasPermission } = useAuth();
   const canViewCost = hasPermission('products:view_cost');
 
@@ -48,7 +50,6 @@ export default function InventoryBalancesPage() {
 
   // Operation Modals State
   const [activeModal, setActiveModal] = useState<'receive' | 'issue' | 'adjust' | 'transfer' | null>(null);
-  const [selectedBalance, setSelectedBalance] = useState<InventoryBalanceDTO | null>(null);
 
   // Form Fields
   const [formProductId, setFormProductId] = useState('');
@@ -58,7 +59,6 @@ export default function InventoryBalancesPage() {
   const [formUnitCost, setFormUnitCost] = useState('0');
   const [formReasonCode, setFormReasonCode] = useState<string>('');
   const [formReason, setFormReason] = useState('');
-  const [formDelta, setFormDelta] = useState('0');
   const [formNewQuantity, setFormNewQuantity] = useState('0');
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -100,8 +100,12 @@ export default function InventoryBalancesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory-balances'] });
       setActiveModal(null);
+      toast.success(t('toasts.stockReceived'));
     },
-    onError: (err: any) => setFormError(err.message || 'Failed to receive stock.'),
+    onError: (err: any) => {
+      setFormError(err.message || 'Failed to receive stock.');
+      toast.error(err.message || 'Failed to receive stock.');
+    },
   });
 
   const issueMutation = useMutation({
@@ -110,8 +114,12 @@ export default function InventoryBalancesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory-balances'] });
       setActiveModal(null);
+      toast.success(t('toasts.stockIssued'));
     },
-    onError: (err: any) => setFormError(err.message || 'Failed to issue stock.'),
+    onError: (err: any) => {
+      setFormError(err.message || 'Failed to issue stock.');
+      toast.error(err.message || 'Failed to issue stock.');
+    },
   });
 
   const adjustMutation = useMutation({
@@ -120,8 +128,12 @@ export default function InventoryBalancesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory-balances'] });
       setActiveModal(null);
+      toast.success(t('toasts.stockAdjusted'));
     },
-    onError: (err: any) => setFormError(err.message || 'Failed to adjust stock.'),
+    onError: (err: any) => {
+      setFormError(err.message || 'Failed to adjust stock.');
+      toast.error(err.message || 'Failed to adjust stock.');
+    },
   });
 
   const transferMutation = useMutation({
@@ -130,8 +142,12 @@ export default function InventoryBalancesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory-balances'] });
       setActiveModal(null);
+      toast.success(t('toasts.stockTransferred'));
     },
-    onError: (err: any) => setFormError(err.message || 'Failed to transfer stock.'),
+    onError: (err: any) => {
+      setFormError(err.message || 'Failed to transfer stock.');
+      toast.error(err.message || 'Failed to transfer stock.');
+    },
   });
 
   // Modal openers
@@ -183,9 +199,9 @@ export default function InventoryBalancesPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-text">Inventory Balances</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-text">{t('inventory.title')}</h1>
           <p className="text-sm text-text-muted mt-1">
-            Real-time stock on hand across all warehouse facilities with atomic updates.
+            {t('inventory.subtitle')}
           </p>
         </div>
 
@@ -193,14 +209,14 @@ export default function InventoryBalancesPage() {
           <Link href="/app/inventory/movements">
             <Button variant="outline" size="sm" className="flex items-center gap-1.5">
               <History className="w-4 h-4" />
-              <span>Movement Ledger</span>
+              <span>{t('inventory.movementLedger')}</span>
             </Button>
           </Link>
 
           <Link href="/app/inventory/quick-entry">
             <Button variant="outline" size="sm" className="flex items-center gap-1.5">
               <QrCode className="w-4 h-4" />
-              <span>Quick Scanning</span>
+              <span>{t('inventory.quickScanner')}</span>
             </Button>
           </Link>
 
@@ -211,7 +227,7 @@ export default function InventoryBalancesPage() {
               className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700"
             >
               <ArrowDownLeft className="w-4 h-4" />
-              <span>Receive</span>
+              <span>{t('inventory.receiveStock')}</span>
             </Button>
           </Can>
 
@@ -222,7 +238,7 @@ export default function InventoryBalancesPage() {
               className="flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700"
             >
               <ArrowUpRight className="w-4 h-4" />
-              <span>Issue</span>
+              <span>{t('inventory.issueStock')}</span>
             </Button>
           </Can>
 
@@ -233,7 +249,7 @@ export default function InventoryBalancesPage() {
               className="flex items-center gap-1.5"
             >
               <Sliders className="w-4 h-4" />
-              <span>Adjust</span>
+              <span>{t('inventory.adjustStock')}</span>
             </Button>
           </Can>
 
@@ -245,7 +261,7 @@ export default function InventoryBalancesPage() {
               className="flex items-center gap-1.5"
             >
               <ArrowRightLeft className="w-4 h-4" />
-              <span>Transfer</span>
+              <span>{t('inventory.transferStock')}</span>
             </Button>
           </Can>
         </div>
@@ -259,41 +275,41 @@ export default function InventoryBalancesPage() {
             onClick={() => { setSelectedStockFilter('all'); setPage(1); }}
             className={`px-3 py-1.5 rounded-[6px] text-xs font-semibold transition-colors ${
               selectedStockFilter === 'all'
-                ? 'bg-slate-900 text-white'
-                : 'text-text-muted hover:text-text hover:bg-slate-100'
+                ? 'bg-accent text-white'
+                : 'text-text-muted hover:text-text hover:bg-surface-muted'
             }`}
           >
-            All Balances
+            {t('products.allStock')}
           </button>
           <button
             onClick={() => { setSelectedStockFilter('in'); setPage(1); }}
             className={`px-3 py-1.5 rounded-[6px] text-xs font-semibold transition-colors ${
               selectedStockFilter === 'in'
                 ? 'bg-emerald-600 text-white'
-                : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
+                : 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-950/60'
             }`}
           >
-            Adequate Stock
+            {t('inventory.adequateStock')}
           </button>
           <button
             onClick={() => { setSelectedStockFilter('low'); setPage(1); }}
             className={`px-3 py-1.5 rounded-[6px] text-xs font-semibold transition-colors ${
               selectedStockFilter === 'low'
                 ? 'bg-amber-600 text-white'
-                : 'text-amber-700 bg-amber-50 hover:bg-amber-100'
+                : 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-950/60'
             }`}
           >
-            Low Stock Alerts
+            {t('inventory.lowStockAlerts')}
           </button>
           <button
             onClick={() => { setSelectedStockFilter('out'); setPage(1); }}
             className={`px-3 py-1.5 rounded-[6px] text-xs font-semibold transition-colors ${
               selectedStockFilter === 'out'
                 ? 'bg-rose-600 text-white'
-                : 'text-rose-700 bg-rose-50 hover:bg-rose-100'
+                : 'text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-950/60'
             }`}
           >
-            Depleted / Out of Stock
+            {t('inventory.outOfStock')}
           </button>
         </div>
 
@@ -303,10 +319,10 @@ export default function InventoryBalancesPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
             <input
               type="text"
-              placeholder="Search product name or SKU..."
+              placeholder={`${t('common.search')} product name or SKU...`}
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-[6px] border border-border bg-white placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-[6px] border border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
 
@@ -314,9 +330,9 @@ export default function InventoryBalancesPage() {
             <select
               value={selectedWarehouse}
               onChange={(e) => { setSelectedWarehouse(e.target.value); setPage(1); }}
-              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
-              <option value="">All Warehouses</option>
+              <option value="">{t('common.all')} Warehouses</option>
               {warehouses.map((w) => (
                 <option key={w.id} value={w.id}>
                   {w.name} ({w.code})
@@ -339,20 +355,20 @@ export default function InventoryBalancesPage() {
         ) : balances.length === 0 ? (
           <EmptyState
             icon={Layers}
-            title="No inventory records found"
+            title={t('common.noData')}
             description="Adjust your search filters or record initial stock receipts."
           />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-border bg-slate-50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="px-4 py-3">Product</th>
+                <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
+                  <th className="px-4 py-3">{t('products.productName')}</th>
                   <th className="px-4 py-3">Warehouse</th>
-                  <th className="px-4 py-3 text-right">Quantity on Hand</th>
-                  <th className="px-4 py-3 text-right">Reorder Level</th>
-                  <th className="px-4 py-3 text-center">Status</th>
-                  <th className="px-4 py-3 text-right">Quick Actions</th>
+                  <th className="px-4 py-3 text-right">{t('products.stockOnHand')}</th>
+                  <th className="px-4 py-3 text-right">{t('products.reorderLevel')}</th>
+                  <th className="px-4 py-3 text-center">{t('common.status')}</th>
+                  <th className="px-4 py-3 text-right">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -361,7 +377,7 @@ export default function InventoryBalancesPage() {
                   const reorder = Number(b.reorderLevel);
 
                   return (
-                    <tr key={`${b.productId}-${b.warehouseId}`} className="hover:bg-slate-50/70 transition-colors">
+                    <tr key={`${b.productId}-${b.warehouseId}`} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="px-4 py-3">
                         <Link
                           href={`/app/products/${b.productId}`}
@@ -401,8 +417,8 @@ export default function InventoryBalancesPage() {
                           <Can permission="inventory:receive">
                             <button
                               onClick={() => openReceiveModal(b)}
-                              title="Receive stock into this warehouse"
-                              className="p-1.5 text-emerald-700 hover:bg-emerald-50 rounded transition-colors"
+                              title={t('inventory.receiveStock')}
+                              className="p-1.5 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded transition-colors"
                             >
                               <ArrowDownLeft className="w-3.5 h-3.5" />
                             </button>
@@ -411,8 +427,8 @@ export default function InventoryBalancesPage() {
                           <Can permission="inventory:issue">
                             <button
                               onClick={() => openIssueModal(b)}
-                              title="Issue stock from this warehouse"
-                              className="p-1.5 text-rose-700 hover:bg-rose-50 rounded transition-colors"
+                              title={t('inventory.issueStock')}
+                              className="p-1.5 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded transition-colors"
                             >
                               <ArrowUpRight className="w-3.5 h-3.5" />
                             </button>
@@ -421,8 +437,8 @@ export default function InventoryBalancesPage() {
                           <Can permission="inventory:adjust">
                             <button
                               onClick={() => openAdjustModal(b)}
-                              title="Adjust count"
-                              className="p-1.5 text-text-muted hover:text-text hover:bg-slate-100 rounded transition-colors"
+                              title={t('inventory.adjustStock')}
+                              className="p-1.5 text-text-muted hover:text-text hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
                             >
                               <Sliders className="w-3.5 h-3.5" />
                             </button>
@@ -431,8 +447,8 @@ export default function InventoryBalancesPage() {
                           <Can permission="inventory:transfer">
                             <button
                               onClick={() => openTransferModal(b)}
-                              title="Transfer stock to another warehouse"
-                              className="p-1.5 text-text-muted hover:text-text hover:bg-slate-100 rounded transition-colors"
+                              title={t('inventory.transferStock')}
+                              className="p-1.5 text-text-muted hover:text-text hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
                             >
                               <ArrowRightLeft className="w-3.5 h-3.5" />
                             </button>
@@ -449,7 +465,7 @@ export default function InventoryBalancesPage() {
 
         {/* Pagination */}
         {meta.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-slate-50 text-xs text-text-muted">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-slate-50 dark:bg-slate-800/50 text-xs text-text-muted">
             <div>
               Page <span className="font-semibold text-text">{meta.page}</span> of{' '}
               <span className="font-semibold text-text">{meta.totalPages}</span>
@@ -461,7 +477,7 @@ export default function InventoryBalancesPage() {
                 disabled={meta.page <= 1}
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
               >
-                Previous
+                {t('common.previous')}
               </Button>
               <Button
                 variant="outline"
@@ -469,7 +485,7 @@ export default function InventoryBalancesPage() {
                 disabled={meta.page >= meta.totalPages}
                 onClick={() => setPage((prev) => Math.min(meta.totalPages, prev + 1))}
               >
-                Next
+                {t('common.next')}
               </Button>
             </div>
           </div>
@@ -480,12 +496,12 @@ export default function InventoryBalancesPage() {
       <Modal
         isOpen={activeModal === 'receive'}
         onClose={() => setActiveModal(null)}
-        title="Receive Stock"
+        title={t('inventory.receiveStock')}
         maxWidth="md"
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setActiveModal(null)}>
-              Cancel
+              {t('actions.cancel')}
             </Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700"
@@ -500,25 +516,26 @@ export default function InventoryBalancesPage() {
                 });
               }}
               isLoading={receiveMutation.isPending}
+              loadingText="Receiving..."
             >
-              Confirm Receipt
+              {t('actions.confirm')}
             </Button>
           </div>
         }
       >
         <div className="space-y-4">
           {formError && (
-            <div className="p-3 bg-red-50 border border-red-200 text-danger text-xs rounded-[6px] flex items-center gap-2">
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-xs rounded-[6px] flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{formError}</span>
             </div>
           )}
 
-          <FormField label="Product" required>
+          <FormField label={t('products.productName')} required>
             <select
               value={formProductId}
               onChange={(e) => setFormProductId(e.target.value)}
-              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
               {products.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -528,11 +545,11 @@ export default function InventoryBalancesPage() {
             </select>
           </FormField>
 
-          <FormField label="Destination Warehouse" required>
+          <FormField label={t('inventory.destinationWarehouse')} required>
             <select
               value={formWarehouseId}
               onChange={(e) => setFormWarehouseId(e.target.value)}
-              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
               {warehouses.map((w) => (
                 <option key={w.id} value={w.id}>
@@ -556,7 +573,7 @@ export default function InventoryBalancesPage() {
             </FormField>
 
             {canViewCost && (
-              <FormField label="Unit Cost ($)" hint="Weighted avg will recalculate">
+              <FormField label={`${t('products.costPrice')} ($)`} hint="Weighted avg will recalculate">
                 <Input
                   type="number"
                   min="0"
@@ -573,7 +590,7 @@ export default function InventoryBalancesPage() {
             <select
               value={formReasonCode}
               onChange={(e) => setFormReasonCode(e.target.value)}
-              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
               <option value={ReasonCode.DIRECT_PURCHASE}>Direct Purchase Receipt</option>
               <option value={ReasonCode.CUSTOMER_RETURN}>Customer Return</option>
@@ -596,12 +613,12 @@ export default function InventoryBalancesPage() {
       <Modal
         isOpen={activeModal === 'issue'}
         onClose={() => setActiveModal(null)}
-        title="Issue / Dispatch Stock"
+        title={t('inventory.issueStock')}
         maxWidth="md"
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setActiveModal(null)}>
-              Cancel
+              {t('actions.cancel')}
             </Button>
             <Button
               variant="danger"
@@ -615,25 +632,26 @@ export default function InventoryBalancesPage() {
                 });
               }}
               isLoading={issueMutation.isPending}
+              loadingText="Issuing..."
             >
-              Confirm Issue
+              {t('actions.confirm')}
             </Button>
           </div>
         }
       >
         <div className="space-y-4">
           {formError && (
-            <div className="p-3 bg-red-50 border border-red-200 text-danger text-xs rounded-[6px] flex items-center gap-2">
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-xs rounded-[6px] flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{formError}</span>
             </div>
           )}
 
-          <FormField label="Product" required>
+          <FormField label={t('products.productName')} required>
             <select
               value={formProductId}
               onChange={(e) => setFormProductId(e.target.value)}
-              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
               {products.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -643,11 +661,11 @@ export default function InventoryBalancesPage() {
             </select>
           </FormField>
 
-          <FormField label="Source Warehouse" required>
+          <FormField label={t('inventory.sourceWarehouse')} required>
             <select
               value={formWarehouseId}
               onChange={(e) => setFormWarehouseId(e.target.value)}
-              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
               {warehouses.map((w) => (
                 <option key={w.id} value={w.id}>
@@ -673,7 +691,7 @@ export default function InventoryBalancesPage() {
             <select
               value={formReasonCode}
               onChange={(e) => setFormReasonCode(e.target.value)}
-              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
               <option value={ReasonCode.USAGE}>Sales Order / Dispatch Usage</option>
               <option value={ReasonCode.SUPPLIER_RETURN}>Return to Supplier</option>
@@ -697,12 +715,12 @@ export default function InventoryBalancesPage() {
       <Modal
         isOpen={activeModal === 'adjust'}
         onClose={() => setActiveModal(null)}
-        title="Adjust Stock Count"
+        title={t('inventory.adjustStock')}
         maxWidth="md"
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setActiveModal(null)}>
-              Cancel
+              {t('actions.cancel')}
             </Button>
             <Button
               onClick={() => {
@@ -714,25 +732,26 @@ export default function InventoryBalancesPage() {
                 });
               }}
               isLoading={adjustMutation.isPending}
+              loadingText="Adjusting..."
             >
-              Confirm Adjustment
+              {t('actions.confirm')}
             </Button>
           </div>
         }
       >
         <div className="space-y-4">
           {formError && (
-            <div className="p-3 bg-red-50 border border-red-200 text-danger text-xs rounded-[6px] flex items-center gap-2">
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-xs rounded-[6px] flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{formError}</span>
             </div>
           )}
 
-          <FormField label="Product" required>
+          <FormField label={t('products.productName')} required>
             <select
               value={formProductId}
               onChange={(e) => setFormProductId(e.target.value)}
-              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
               {products.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -746,7 +765,7 @@ export default function InventoryBalancesPage() {
             <select
               value={formWarehouseId}
               onChange={(e) => setFormWarehouseId(e.target.value)}
-              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
               {warehouses.map((w) => (
                 <option key={w.id} value={w.id}>
@@ -783,12 +802,12 @@ export default function InventoryBalancesPage() {
       <Modal
         isOpen={activeModal === 'transfer'}
         onClose={() => setActiveModal(null)}
-        title="Transfer Stock Between Warehouses"
+        title={t('inventory.transferStock')}
         maxWidth="md"
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setActiveModal(null)}>
-              Cancel
+              {t('actions.cancel')}
             </Button>
             <Button
               onClick={() => {
@@ -801,25 +820,26 @@ export default function InventoryBalancesPage() {
                 });
               }}
               isLoading={transferMutation.isPending}
+              loadingText="Transferring..."
             >
-              Execute Transfer
+              {t('actions.confirm')}
             </Button>
           </div>
         }
       >
         <div className="space-y-4">
           {formError && (
-            <div className="p-3 bg-red-50 border border-red-200 text-danger text-xs rounded-[6px] flex items-center gap-2">
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-xs rounded-[6px] flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{formError}</span>
             </div>
           )}
 
-          <FormField label="Product" required>
+          <FormField label={t('products.productName')} required>
             <select
               value={formProductId}
               onChange={(e) => setFormProductId(e.target.value)}
-              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
               {products.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -830,11 +850,11 @@ export default function InventoryBalancesPage() {
           </FormField>
 
           <div className="grid grid-cols-2 gap-3">
-            <FormField label="Source Warehouse" required>
+            <FormField label={t('inventory.sourceWarehouse')} required>
               <select
                 value={formWarehouseId}
                 onChange={(e) => setFormWarehouseId(e.target.value)}
-                className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
               >
                 {warehouses.map((w) => (
                   <option key={w.id} value={w.id}>
@@ -844,11 +864,11 @@ export default function InventoryBalancesPage() {
               </select>
             </FormField>
 
-            <FormField label="Destination Warehouse" required>
+            <FormField label={t('inventory.destinationWarehouse')} required>
               <select
                 value={formTargetWarehouseId}
                 onChange={(e) => setFormTargetWarehouseId(e.target.value)}
-                className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
               >
                 {warehouses
                   .filter((w) => w.id !== formWarehouseId)
@@ -885,4 +905,3 @@ export default function InventoryBalancesPage() {
     </div>
   );
 }
-

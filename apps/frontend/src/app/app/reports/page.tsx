@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '../../../lib/api-client';
 import { useAuth } from '../../../lib/auth-context';
+import { useTheme } from '../../../lib/theme-context';
+import { useTranslation } from '../../../i18n/i18n-context';
 import { Can } from '../../../components/auth/Can';
 import { Button } from '../../../components/ui/Button';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
@@ -31,6 +33,16 @@ import {
 
 export default function ReportsPage() {
   const { hasPermission } = useAuth();
+  const { resolvedTheme } = useTheme();
+  const { t } = useTranslation();
+  const isDark = resolvedTheme === 'dark';
+
+  const chartGridColor = isDark ? '#334155' : '#E2E8F0';
+  const chartTextColor = isDark ? '#94A3B8' : '#64748B';
+  const tooltipBg = isDark ? '#1E293B' : '#FFFFFF';
+  const tooltipBorder = isDark ? '#334155' : '#E2E8F0';
+  const tooltipText = isDark ? '#F8FAFC' : '#0F172A';
+
   const canViewValuation = hasPermission('reports:valuation');
   const canExport = hasPermission('reports:export');
 
@@ -38,7 +50,7 @@ export default function ReportsPage() {
   const [valuationGroupBy, setValuationGroupBy] = useState<'category' | 'warehouse'>('category');
 
   // Query Valuation Report
-  const { data: valuationRes, isLoading: isValuationLoading, isFetching: isValuationFetching } = useQuery({
+  const { data: valuationRes, isLoading: isValuationLoading } = useQuery({
     queryKey: ['report-valuation', valuationGroupBy],
     queryFn: () => apiRequest<any[]>(`/reports/valuation?groupBy=${valuationGroupBy}`),
     enabled: canViewValuation && activeTab === 'valuation',
@@ -46,7 +58,7 @@ export default function ReportsPage() {
   const valuationData = valuationRes?.data || [];
 
   // Query Low Stock Report
-  const { data: lowStockRes, isLoading: isLowStockLoading, isFetching: isLowStockFetching } = useQuery({
+  const { data: lowStockRes, isLoading: isLowStockLoading } = useQuery({
     queryKey: ['report-low-stock'],
     queryFn: () => apiRequest<any[]>('/reports/low-stock'),
     enabled: activeTab === 'low-stock',
@@ -54,7 +66,7 @@ export default function ReportsPage() {
   const lowStockData = lowStockRes?.data || [];
 
   // Query Out of Stock Report
-  const { data: outOfStockRes, isLoading: isOutOfStockLoading, isFetching: isOutOfStockFetching } = useQuery({
+  const { data: outOfStockRes, isLoading: isOutOfStockLoading } = useQuery({
     queryKey: ['report-out-of-stock'],
     queryFn: () => apiRequest<any[]>('/reports/out-of-stock'),
     enabled: activeTab === 'out-of-stock',
@@ -79,10 +91,8 @@ export default function ReportsPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-text">Reports & Analytics</h1>
-          <p className="text-sm text-text-muted mt-1">
-            Financial valuation, replenishment triggers, and stock availability metrics.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-text">{t('reports.title')}</h1>
+          <p className="text-sm text-text-muted mt-1">{t('reports.subtitle')}</p>
         </div>
 
         <Can permission="reports:export">
@@ -92,12 +102,12 @@ export default function ReportsPage() {
             className="flex items-center gap-2"
           >
             <Download className="w-4 h-4" />
-            <span>Export CSV</span>
+            <span>{t('common.exportCsv')}</span>
           </Button>
         </Can>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs & Controls */}
       <div className="bg-surface rounded-[8px] border border-border p-4 shadow-subtle space-y-4">
         <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3">
           {canViewValuation && (
@@ -105,12 +115,12 @@ export default function ReportsPage() {
               onClick={() => setActiveTab('valuation')}
               className={`px-3 py-1.5 rounded-[6px] text-xs font-semibold flex items-center gap-1.5 transition-colors ${
                 activeTab === 'valuation'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-text-muted hover:text-text hover:bg-slate-100'
+                  ? 'bg-accent text-white shadow-sm'
+                  : 'text-text-muted hover:text-text hover:bg-surface-muted'
               }`}
             >
               <DollarSign className="w-3.5 h-3.5" />
-              <span>Inventory Valuation</span>
+              <span>{t('reports.valuationTab')}</span>
             </button>
           )}
 
@@ -118,48 +128,48 @@ export default function ReportsPage() {
             onClick={() => setActiveTab('low-stock')}
             className={`px-3 py-1.5 rounded-[6px] text-xs font-semibold flex items-center gap-1.5 transition-colors ${
               activeTab === 'low-stock'
-                ? 'bg-amber-600 text-white'
-                : 'text-amber-700 bg-amber-50 hover:bg-amber-100'
+                ? 'bg-amber-600 text-white shadow-sm'
+                : 'text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20'
             }`}
           >
             <AlertTriangle className="w-3.5 h-3.5" />
-            <span>Low Stock Alerts</span>
+            <span>{t('reports.lowStockTab')}</span>
           </button>
 
           <button
             onClick={() => setActiveTab('out-of-stock')}
             className={`px-3 py-1.5 rounded-[6px] text-xs font-semibold flex items-center gap-1.5 transition-colors ${
               activeTab === 'out-of-stock'
-                ? 'bg-rose-600 text-white'
-                : 'text-rose-700 bg-rose-50 hover:bg-rose-100'
+                ? 'bg-rose-600 text-white shadow-sm'
+                : 'text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20'
             }`}
           >
             <PackageX className="w-3.5 h-3.5" />
-            <span>Out of Stock</span>
+            <span>{t('reports.outOfStockTab')}</span>
           </button>
 
           {activeTab === 'valuation' && (
             <div className="ml-auto flex items-center gap-2">
-              <span className="text-xs text-text-muted">Group By:</span>
+              <span className="text-xs text-text-muted">{t('reports.groupBy')}:</span>
               <button
                 onClick={() => setValuationGroupBy('category')}
-                className={`px-2.5 py-1 text-xs rounded font-medium ${
+                className={`px-2.5 py-1 text-xs rounded font-medium transition-colors ${
                   valuationGroupBy === 'category'
-                    ? 'bg-accent text-white'
-                    : 'bg-slate-100 text-text-muted hover:text-text'
+                    ? 'bg-accent text-white shadow-xs'
+                    : 'bg-surface-muted text-text-muted hover:text-text'
                 }`}
               >
-                Category
+                {t('reports.category')}
               </button>
               <button
                 onClick={() => setValuationGroupBy('warehouse')}
-                className={`px-2.5 py-1 text-xs rounded font-medium ${
+                className={`px-2.5 py-1 text-xs rounded font-medium transition-colors ${
                   valuationGroupBy === 'warehouse'
-                    ? 'bg-accent text-white'
-                    : 'bg-slate-100 text-text-muted hover:text-text'
+                    ? 'bg-accent text-white shadow-xs'
+                    : 'bg-surface-muted text-text-muted hover:text-text'
                 }`}
               >
-                Warehouse
+                {t('reports.warehouse')}
               </button>
             </div>
           )}
@@ -173,12 +183,12 @@ export default function ReportsPage() {
             ) : valuationData.length === 0 ? (
               <EmptyState
                 icon={DollarSign}
-                title="No valuation data available"
-                description="Inventory valuation will calculate as soon as products with recorded costs are received."
+                title={t('reports.noValuationData')}
+                description={t('reports.noValuationDesc')}
               />
             ) : (
               <>
-                {/* Valuation Chart */}
+                {/* Valuation Bar Chart */}
                 <div className="h-64 w-full pt-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
@@ -188,42 +198,49 @@ export default function ReportsPage() {
                       }))}
                       margin={{ top: 10, right: 10, left: 10, bottom: 20 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                      <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
                       <XAxis
                         dataKey="name"
-                        tick={{ fill: '#64748B', fontSize: 11 }}
+                        tick={{ fill: chartTextColor, fontSize: 11 }}
                         interval={0}
                         angle={-15}
                         textAnchor="end"
                       />
                       <YAxis
-                        tick={{ fill: '#64748B', fontSize: 11 }}
+                        tick={{ fill: chartTextColor, fontSize: 11 }}
                         tickFormatter={(v) => `$${v.toLocaleString()}`}
                       />
                       <Tooltip
-                        formatter={(val: any) => [`$${Number(val).toLocaleString()}`, 'Valuation']}
+                        contentStyle={{
+                          backgroundColor: tooltipBg,
+                          borderColor: tooltipBorder,
+                          color: tooltipText,
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                        }}
+                        formatter={(val: any) => [`$${Number(val).toLocaleString()}`, t('reports.totalValuation')]}
                       />
-                      <Bar dataKey="valuation" fill="#0F766E" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="valuation" fill={isDark ? '#2DD4BF' : '#0F766E'} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
 
-                {/* Table */}
+                {/* Valuation Table */}
                 <div className="overflow-x-auto border border-border rounded-[6px]">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="border-b border-border bg-slate-50 text-text-muted uppercase font-semibold text-[11px]">
+                      <tr className="border-b border-border bg-surface-muted text-text-muted uppercase font-semibold text-[11px]">
                         <th className="px-4 py-3">
-                          {valuationGroupBy === 'category' ? 'Category' : 'Warehouse'}
+                          {valuationGroupBy === 'category' ? t('reports.category') : t('reports.warehouse')}
                         </th>
-                        <th className="px-4 py-3 text-right">Unique Items</th>
-                        <th className="px-4 py-3 text-right">Total Units</th>
-                        <th className="px-4 py-3 text-right">Total Valuation</th>
+                        <th className="px-4 py-3 text-right">{t('reports.uniqueItems')}</th>
+                        <th className="px-4 py-3 text-right">{t('reports.totalUnits')}</th>
+                        <th className="px-4 py-3 text-right">{t('reports.totalValuation')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
                       {valuationData.map((row, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50/50">
+                        <tr key={idx} className="hover:bg-surface-muted/50 transition-colors">
                           <td className="px-4 py-3 font-semibold text-text">
                             {valuationGroupBy === 'category' ? row.categoryName : row.warehouseName}
                           </td>
@@ -240,12 +257,12 @@ export default function ReportsPage() {
                       ))}
                     </tbody>
                     <tfoot>
-                      <tr className="bg-slate-100 font-bold border-t-2 border-border">
-                        <td className="px-4 py-3 text-text">Total Valuation</td>
-                        <td className="px-4 py-3 text-right font-mono">
+                      <tr className="bg-surface-muted font-bold border-t-2 border-border">
+                        <td className="px-4 py-3 text-text">{t('reports.totalValuation')}</td>
+                        <td className="px-4 py-3 text-right font-mono text-text">
                           {valuationData.reduce((s, r) => s + Number(r.itemCount), 0)}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono">
+                        <td className="px-4 py-3 text-right font-mono text-text">
                           {valuationData
                             .reduce((s, r) => s + Number(r.totalQuantity), 0)
                             .toLocaleString()}
@@ -270,20 +287,20 @@ export default function ReportsPage() {
             ) : lowStockData.length === 0 ? (
               <EmptyState
                 icon={AlertTriangle}
-                title="No low stock alerts"
-                description="All inventory items are currently above their established reorder thresholds."
+                title={t('reports.noLowStockData')}
+                description={t('reports.noLowStockDesc')}
               />
             ) : (
               <div className="overflow-x-auto border border-border rounded-[6px]">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-border bg-slate-50 text-text-muted uppercase font-semibold text-[11px]">
-                      <th className="px-4 py-3">SKU</th>
-                      <th className="px-4 py-3">Product Name</th>
-                      <th className="px-4 py-3">Category</th>
-                      <th className="px-4 py-3 text-right">Current Stock</th>
-                      <th className="px-4 py-3 text-right">Reorder Threshold</th>
-                      <th className="px-4 py-3 text-right">Suggested Replenishment</th>
+                    <tr className="border-b border-border bg-surface-muted text-text-muted uppercase font-semibold text-[11px]">
+                      <th className="px-4 py-3">{t('products.sku')}</th>
+                      <th className="px-4 py-3">{t('products.productName')}</th>
+                      <th className="px-4 py-3">{t('products.category')}</th>
+                      <th className="px-4 py-3 text-right">{t('reports.currentStock')}</th>
+                      <th className="px-4 py-3 text-right">{t('reports.reorderThreshold')}</th>
+                      <th className="px-4 py-3 text-right">{t('reports.suggestedReplenishment')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -293,13 +310,13 @@ export default function ReportsPage() {
                       const deficit = Math.max(0, reorder - onHand);
 
                       return (
-                        <tr key={idx} className="hover:bg-amber-50/40">
+                        <tr key={idx} className="hover:bg-amber-500/10 transition-colors">
                           <td className="px-4 py-3 font-mono font-semibold text-text">
                             {item.sku}
                           </td>
                           <td className="px-4 py-3 font-medium text-text">{item.name}</td>
                           <td className="px-4 py-3 text-text-muted">{item.category_name}</td>
-                          <td className="px-4 py-3 text-right font-mono font-bold text-amber-700">
+                          <td className="px-4 py-3 text-right font-mono font-bold text-amber-600 dark:text-amber-400">
                             {onHand} {item.unit}
                           </td>
                           <td className="px-4 py-3 text-right font-mono text-text-muted">
@@ -326,30 +343,30 @@ export default function ReportsPage() {
             ) : outOfStockData.length === 0 ? (
               <EmptyState
                 icon={Package}
-                title="No depleted items"
-                description="Zero products are currently completely out of stock."
+                title={t('reports.noOutOfStockData')}
+                description={t('reports.noOutOfStockDesc')}
               />
             ) : (
               <div className="overflow-x-auto border border-border rounded-[6px]">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-border bg-slate-50 text-text-muted uppercase font-semibold text-[11px]">
-                      <th className="px-4 py-3">SKU</th>
-                      <th className="px-4 py-3">Product Name</th>
-                      <th className="px-4 py-3">Category</th>
-                      <th className="px-4 py-3 text-right">Stock on Hand</th>
-                      <th className="px-4 py-3 text-right">Reorder Level</th>
+                    <tr className="border-b border-border bg-surface-muted text-text-muted uppercase font-semibold text-[11px]">
+                      <th className="px-4 py-3">{t('products.sku')}</th>
+                      <th className="px-4 py-3">{t('products.productName')}</th>
+                      <th className="px-4 py-3">{t('products.category')}</th>
+                      <th className="px-4 py-3 text-right">{t('products.stockOnHand')}</th>
+                      <th className="px-4 py-3 text-right">{t('products.reorderLevel')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {outOfStockData.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-rose-50/40">
+                      <tr key={idx} className="hover:bg-rose-500/10 transition-colors">
                         <td className="px-4 py-3 font-mono font-semibold text-text">
                           {item.sku}
                         </td>
                         <td className="px-4 py-3 font-medium text-text">{item.name}</td>
                         <td className="px-4 py-3 text-text-muted">{item.category_name}</td>
-                        <td className="px-4 py-3 text-right font-mono font-bold text-rose-700">
+                        <td className="px-4 py-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">
                           0 {item.unit}
                         </td>
                         <td className="px-4 py-3 text-right font-mono text-text-muted">
@@ -367,4 +384,3 @@ export default function ReportsPage() {
     </div>
   );
 }
-

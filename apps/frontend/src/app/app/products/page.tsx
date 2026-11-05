@@ -13,7 +13,9 @@ import { StockBadge } from '../../../components/ui/StockBadge';
 import { Badge } from '../../../components/ui/Badge';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
 import { EmptyState } from '../../../components/ui/EmptyState';
-import { Modal } from '../../../components/ui/Modal';
+import { ConfirmModal } from '../../../components/ui/ConfirmModal';
+import { useToast } from '../../../lib/toast-context';
+import { useTranslation } from '../../../i18n/i18n-context';
 import {
   Search,
   Plus,
@@ -25,12 +27,14 @@ import {
   ArrowUpDown,
   Filter,
   AlertTriangle,
-  Lock,
+  RotateCcw,
 } from 'lucide-react';
 
 export default function ProductsPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const toast = useToast();
+  const { t } = useTranslation();
   const { hasPermission } = useAuth();
   const canViewCost = hasPermission('products:view_cost');
 
@@ -77,9 +81,13 @@ export default function ProductsPage() {
       const endpoint = isArchived ? `/products/${id}/restore` : `/products/${id}/archive`;
       return apiRequest(endpoint, { method: 'POST' });
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['products-list'] });
+      toast.success(variables.isArchived ? t('toasts.productRestored') : t('toasts.productArchived'));
       setArchiveTarget(null);
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Operation failed.');
     },
   });
 
@@ -94,16 +102,16 @@ export default function ProductsPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-text">Products</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-text">{t('products.title')}</h1>
           <p className="text-sm text-text-muted mt-1">
-            Manage your product catalog, pricing, SKU codes, and reorder levels.
+            {t('products.subtitle')}
           </p>
         </div>
         <Can permission="products:create">
           <Link href="/app/products/new">
             <Button className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
-              <span>Add Product</span>
+              <span>{t('products.addProduct')}</span>
             </Button>
           </Link>
         </Can>
@@ -117,41 +125,41 @@ export default function ProductsPage() {
             onClick={() => { setSelectedStockState('all'); setPage(1); }}
             className={`px-3 py-1.5 rounded-[6px] text-xs font-semibold transition-colors ${
               selectedStockState === 'all'
-                ? 'bg-slate-900 text-white'
-                : 'text-text-muted hover:text-text hover:bg-slate-100'
+                ? 'bg-accent text-white'
+                : 'text-text-muted hover:text-text hover:bg-surface-muted'
             }`}
           >
-            All Stock
+            {t('products.allStock')}
           </button>
           <button
             onClick={() => { setSelectedStockState('in'); setPage(1); }}
             className={`px-3 py-1.5 rounded-[6px] text-xs font-semibold transition-colors ${
               selectedStockState === 'in'
                 ? 'bg-emerald-600 text-white'
-                : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
+                : 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-950/60'
             }`}
           >
-            In Stock
+            {t('products.inStock')}
           </button>
           <button
             onClick={() => { setSelectedStockState('low'); setPage(1); }}
             className={`px-3 py-1.5 rounded-[6px] text-xs font-semibold transition-colors ${
               selectedStockState === 'low'
                 ? 'bg-amber-600 text-white'
-                : 'text-amber-700 bg-amber-50 hover:bg-amber-100'
+                : 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-950/60'
             }`}
           >
-            Low Stock
+            {t('products.lowStock')}
           </button>
           <button
             onClick={() => { setSelectedStockState('out'); setPage(1); }}
             className={`px-3 py-1.5 rounded-[6px] text-xs font-semibold transition-colors ${
               selectedStockState === 'out'
                 ? 'bg-rose-600 text-white'
-                : 'text-rose-700 bg-rose-50 hover:bg-rose-100'
+                : 'text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-950/60'
             }`}
           >
-            Out of Stock
+            {t('products.outOfStock')}
           </button>
 
           <div className="ml-auto flex items-center gap-2">
@@ -162,7 +170,7 @@ export default function ProductsPage() {
                 onChange={(e) => { setIncludeArchived(e.target.checked); setPage(1); }}
                 className="rounded border-border text-accent focus:ring-accent"
               />
-              Show Archived Only
+              <span>{t('products.showArchived')}</span>
             </label>
           </div>
         </div>
@@ -173,10 +181,10 @@ export default function ProductsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
             <input
               type="text"
-              placeholder="Search by SKU, Name, Brand..."
+              placeholder={`${t('common.search')} SKU, Name, Brand...`}
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-[6px] border border-border bg-white placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-[6px] border border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
 
@@ -184,9 +192,9 @@ export default function ProductsPage() {
             <select
               value={selectedCategory}
               onChange={(e) => { setSelectedCategory(e.target.value); setPage(1); }}
-              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
-              <option value="">All Categories</option>
+              <option value="">{t('common.all')} Categories</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -199,7 +207,7 @@ export default function ProductsPage() {
             <select
               value={sortBy}
               onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
-              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
               <option value="createdAt:desc">Newest First</option>
               <option value="name:asc">Name (A-Z)</option>
@@ -212,7 +220,9 @@ export default function ProductsPage() {
 
           <div className="flex items-center justify-end text-xs text-text-muted">
             {isFetching && <RefreshCw className="w-3.5 h-3.5 animate-spin mr-1.5 text-accent" />}
-            Showing {products.length} of {meta.total} products
+            <span>
+              Showing {products.length} of {meta.total} products
+            </span>
           </div>
         </div>
       </div>
@@ -220,11 +230,11 @@ export default function ProductsPage() {
       {/* Products Table */}
       <div className="bg-surface rounded-[8px] border border-border shadow-subtle overflow-hidden">
         {isLoading ? (
-          <TableSkeleton rows={8} columns={7} />
+          <TableSkeleton rows={8} columns={canViewCost ? 9 : 8} />
         ) : products.length === 0 ? (
           <EmptyState
             icon={Package}
-            title="No products found"
+            title={t('common.noData')}
             description={
               searchTerm || selectedCategory || selectedStockState !== 'all'
                 ? "Try adjusting your search filters or clear them to see all products."
@@ -233,7 +243,7 @@ export default function ProductsPage() {
             action={
               <Can permission="products:create">
                 <Link href="/app/products/new">
-                  <Button size="sm">Create First Product</Button>
+                  <Button size="sm">{t('products.addProduct')}</Button>
                 </Link>
               </Can>
             }
@@ -242,31 +252,29 @@ export default function ProductsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-border bg-slate-50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="px-4 py-3">Product</th>
-                  <th className="px-4 py-3">SKU / Barcode</th>
-                  <th className="px-4 py-3">Category</th>
-                  <th className="px-4 py-3 text-right">Stock Level</th>
-                  <th className="px-4 py-3 text-right">Reorder</th>
-                  {canViewCost && <th className="px-4 py-3 text-right">Cost Price</th>}
-                  <th className="px-4 py-3 text-right">Selling Price</th>
-                  <th className="px-4 py-3 text-center">Status</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+                <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
+                  <th className="px-4 py-3">{t('products.productName')}</th>
+                  <th className="px-4 py-3">{t('products.sku')} / Barcode</th>
+                  <th className="px-4 py-3">{t('products.category')}</th>
+                  <th className="px-4 py-3 text-right">{t('products.stockLevel')}</th>
+                  <th className="px-4 py-3 text-right">{t('products.reorderLevel')}</th>
+                  {canViewCost && <th className="px-4 py-3 text-right">{t('products.costPrice')}</th>}
+                  <th className="px-4 py-3 text-right">{t('products.sellingPrice')}</th>
+                  <th className="px-4 py-3 text-center">{t('common.status')}</th>
+                  <th className="px-4 py-3 text-right">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {products.map((p) => {
                   const qty = Number(p.totalQuantityOnHand || 0);
                   const reorder = Number(p.reorderLevel || 0);
-                  const isLow = qty > 0 && qty <= reorder;
-                  const isOut = qty === 0;
 
                   return (
-                    <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
+                    <tr key={p.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
                       {/* Product Name & Brand */}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-[6px] border border-border bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
+                          <div className="w-9 h-9 rounded-[6px] border border-border bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden">
                             {p.imageUrl ? (
                               <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
                             ) : (
@@ -297,7 +305,7 @@ export default function ProductsPage() {
 
                       {/* Category */}
                       <td className="px-4 py-3">
-                        <span className="px-2 py-0.5 rounded-[4px] bg-slate-100 text-slate-700 text-[11px] font-medium">
+                        <span className="px-2 py-0.5 rounded-[4px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-medium">
                           {p.categoryName || 'Uncategorized'}
                         </span>
                       </td>
@@ -346,7 +354,7 @@ export default function ProductsPage() {
                           <Link href={`/app/products/${p.id}`}>
                             <button
                               title="View Details"
-                              className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 transition-colors"
+                              className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                             >
                               <Eye className="w-3.5 h-3.5" />
                             </button>
@@ -356,7 +364,7 @@ export default function ProductsPage() {
                             <Link href={`/app/products/${p.id}/edit`}>
                               <button
                                 title="Edit Product"
-                                className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 transition-colors"
+                                className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                               >
                                 <Edit2 className="w-3.5 h-3.5" />
                               </button>
@@ -367,9 +375,13 @@ export default function ProductsPage() {
                             <button
                               onClick={() => setArchiveTarget(p)}
                               title={p.status === 'ARCHIVED' ? 'Restore Product' : 'Archive Product'}
-                              className="p-1.5 text-text-muted hover:text-danger rounded hover:bg-slate-100 transition-colors"
+                              className="p-1.5 text-text-muted hover:text-danger rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                             >
-                              <Archive className="w-3.5 h-3.5" />
+                              {p.status === 'ARCHIVED' ? (
+                                <RotateCcw className="w-3.5 h-3.5 text-emerald-500" />
+                              ) : (
+                                <Archive className="w-3.5 h-3.5" />
+                              )}
                             </button>
                           </Can>
                         </div>
@@ -384,7 +396,7 @@ export default function ProductsPage() {
 
         {/* Pagination Footer */}
         {meta.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-slate-50 text-xs text-text-muted">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-slate-50 dark:bg-slate-800/50 text-xs text-text-muted">
             <div>
               Page <span className="font-semibold text-text">{meta.page}</span> of{' '}
               <span className="font-semibold text-text">{meta.totalPages}</span>
@@ -396,7 +408,7 @@ export default function ProductsPage() {
                 disabled={meta.page <= 1}
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
               >
-                Previous
+                {t('common.previous')}
               </Button>
               <Button
                 variant="outline"
@@ -404,7 +416,7 @@ export default function ProductsPage() {
                 disabled={meta.page >= meta.totalPages}
                 onClick={() => setPage((prev) => Math.min(meta.totalPages, prev + 1))}
               >
-                Next
+                {t('common.next')}
               </Button>
             </div>
           </div>
@@ -412,39 +424,16 @@ export default function ProductsPage() {
       </div>
 
       {/* Archive / Restore Confirmation Modal */}
-      <Modal
+      <ConfirmModal
         isOpen={!!archiveTarget}
         onClose={() => setArchiveTarget(null)}
-        title={archiveTarget?.status === 'ARCHIVED' ? 'Restore Product' : 'Archive Product'}
-        maxWidth="md"
-        footer={
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setArchiveTarget(null)}>
-              Cancel
-            </Button>
-            <Button
-              variant={archiveTarget?.status === 'ARCHIVED' ? 'primary' : 'danger'}
-              onClick={handleArchiveConfirm}
-              isLoading={toggleArchiveMutation.isPending}
-            >
-              {archiveTarget?.status === 'ARCHIVED' ? 'Restore Product' : 'Confirm Archive'}
-            </Button>
-          </div>
-        }
-      >
-        <div className="space-y-3">
-          <p className="text-sm text-text">
-            Are you sure you want to {archiveTarget?.status === 'ARCHIVED' ? 'restore' : 'archive'}{' '}
-            <strong className="font-semibold">{archiveTarget?.name}</strong> ({archiveTarget?.sku})?
-          </p>
-          {archiveTarget?.status !== 'ARCHIVED' && (
-            <p className="text-xs text-text-muted bg-amber-50 border border-amber-200 text-amber-800 p-2.5 rounded-[6px]">
-              Archived products remain in existing transaction history and reports but cannot be selected for new stock movements or purchase orders.
-            </p>
-          )}
-        </div>
-      </Modal>
+        onConfirm={handleArchiveConfirm}
+        title={archiveTarget?.status === 'ARCHIVED' ? t('products.confirmRestore') : t('products.confirmArchive')}
+        message={`Are you sure you want to ${archiveTarget?.status === 'ARCHIVED' ? 'restore' : 'archive'} "${archiveTarget?.name}" (${archiveTarget?.sku})?`}
+        confirmLabel={archiveTarget?.status === 'ARCHIVED' ? t('products.confirmRestore') : t('products.confirmArchive')}
+        variant={archiveTarget?.status === 'ARCHIVED' ? 'primary' : 'danger'}
+        isLoading={toggleArchiveMutation.isPending}
+      />
     </div>
   );
 }
-

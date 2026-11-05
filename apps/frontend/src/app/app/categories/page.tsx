@@ -12,6 +12,8 @@ import { FormField } from '../../../components/ui/FormField';
 import { Input } from '../../../components/ui/Input';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
 import { EmptyState } from '../../../components/ui/EmptyState';
+import { useToast } from '../../../lib/toast-context';
+import { useTranslation } from '../../../i18n/i18n-context';
 import {
   FolderTree,
   Plus,
@@ -20,14 +22,16 @@ import {
   RefreshCw,
   Search,
   Folder,
-  ChevronRight,
   FolderOpen,
   AlertCircle,
-  Package,
+  RotateCcw,
 } from 'lucide-react';
 
 export default function CategoriesPage() {
   const queryClient = useQueryClient();
+  const toast = useToast();
+  const { t } = useTranslation();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategoryDTO | null>(null);
@@ -114,9 +118,11 @@ export default function CategoriesPage() {
       queryClient.invalidateQueries({ queryKey: ['categories-tree'] });
       queryClient.invalidateQueries({ queryKey: ['categories-flat'] });
       setShowModal(false);
+      toast.success(t('toasts.categorySaved'));
     },
     onError: (err: any) => {
       setFormError(err.message || 'Failed to save category.');
+      toast.error(err.message || 'Failed to save category.');
     },
   });
 
@@ -154,10 +160,14 @@ export default function CategoriesPage() {
         body: targetCatId ? JSON.stringify({ moveProductsTo: targetCatId }) : undefined,
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['categories-tree'] });
       queryClient.invalidateQueries({ queryKey: ['categories-flat'] });
+      toast.success(variables.isArchived ? 'Category restored successfully.' : t('toasts.categoryArchived'));
       setArchiveTarget(null);
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to archive category.');
     },
   });
 
@@ -177,7 +187,7 @@ export default function CategoriesPage() {
 
     return (
       <React.Fragment key={cat.id}>
-        <tr className="hover:bg-slate-50/70 transition-colors">
+        <tr className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
           <td className="px-4 py-3">
             <div
               className="flex items-center gap-2"
@@ -198,22 +208,21 @@ export default function CategoriesPage() {
             </div>
           </td>
           <td className="px-4 py-3 font-mono text-[11px] text-text-muted">
-            {cat.slug}
+            /{cat.slug}
           </td>
-          <td className="px-4 py-3 text-right">
-            <span className="inline-flex items-center gap-1 font-mono font-semibold text-text">
-              <Package className="w-3.5 h-3.5 text-text-muted" />
+          <td className="px-4 py-3 text-center font-mono">
+            <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-semibold">
               {cat.productCount ?? 0}
             </span>
           </td>
-          <td className="px-4 py-3 text-center font-mono text-xs text-text-muted">
+          <td className="px-4 py-3 text-center font-mono text-text-muted text-xs">
             {cat.sortOrder ?? 0}
           </td>
           <td className="px-4 py-3 text-center">
-            {cat.status === 'ACTIVE' ? (
-              <Badge variant="success">Active</Badge>
-            ) : (
+            {cat.status === 'ARCHIVED' ? (
               <Badge variant="neutral">Archived</Badge>
+            ) : (
+              <Badge variant="success">Active</Badge>
             )}
           </td>
           <td className="px-4 py-3 text-right">
@@ -221,30 +230,27 @@ export default function CategoriesPage() {
               <Can permission="categories:manage">
                 <button
                   onClick={() => openEditModal(cat)}
-                  title="Edit Category"
-                  className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 transition-colors"
+                  title={t('categories.editCategory')}
+                  className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                 </button>
-              </Can>
-
-              <Can permission="categories:manage">
                 <button
-                  onClick={() => {
-                    setArchiveTarget(cat);
-                    setMoveProductsTo('');
-                  }}
-                  title={cat.status === 'ARCHIVED' ? 'Restore Category' : 'Archive Category'}
-                  className="p-1.5 text-text-muted hover:text-danger rounded hover:bg-slate-100 transition-colors"
+                  onClick={() => setArchiveTarget(cat)}
+                  title={cat.status === 'ARCHIVED' ? t('categories.confirmRestore') : t('categories.confirmArchive')}
+                  className="p-1.5 text-text-muted hover:text-danger rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
-                  <Archive className="w-3.5 h-3.5" />
+                  {cat.status === 'ARCHIVED' ? (
+                    <RotateCcw className="w-3.5 h-3.5 text-emerald-500" />
+                  ) : (
+                    <Archive className="w-3.5 h-3.5" />
+                  )}
                 </button>
               </Can>
             </div>
           </td>
         </tr>
-        {hasChildren &&
-          cat.children!.map((child) => renderCategoryRow(child, depth + 1))}
+        {hasChildren && cat.children!.map((child) => renderCategoryRow(child, depth + 1))}
       </React.Fragment>
     );
   };
@@ -254,50 +260,51 @@ export default function CategoriesPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-text">Categories</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-text">{t('categories.title')}</h1>
           <p className="text-sm text-text-muted mt-1">
-            Organize products into hierarchical departments and classification groups.
+            {t('categories.subtitle')}
           </p>
         </div>
         <Can permission="categories:manage">
           <Button onClick={openCreateModal} className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
-            <span>Add Category</span>
+            <span>{t('categories.addCategory')}</span>
           </Button>
         </Can>
       </div>
 
-      {/* Search Bar */}
-      <div className="bg-surface rounded-[8px] border border-border p-4 shadow-subtle flex items-center justify-between gap-4">
-        <div className="relative w-full max-w-md">
+      {/* Search and Filters */}
+      <div className="bg-surface rounded-[8px] border border-border p-4 shadow-subtle flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative max-w-sm w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
           <input
             type="text"
-            placeholder="Search categories..."
+            placeholder={`${t('common.search')} categories...`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs rounded-[6px] border border-border bg-white placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+            className="w-full pl-9 pr-3 py-1.5 text-xs rounded-[6px] border border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
-        <div className="flex items-center text-xs text-text-muted">
-          {isFetching && <RefreshCw className="w-3.5 h-3.5 animate-spin mr-1.5 text-accent" />}
-          <span>{flatCategories.length} categories total</span>
+
+        <div className="text-xs text-text-muted flex items-center gap-1.5">
+          {isFetching && <RefreshCw className="w-3.5 h-3.5 animate-spin text-accent" />}
+          <span>Hierarchical tree structure</span>
         </div>
       </div>
 
-      {/* Category Tree Table */}
+      {/* Categories Tree Table */}
       <div className="bg-surface rounded-[8px] border border-border shadow-subtle overflow-hidden">
         {isLoading ? (
           <TableSkeleton rows={6} columns={6} />
         ) : treeCategories.length === 0 ? (
           <EmptyState
             icon={FolderTree}
-            title="No categories found"
-            description="Create categories to help organize your product catalog and public store."
+            title={t('common.noData')}
+            description="No categories found matching your query."
             action={
               <Can permission="categories:manage">
                 <Button size="sm" onClick={openCreateModal}>
-                  Create First Category
+                  {t('categories.addCategory')}
                 </Button>
               </Can>
             }
@@ -306,13 +313,13 @@ export default function CategoriesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-border bg-slate-50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="px-4 py-3">Category Name</th>
-                  <th className="px-4 py-3">Slug</th>
-                  <th className="px-4 py-3 text-right">Products</th>
-                  <th className="px-4 py-3 text-center">Sort Order</th>
-                  <th className="px-4 py-3 text-center">Status</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+                <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
+                  <th className="px-4 py-3">{t('categories.categoryName')}</th>
+                  <th className="px-4 py-3">{t('categories.slug')}</th>
+                  <th className="px-4 py-3 text-center">{t('categories.productsCount')}</th>
+                  <th className="px-4 py-3 text-center">{t('categories.sortOrder')}</th>
+                  <th className="px-4 py-3 text-center">{t('common.status')}</th>
+                  <th className="px-4 py-3 text-right">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -323,35 +330,36 @@ export default function CategoriesPage() {
         )}
       </div>
 
-      {/* Create / Edit Category Modal */}
+      {/* Add / Edit Category Modal */}
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title={editingCategory ? 'Edit Category' : 'New Category'}
+        title={editingCategory ? t('categories.editCategory') : t('categories.addCategory')}
         maxWidth="md"
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowModal(false)}>
-              Cancel
+              {t('actions.cancel')}
             </Button>
             <Button
               onClick={handleFormSubmit}
               isLoading={saveCategoryMutation.isPending}
+              loadingText="Saving..."
             >
-              {editingCategory ? 'Save Changes' : 'Create Category'}
+              {editingCategory ? 'Save Changes' : t('categories.addCategory')}
             </Button>
           </div>
         }
       >
         <form onSubmit={handleFormSubmit} className="space-y-4">
           {formError && (
-            <div className="p-3 rounded-[6px] bg-red-50 border border-red-200 text-danger text-xs flex items-center gap-2">
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-xs rounded-[6px] flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{formError}</span>
             </div>
           )}
 
-          <FormField label="Category Name" required>
+          <FormField label={t('categories.categoryName')} required>
             <Input
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
@@ -360,7 +368,7 @@ export default function CategoriesPage() {
             />
           </FormField>
 
-          <FormField label="URL Slug" required hint="Lowercase letters, numbers, and hyphens">
+          <FormField label={t('categories.slug')} required hint="Lowercase letters, numbers, and hyphens">
             <Input
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
@@ -370,13 +378,13 @@ export default function CategoriesPage() {
             />
           </FormField>
 
-          <FormField label="Parent Category" hint="Leave blank to create a top-level department">
+          <FormField label={t('categories.parentCategory')} hint="Leave blank to create a top-level department">
             <select
               value={parentId}
               onChange={(e) => setParentId(e.target.value)}
-              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full h-9 px-3 text-sm rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
-              <option value="">None (Top-Level Category)</option>
+              <option value="">{t('categories.noneTopLevel')}</option>
               {flatCategories
                 .filter((c) => !editingCategory || c.id !== editingCategory.id)
                 .map((c) => (
@@ -387,17 +395,17 @@ export default function CategoriesPage() {
             </select>
           </FormField>
 
-          <FormField label="Description">
+          <FormField label={t('categories.description')}>
             <textarea
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Short description for navigation and catalog..."
-              className="w-full rounded-[6px] border border-border bg-white px-3 py-2 text-sm text-text placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full rounded-[6px] border border-border bg-surface text-text px-3 py-2 text-sm placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </FormField>
 
-          <FormField label="Sort Order" hint="Lower numbers appear first">
+          <FormField label={t('categories.sortOrder')} hint="Lower numbers appear first">
             <Input
               type="number"
               value={sortOrder}
@@ -412,19 +420,20 @@ export default function CategoriesPage() {
       <Modal
         isOpen={!!archiveTarget}
         onClose={() => setArchiveTarget(null)}
-        title={archiveTarget?.status === 'ARCHIVED' ? 'Restore Category' : 'Archive Category'}
+        title={archiveTarget?.status === 'ARCHIVED' ? t('categories.confirmRestore') : t('categories.confirmArchive')}
         maxWidth="md"
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setArchiveTarget(null)}>
-              Cancel
+              {t('actions.cancel')}
             </Button>
             <Button
               variant={archiveTarget?.status === 'ARCHIVED' ? 'primary' : 'danger'}
               onClick={handleArchiveConfirm}
               isLoading={archiveMutation.isPending}
+              loadingText="Processing..."
             >
-              {archiveTarget?.status === 'ARCHIVED' ? 'Restore Category' : 'Confirm Archive'}
+              {archiveTarget?.status === 'ARCHIVED' ? t('categories.confirmRestore') : t('categories.confirmArchive')}
             </Button>
           </div>
         }
@@ -436,7 +445,7 @@ export default function CategoriesPage() {
           </p>
 
           {archiveTarget?.status !== 'ARCHIVED' && Number(archiveTarget?.productCount || 0) > 0 && (
-            <div className="space-y-2 bg-amber-50 border border-amber-200 text-amber-900 p-3 rounded-[6px] text-xs">
+            <div className="space-y-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-900 dark:text-amber-200 p-3 rounded-[6px] text-xs">
               <p className="font-semibold">
                 This category currently contains {archiveTarget?.productCount} product(s).
               </p>
@@ -444,7 +453,7 @@ export default function CategoriesPage() {
               <select
                 value={moveProductsTo}
                 onChange={(e) => setMoveProductsTo(e.target.value)}
-                className="w-full h-8 px-2 text-xs rounded border border-amber-300 bg-white text-text mt-1"
+                className="w-full h-8 px-2 text-xs rounded border border-amber-300 dark:border-amber-800 bg-surface text-text mt-1"
               >
                 <option value="">Do not move (keep existing)</option>
                 {flatCategories

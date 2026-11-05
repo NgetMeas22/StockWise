@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '../../../../lib/api-client';
+import { useTranslation } from '../../../../i18n/i18n-context';
 import { PublicProductDTO } from '@stockwise/shared';
 import { ChevronRight, Box, CheckCircle2, Shield, ArrowLeft } from 'lucide-react';
 import { Button } from '../../../../components/ui/Button';
@@ -12,6 +13,7 @@ import { Button } from '../../../../components/ui/Button';
 export default function PublicProductDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
+  const { t } = useTranslation();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['public-product', slug],
@@ -24,13 +26,13 @@ export default function PublicProductDetailPage() {
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-pulse">
-        <div className="h-4 w-48 bg-slate-200 rounded mb-6"></div>
+        <div className="h-4 w-48 bg-surface-muted rounded mb-6"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          <div className="aspect-[4/3] bg-slate-200 rounded-[8px]"></div>
+          <div className="aspect-[4/3] bg-surface-muted rounded-[8px]"></div>
           <div className="space-y-4">
-            <div className="h-8 w-3/4 bg-slate-200 rounded"></div>
-            <div className="h-4 w-1/4 bg-slate-200 rounded"></div>
-            <div className="h-24 bg-slate-200 rounded"></div>
+            <div className="h-8 w-3/4 bg-surface-muted rounded"></div>
+            <div className="h-4 w-1/4 bg-surface-muted rounded"></div>
+            <div className="h-24 bg-surface-muted rounded"></div>
           </div>
         </div>
       </div>
@@ -40,15 +42,15 @@ export default function PublicProductDetailPage() {
   if (error || !product) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <Box className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-text">Product Not Found</h2>
+        <Box className="w-16 h-16 text-text-muted mx-auto mb-4" />
+        <h2 className="text-xl font-bold text-text">{t('catalog.productNotFound')}</h2>
         <p className="text-xs text-text-muted mt-2 mb-6">
-          The requested product may have been discontinued or is not currently available in the public catalog.
+          {t('catalog.productNotFoundDesc')}
         </p>
         <Link href="/catalog">
           <Button variant="outline" size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Catalog
+            {t('catalog.backToCatalog')}
           </Button>
         </Link>
       </div>
@@ -65,7 +67,7 @@ export default function PublicProductDetailPage() {
         {product.category?.breadcrumb?.map((b) => (
           <React.Fragment key={b.slug}>
             <ChevronRight className="w-3.5 h-3.5" />
-            <Link href={`/catalog/${b.slug}`} className="hover:text-accent transition-colors">
+            <Link href={`/catalog?category=${b.slug}`} className="hover:text-accent transition-colors">
               {b.name}
             </Link>
           </React.Fragment>
@@ -75,7 +77,7 @@ export default function PublicProductDetailPage() {
       </nav>
 
       {/* Main Product Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-surface p-8 rounded-[8px] border border-border">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-surface p-8 rounded-[8px] border border-border shadow-sm">
         {/* Media / Image Display */}
         <div className="aspect-[4/3] bg-surface-muted rounded-[8px] border border-border flex items-center justify-center p-8">
           {product.imageUrl ? (
@@ -85,7 +87,7 @@ export default function PublicProductDetailPage() {
               className="max-h-full max-w-full object-contain"
             />
           ) : (
-            <div className="flex flex-col items-center justify-center text-slate-400">
+            <div className="flex flex-col items-center justify-center text-text-muted">
               <Box className="w-20 h-20 mb-2 stroke-[1.5]" />
               <span className="text-xs font-medium">Product Image Placeholder</span>
             </div>
@@ -106,39 +108,39 @@ export default function PublicProductDetailPage() {
 
             {product.sku && (
               <div className="mt-2 text-xs text-text-muted">
-                Item Code: <span className="font-mono text-slate-700 font-semibold">{product.sku}</span>
+                {t('catalog.itemCode')}: <span className="font-mono text-text font-semibold">{product.sku}</span>
               </div>
             )}
 
             {/* Price & Availability Banner */}
             <div className="mt-6 p-4 rounded-[6px] bg-surface-muted border border-border flex items-center justify-between">
               <div>
-                <span className="text-xs text-text-muted block">Catalog Reference Price</span>
+                <span className="text-xs text-text-muted block">{t('catalog.referencePrice')}</span>
                 {product.price ? (
                   <span className="text-2xl font-bold font-mono text-text">
                     ${product.price} {product.currency || 'USD'}
                   </span>
                 ) : (
-                  <span className="text-sm font-medium text-text-muted">Inquire for pricing</span>
+                  <span className="text-sm font-medium text-text-muted">{t('catalog.inquirePricing')}</span>
                 )}
               </div>
 
               {product.availability && (
                 <span
-                  className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                  className={`text-xs font-semibold px-3 py-1 rounded-full border ${
                     product.availability === 'IN_STOCK'
-                      ? 'bg-emerald-50 text-ok border border-emerald-200'
-                      : 'bg-red-50 text-danger border border-red-200'
+                      ? 'bg-emerald-500/10 text-ok border-emerald-500/30'
+                      : 'bg-rose-500/10 text-danger border-rose-500/30'
                   }`}
                 >
-                  {product.availability === 'IN_STOCK' ? 'In Stock' : 'Out of Stock'}
+                  {product.availability === 'IN_STOCK' ? t('catalog.available') : t('catalog.outOfStock')}
                 </span>
               )}
             </div>
 
             {/* Description */}
             <div className="mt-6">
-              <h3 className="text-xs font-bold text-text uppercase tracking-wider mb-2">Overview</h3>
+              <h3 className="text-xs font-bold text-text uppercase tracking-wider mb-2">{t('catalog.overview')}</h3>
               <p className="text-sm text-text leading-relaxed whitespace-pre-line">
                 {product.description || 'No detailed description provided for this catalog product.'}
               </p>
@@ -148,13 +150,10 @@ export default function PublicProductDetailPage() {
           {/* Institutional Procurement Assurance */}
           <div className="mt-8 pt-6 border-t border-border flex items-center gap-4 text-xs text-text-muted">
             <Shield className="w-5 h-5 text-accent shrink-0" />
-            <span>
-              Authorized distribution only. Registered healthcare facilities, dental clinics, and research laboratories can place orders via the staff procurement portal.
-            </span>
+            <span>Verified Medical-Grade Supply Chain & ISO 13485 Compliant Tracking</span>
           </div>
         </div>
       </div>
     </div>
   );
 }
-

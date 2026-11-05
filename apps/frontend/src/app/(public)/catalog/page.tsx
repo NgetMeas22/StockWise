@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '../../../lib/api-client';
+import { useTranslation } from '../../../i18n/i18n-context';
 import { PublicCategoryDTO, PublicProductDTO } from '@stockwise/shared';
 import { Search, Filter, Box, ArrowRight, ChevronRight, X, SlidersHorizontal } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
@@ -12,6 +13,7 @@ import { Button } from '../../../components/ui/Button';
 function CatalogContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
 
   const qParam = searchParams.get('q') || '';
   const categoryParam = searchParams.get('category') || '';
@@ -71,7 +73,7 @@ function CatalogContent() {
       <nav className="flex items-center gap-1.5 text-xs text-text-muted mb-6">
         <Link href="/" className="hover:text-accent transition-colors">Home</Link>
         <ChevronRight className="w-3.5 h-3.5" />
-        <span className="font-medium text-text">Browse Catalog</span>
+        <span className="font-medium text-text">{t('catalog.browseTitle')}</span>
         {categoryParam && (
           <>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -83,9 +85,9 @@ function CatalogContent() {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-text">Browse Supplies Catalog</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-text">{t('catalog.browseTitle')}</h1>
           <p className="text-xs text-text-muted mt-0.5">
-            Showing {meta.total} products {qParam ? `matching "${qParam}"` : ''}
+            {t('catalog.showingProducts')} {meta.total} {t('catalog.productsCount')} {qParam ? `${t('catalog.matching')} "${qParam}"` : ''}
           </p>
         </div>
 
@@ -95,23 +97,23 @@ function CatalogContent() {
             <Search className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search in catalog..."
+              placeholder={t('catalog.searchPlaceholder')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="pl-9 pr-3 py-1.5 rounded-[6px] border border-border bg-white text-xs text-text placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-accent w-48 sm:w-64"
+              className="pl-9 pr-3 py-1.5 rounded-[6px] border border-border bg-surface text-xs text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent w-48 sm:w-64"
             />
           </form>
 
           <select
             value={sortParam}
             onChange={(e) => updateFilters({ sort: e.target.value })}
-            className="px-3 py-1.5 rounded-[6px] border border-border bg-white text-xs font-medium text-text focus:outline-none focus:ring-2 focus:ring-accent"
+            className="px-3 py-1.5 rounded-[6px] border border-border bg-surface text-xs font-medium text-text focus:outline-none focus:ring-2 focus:ring-accent"
           >
-            <option value="name:asc">Name: A to Z</option>
-            <option value="name:desc">Name: Z to A</option>
-            <option value="price:asc">Price: Low to High</option>
-            <option value="price:desc">Price: High to Low</option>
-            <option value="newest">Newest Additions</option>
+            <option value="name:asc">{t('catalog.sortNameAsc')}</option>
+            <option value="name:desc">{t('catalog.sortNameDesc')}</option>
+            <option value="price:asc">{t('catalog.sortPriceAsc')}</option>
+            <option value="price:desc">{t('catalog.sortPriceDesc')}</option>
+            <option value="newest">{t('catalog.sortNewest')}</option>
           </select>
         </div>
       </div>
@@ -120,24 +122,24 @@ function CatalogContent() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 pt-8">
         {/* Left Filter Panel */}
         <aside className="lg:col-span-1 space-y-6">
-          <div className="bg-surface p-5 rounded-[8px] border border-border">
+          <div className="bg-surface p-5 rounded-[8px] border border-border shadow-xs">
             <div className="flex items-center justify-between pb-3 border-b border-border mb-4">
               <span className="text-xs font-bold uppercase tracking-wider text-text flex items-center gap-1.5">
-                <SlidersHorizontal className="w-4 h-4" /> Filters
+                <SlidersHorizontal className="w-4 h-4 text-accent" /> {t('catalog.filters')}
               </span>
               {(categoryParam || brandParam || qParam) && (
                 <button
                   onClick={() => router.push('/catalog')}
                   className="text-xs text-danger hover:underline font-medium"
                 >
-                  Clear all
+                  {t('catalog.clearAll')}
                 </button>
               )}
             </div>
 
             {/* Category Filter */}
             <div className="space-y-3 mb-6">
-              <h4 className="text-xs font-semibold text-text uppercase tracking-wider">Categories</h4>
+              <h4 className="text-xs font-semibold text-text uppercase tracking-wider">{t('catalog.categories')}</h4>
               <div className="space-y-1">
                 <button
                   onClick={() => updateFilters({ category: null })}
@@ -147,7 +149,7 @@ function CatalogContent() {
                       : 'text-text-muted hover:bg-surface-muted hover:text-text'
                   }`}
                 >
-                  All Categories
+                  {t('catalog.allCategories')}
                 </button>
                 {categories.map((c) => (
                   <button
@@ -160,7 +162,7 @@ function CatalogContent() {
                     }`}
                   >
                     <span className="truncate">{c.name}</span>
-                    <span className="text-[10px] text-slate-400">{c.productCount}</span>
+                    <span className="text-[10px] text-text-muted">{c.productCount}</span>
                   </button>
                 ))}
               </div>
@@ -169,7 +171,7 @@ function CatalogContent() {
             {/* Brand Filter */}
             {brands.length > 0 && (
               <div className="space-y-3">
-                <h4 className="text-xs font-semibold text-text uppercase tracking-wider">Brands</h4>
+                <h4 className="text-xs font-semibold text-text uppercase tracking-wider">{t('catalog.brands')}</h4>
                 <div className="space-y-1">
                   <button
                     onClick={() => updateFilters({ brand: null })}
@@ -179,7 +181,7 @@ function CatalogContent() {
                         : 'text-text-muted hover:bg-surface-muted hover:text-text'
                     }`}
                   >
-                    All Brands
+                    {t('catalog.allBrands')}
                   </button>
                   {brands.map((b) => (
                     <button
@@ -209,11 +211,11 @@ function CatalogContent() {
               ))}
             </div>
           ) : products.length === 0 ? (
-            <div className="text-center py-16 bg-white border border-dashed border-border rounded-[8px]">
-              <Box className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-              <h3 className="text-base font-semibold text-text">No products match your criteria</h3>
+            <div className="text-center py-16 bg-surface border border-dashed border-border rounded-[8px]">
+              <Box className="w-12 h-12 text-text-muted mx-auto mb-3" />
+              <h3 className="text-base font-semibold text-text">{t('catalog.noProducts')}</h3>
               <p className="text-xs text-text-muted mt-1 max-w-sm mx-auto">
-                Try modifying your category selection, removing brand filters, or searching with broader keywords.
+                {t('catalog.noProductsDesc')}
               </p>
               <Button
                 variant="outline"
@@ -221,7 +223,7 @@ function CatalogContent() {
                 className="mt-4"
                 onClick={() => router.push('/catalog')}
               >
-                Reset Filters
+                {t('catalog.resetFilters')}
               </Button>
             </div>
           ) : (
@@ -234,8 +236,8 @@ function CatalogContent() {
                     className="group bg-surface rounded-[8px] border border-border hover:border-accent hover:shadow-md transition-all overflow-hidden flex flex-col"
                   >
                     {/* 4:3 Image Area */}
-                    <div className="aspect-[4/3] bg-surface-muted flex items-center justify-center p-4 border-b border-border group-hover:bg-teal-50/20 transition-colors">
-                      <Box className="w-12 h-12 text-slate-300 group-hover:text-accent/60 transition-colors" />
+                    <div className="aspect-[4/3] bg-surface-muted flex items-center justify-center p-4 border-b border-border group-hover:bg-accent-soft/20 transition-colors">
+                      <Box className="w-12 h-12 text-text-muted group-hover:text-accent transition-colors" />
                     </div>
                     <div className="p-4 flex-1 flex flex-col justify-between">
                       <div>
@@ -248,7 +250,7 @@ function CatalogContent() {
                           {prod.name}
                         </h3>
                         <div className="text-[11px] text-text-muted mt-1">
-                          SKU: <span className="font-mono text-slate-600">{prod.sku}</span>
+                          {t('catalog.itemCode')}: <span className="font-mono text-text font-medium">{prod.sku}</span>
                         </div>
                       </div>
 
@@ -258,18 +260,18 @@ function CatalogContent() {
                             ${prod.price}
                           </div>
                         ) : (
-                          <div className="text-xs text-text-muted">Inquire for pricing</div>
+                          <div className="text-xs text-text-muted">{t('catalog.inquirePricing')}</div>
                         )}
 
                         {prod.availability && (
                           <span
-                            className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                            className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${
                               prod.availability === 'IN_STOCK'
-                                ? 'bg-emerald-50 text-ok border border-emerald-200'
-                                : 'bg-red-50 text-danger border border-red-200'
+                                ? 'bg-emerald-500/10 text-ok border-emerald-500/30'
+                                : 'bg-rose-500/10 text-danger border-rose-500/30'
                             }`}
                           >
-                            {prod.availability === 'IN_STOCK' ? 'Available' : 'Out of Stock'}
+                            {prod.availability === 'IN_STOCK' ? t('catalog.available') : t('catalog.outOfStock')}
                           </span>
                         )}
                       </div>
@@ -282,7 +284,7 @@ function CatalogContent() {
               {meta.totalPages > 1 && (
                 <div className="mt-10 flex items-center justify-between border-t border-border pt-4">
                   <div className="text-xs text-text-muted">
-                    Page {meta.page} of {meta.totalPages}
+                    {t('common.page')} {meta.page} {t('common.of')} {meta.totalPages}
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
@@ -291,7 +293,7 @@ function CatalogContent() {
                       disabled={meta.page <= 1}
                       onClick={() => updateFilters({ page: String(meta.page - 1) })}
                     >
-                      Previous
+                      {t('common.previous')}
                     </Button>
                     <Button
                       variant="outline"
@@ -299,7 +301,7 @@ function CatalogContent() {
                       disabled={meta.page >= meta.totalPages}
                       onClick={() => updateFilters({ page: String(meta.page + 1) })}
                     >
-                      Next
+                      {t('common.next')}
                     </Button>
                   </div>
                 </div>

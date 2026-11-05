@@ -8,13 +8,13 @@ import { Can } from '../../../../components/auth/Can';
 import { Button } from '../../../../components/ui/Button';
 import { Badge } from '../../../../components/ui/Badge';
 import { TableSkeleton } from '../../../../components/ui/TableSkeleton';
+import { useToast } from '../../../../lib/toast-context';
+import { useTranslation } from '../../../../i18n/i18n-context';
 import {
-  ShieldCheck,
   Lock,
   Save,
   CheckCircle2,
   AlertCircle,
-  RefreshCw,
   Info,
 } from 'lucide-react';
 
@@ -35,11 +35,11 @@ interface PermissionItem {
 
 export default function RolesMatrixPage() {
   const queryClient = useQueryClient();
+  const toast = useToast();
+  const { t } = useTranslation();
 
   const [rolePermissionsState, setRolePermissionsState] = useState<Record<string, Set<PermissionKey>>>({});
   const [dirtyRoles, setDirtyRoles] = useState<Set<string>>(new Set());
-  const [saveSuccessMsg, setSaveSuccessMsg] = useState<string | null>(null);
-  const [saveErrorMsg, setSaveErrorMsg] = useState<string | null>(null);
 
   // Fetch Roles
   const { data: rolesRes, isLoading: isRolesLoading } = useQuery({
@@ -75,14 +75,12 @@ export default function RolesMatrixPage() {
         body: JSON.stringify({ permissions: perms }),
       });
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['roles-list'] });
-      setSaveSuccessMsg('Permissions successfully updated and synchronized across all active sessions.');
-      setSaveErrorMsg(null);
-      setTimeout(() => setSaveSuccessMsg(null), 4000);
+      toast.success('Permissions successfully updated and synchronized across all active sessions.');
     },
     onError: (err: any) => {
-      setSaveErrorMsg(err.message || 'Failed to update role permissions.');
+      toast.error(err.message || 'Failed to update role permissions.');
     },
   });
 
@@ -128,15 +126,15 @@ export default function RolesMatrixPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-text">RBAC Permission Matrix</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-text">{t('admin.rolesTitle')}</h1>
           <p className="text-sm text-text-muted mt-1">
-            Enterprise authorization grid across 26 granular privileges and 4 system roles.
+            {t('admin.rolesSubtitle')}
           </p>
         </div>
       </div>
 
       {/* Info / Alert banner */}
-      <div className="p-4 rounded-[8px] bg-slate-50 border border-border flex items-start gap-3 text-xs text-text-muted">
+      <div className="p-4 rounded-[8px] bg-slate-50 dark:bg-slate-800/50 border border-border flex items-start gap-3 text-xs text-text-muted">
         <Info className="w-5 h-5 text-accent shrink-0 mt-0.5" />
         <div>
           <strong className="text-text font-semibold">Security Enforcement Rule P-1:</strong> The{' '}
@@ -144,20 +142,6 @@ export default function RolesMatrixPage() {
           cannot be revoked or altered to guarantee system recovery and business continuity.
         </div>
       </div>
-
-      {saveSuccessMsg && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-[6px] flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          <span>{saveSuccessMsg}</span>
-        </div>
-      )}
-
-      {saveErrorMsg && (
-        <div className="p-3 bg-red-50 border border-red-200 text-danger text-xs rounded-[6px] flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{saveErrorMsg}</span>
-        </div>
-      )}
 
       {/* Matrix Table */}
       <div className="bg-surface rounded-[8px] border border-border shadow-subtle overflow-hidden">
@@ -167,7 +151,7 @@ export default function RolesMatrixPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-border bg-slate-100 text-text font-bold text-xs">
+                <tr className="border-b border-border bg-slate-100 dark:bg-slate-800 text-text font-bold text-xs">
                   <th className="px-4 py-3 min-w-[280px]">Permission Name & Code</th>
                   {roles.map((r) => (
                     <th key={r.id} className="px-4 py-3 text-center min-w-[140px]">
@@ -180,6 +164,7 @@ export default function RolesMatrixPage() {
                               size="sm"
                               onClick={() => handleSaveRole(r)}
                               isLoading={saveRoleMutation.isPending}
+                              loadingText="Saving..."
                               className="h-6 text-[11px] px-2"
                             >
                               <Save className="w-3 h-3 mr-1" />
@@ -196,15 +181,15 @@ export default function RolesMatrixPage() {
                 {Object.entries(groupedPermissions).map(([group, perms]) => (
                   <React.Fragment key={group}>
                     {/* Domain Category Header */}
-                    <tr className="bg-slate-50 font-bold text-[11px] text-text-muted uppercase tracking-wider">
-                      <td colSpan={1 + roles.length} className="px-4 py-2 bg-slate-50 border-y border-border">
+                    <tr className="bg-slate-50 dark:bg-slate-800/50 font-bold text-[11px] text-text-muted uppercase tracking-wider">
+                      <td colSpan={1 + roles.length} className="px-4 py-2 border-y border-border">
                         {group} Operations
                       </td>
                     </tr>
 
                     {/* Permissions in Domain */}
                     {perms.map((p) => (
-                      <tr key={p.key} className="hover:bg-slate-50/70 transition-colors">
+                      <tr key={p.key} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
                         <td className="px-4 py-3">
                           <div className="font-medium text-text">{p.description}</div>
                           <div className="font-mono text-[11px] text-text-muted mt-0.5">{p.key}</div>
@@ -220,7 +205,7 @@ export default function RolesMatrixPage() {
                           return (
                             <td key={r.id} className="px-4 py-3 text-center">
                               {isLocked ? (
-                                <div className="inline-flex items-center justify-center w-7 h-7 rounded bg-slate-100 text-slate-500 cursor-not-allowed">
+                                <div className="inline-flex items-center justify-center w-7 h-7 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 cursor-not-allowed">
                                   <Lock className="w-3.5 h-3.5" />
                                 </div>
                               ) : (
@@ -246,4 +231,3 @@ export default function RolesMatrixPage() {
     </div>
   );
 }
-

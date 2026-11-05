@@ -8,7 +8,6 @@ import {
   PurchaseOrderDTO,
   PurchaseOrderStatus,
   SupplierDTO,
-  WarehouseDTO,
 } from '@stockwise/shared';
 import { useAuth } from '../../../lib/auth-context';
 import { Can } from '../../../components/auth/Can';
@@ -16,19 +15,19 @@ import { Button } from '../../../components/ui/Button';
 import { Badge } from '../../../components/ui/Badge';
 import { TableSkeleton } from '../../../components/ui/TableSkeleton';
 import { EmptyState } from '../../../components/ui/EmptyState';
+import { useTranslation } from '../../../i18n/i18n-context';
 import {
   ShoppingCart,
   Plus,
   Eye,
   Search,
-  Filter,
   RefreshCw,
   Building2,
   Truck,
-  Calendar,
 } from 'lucide-react';
 
 export default function PurchaseOrdersPage() {
+  const { t } = useTranslation();
   const { hasPermission } = useAuth();
   const canViewCost = hasPermission('products:view_cost');
 
@@ -65,15 +64,15 @@ export default function PurchaseOrdersPage() {
   const getStatusBadge = (status: PurchaseOrderStatus) => {
     switch (status) {
       case 'DRAFT':
-        return <Badge variant="neutral">Draft</Badge>;
+        return <Badge variant="neutral">{t('purchases.draft')}</Badge>;
       case 'ORDERED':
-        return <Badge variant="info">Ordered</Badge>;
+        return <Badge variant="info">{t('purchases.ordered')}</Badge>;
       case 'PARTIALLY_RECEIVED':
-        return <Badge variant="warning">Partially Received</Badge>;
+        return <Badge variant="warning">{t('purchases.partiallyReceived')}</Badge>;
       case 'RECEIVED':
-        return <Badge variant="success">Received</Badge>;
+        return <Badge variant="success">{t('purchases.received')}</Badge>;
       case 'CANCELLED':
-        return <Badge variant="danger">Cancelled</Badge>;
+        return <Badge variant="danger">{t('purchases.cancelled')}</Badge>;
       default:
         return <Badge variant="neutral">{status}</Badge>;
     }
@@ -84,9 +83,9 @@ export default function PurchaseOrdersPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-text">Purchase Orders</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-text">{t('purchases.title')}</h1>
           <p className="text-sm text-text-muted mt-1">
-            Procure inventory from suppliers with line item tracking and receipt reconciliation.
+            {t('purchases.subtitle')}
           </p>
         </div>
 
@@ -94,7 +93,7 @@ export default function PurchaseOrdersPage() {
           <Link href="/app/purchases/new">
             <Button className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
-              <span>New Purchase Order</span>
+              <span>{t('purchases.newPO')}</span>
             </Button>
           </Link>
         </Can>
@@ -108,61 +107,61 @@ export default function PurchaseOrdersPage() {
             onClick={() => { setSelectedStatus(''); setPage(1); }}
             className={`px-3 py-1.5 rounded-[6px] text-xs font-semibold transition-colors ${
               selectedStatus === ''
-                ? 'bg-slate-900 text-white'
-                : 'text-text-muted hover:text-text hover:bg-slate-100'
+                ? 'bg-accent text-white'
+                : 'text-text-muted hover:text-text hover:bg-surface-muted'
             }`}
           >
-            All Orders
+            {t('common.all')} Orders
           </button>
           <button
             onClick={() => { setSelectedStatus('DRAFT'); setPage(1); }}
             className={`px-3 py-1.5 rounded-[6px] text-xs font-semibold transition-colors ${
               selectedStatus === 'DRAFT'
                 ? 'bg-slate-700 text-white'
-                : 'text-slate-600 bg-slate-100 hover:bg-slate-200'
+                : 'text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
-            Drafts
+            {t('purchases.draft')}
           </button>
           <button
             onClick={() => { setSelectedStatus('ORDERED'); setPage(1); }}
             className={`px-3 py-1.5 rounded-[6px] text-xs font-semibold transition-colors ${
               selectedStatus === 'ORDERED'
                 ? 'bg-blue-600 text-white'
-                : 'text-blue-700 bg-blue-50 hover:bg-blue-100'
+                : 'text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-950/60'
             }`}
           >
-            Ordered / Awaiting
+            {t('purchases.ordered')}
           </button>
           <button
             onClick={() => { setSelectedStatus('PARTIALLY_RECEIVED'); setPage(1); }}
             className={`px-3 py-1.5 rounded-[6px] text-xs font-semibold transition-colors ${
               selectedStatus === 'PARTIALLY_RECEIVED'
                 ? 'bg-amber-600 text-white'
-                : 'text-amber-700 bg-amber-50 hover:bg-amber-100'
+                : 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-950/60'
             }`}
           >
-            Partially Received
+            {t('purchases.partiallyReceived')}
           </button>
           <button
             onClick={() => { setSelectedStatus('RECEIVED'); setPage(1); }}
             className={`px-3 py-1.5 rounded-[6px] text-xs font-semibold transition-colors ${
               selectedStatus === 'RECEIVED'
                 ? 'bg-emerald-600 text-white'
-                : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
+                : 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-950/60'
             }`}
           >
-            Completed / Received
+            {t('purchases.received')}
           </button>
           <button
             onClick={() => { setSelectedStatus('CANCELLED'); setPage(1); }}
             className={`px-3 py-1.5 rounded-[6px] text-xs font-semibold transition-colors ${
               selectedStatus === 'CANCELLED'
                 ? 'bg-rose-600 text-white'
-                : 'text-rose-700 bg-rose-50 hover:bg-rose-100'
+                : 'text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-950/60'
             }`}
           >
-            Cancelled
+            {t('purchases.cancelled')}
           </button>
         </div>
 
@@ -172,10 +171,10 @@ export default function PurchaseOrdersPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
             <input
               type="text"
-              placeholder="Search PO # or vendor..."
+              placeholder={`${t('common.search')} PO # or vendor...`}
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-[6px] border border-border bg-white placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-[6px] border border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
 
@@ -183,9 +182,9 @@ export default function PurchaseOrdersPage() {
             <select
               value={selectedSupplier}
               onChange={(e) => { setSelectedSupplier(e.target.value); setPage(1); }}
-              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-white text-text focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3 py-1.5 text-xs rounded-[6px] border border-border bg-surface text-text focus:outline-none focus:ring-1 focus:ring-accent"
             >
-              <option value="">All Suppliers</option>
+              <option value="">{t('common.all')} Suppliers</option>
               {suppliers.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name}
@@ -204,16 +203,16 @@ export default function PurchaseOrdersPage() {
       {/* PO Table */}
       <div className="bg-surface rounded-[8px] border border-border shadow-subtle overflow-hidden">
         {isLoading ? (
-          <TableSkeleton rows={8} columns={7} />
+          <TableSkeleton rows={8} columns={canViewCost ? 8 : 7} />
         ) : orders.length === 0 ? (
           <EmptyState
             icon={ShoppingCart}
-            title="No purchase orders found"
+            title={t('common.noData')}
             description="Create a purchase order to request items from suppliers and restock your warehouses."
             action={
               <Can permission="purchases:manage">
                 <Link href="/app/purchases/new">
-                  <Button size="sm">Create First Purchase Order</Button>
+                  <Button size="sm">{t('purchases.newPO')}</Button>
                 </Link>
               </Can>
             }
@@ -222,20 +221,20 @@ export default function PurchaseOrdersPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-border bg-slate-50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="px-4 py-3">PO Number</th>
-                  <th className="px-4 py-3">Supplier</th>
+                <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
+                  <th className="px-4 py-3">{t('purchases.poNumber')}</th>
+                  <th className="px-4 py-3">{t('purchases.supplier')}</th>
                   <th className="px-4 py-3">Destination</th>
-                  <th className="px-4 py-3">Order Date</th>
-                  <th className="px-4 py-3">Expected Date</th>
-                  {canViewCost && <th className="px-4 py-3 text-right">Total Amount</th>}
-                  <th className="px-4 py-3 text-center">Status</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+                  <th className="px-4 py-3">{t('purchases.orderDate')}</th>
+                  <th className="px-4 py-3">{t('purchases.expectedDate')}</th>
+                  {canViewCost && <th className="px-4 py-3 text-right">{t('purchases.totalCost')}</th>}
+                  <th className="px-4 py-3 text-center">{t('common.status')}</th>
+                  <th className="px-4 py-3 text-right">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {orders.map((po) => (
-                  <tr key={po.id} className="hover:bg-slate-50/70 transition-colors">
+                  <tr key={po.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="px-4 py-3">
                       <Link
                         href={`/app/purchases/${po.id}`}
@@ -281,7 +280,7 @@ export default function PurchaseOrdersPage() {
                       <Link href={`/app/purchases/${po.id}`}>
                         <Button variant="outline" size="sm" className="h-7 text-xs">
                           <Eye className="w-3 h-3 mr-1" />
-                          <span>View</span>
+                          <span>{t('common.view')}</span>
                         </Button>
                       </Link>
                     </td>
@@ -294,7 +293,7 @@ export default function PurchaseOrdersPage() {
 
         {/* Pagination Footer */}
         {meta.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-slate-50 text-xs text-text-muted">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-slate-50 dark:bg-slate-800/50 text-xs text-text-muted">
             <div>
               Page <span className="font-semibold text-text">{meta.page}</span> of{' '}
               <span className="font-semibold text-text">{meta.totalPages}</span>
@@ -306,7 +305,7 @@ export default function PurchaseOrdersPage() {
                 disabled={meta.page <= 1}
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
               >
-                Previous
+                {t('common.previous')}
               </Button>
               <Button
                 variant="outline"
@@ -314,7 +313,7 @@ export default function PurchaseOrdersPage() {
                 disabled={meta.page >= meta.totalPages}
                 onClick={() => setPage((prev) => Math.min(meta.totalPages, prev + 1))}
               >
-                Next
+                {t('common.next')}
               </Button>
             </div>
           </div>
@@ -323,4 +322,3 @@ export default function PurchaseOrdersPage() {
     </div>
   );
 }
-
