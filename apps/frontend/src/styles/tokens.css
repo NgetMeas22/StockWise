@@ -1,0 +1,107 @@
+:root {
+  /* Surface & Base Colors - Light Mode */
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --surface-muted: #F1F5F9;
+  --border: #E2E8F0;
+  --text: #0F172A;
+  --text-muted: #64748B;
+
+  /* Default Accent: Teal */
+  --accent: #0F766E;
+  --accent-hover: #115E59;
+  --accent-soft: #CCFBF1;
+  --accent-fg: #FFFFFF;
+
+  /* Semantic Feedback */
+  --ok: #15803D;
+  --ok-soft: #DCFCE7;
+  --warn: #B45309;
+  --warn-soft: #FEF3C7;
+  --danger: #B91C1C;
+  --danger-soft: #FEE2E2;
+  --info: #0369A1;
+  --info-soft: #E0F2FE;
+}
+
+/* Dark Mode Tokens */
+.dark {
+  --bg: #090D16;
+  --surface: #111827;
+  --surface-muted: #1F2937;
+  --border: #374151;
+  --text: #F9FAFB;
+  --text-muted: #9CA3AF;
+
+  /* Default Accent in Dark Mode */
+  --accent: #14B8A6;
+  --accent-hover: #2DD4BF;
+  --accent-soft: rgba(20, 184, 166, 0.16);
+  --accent-fg: #0F172A;
+
+  /* Semantic Feedback in Dark Mode */
+  --ok: #22C55E;
+  --ok-soft: rgba(34, 197, 94, 0.15);
+  --warn: #F59E0B;
+  --warn-soft: rgba(245, 158, 11, 0.15);
+  --danger: #EF4444;
+  --danger-soft: rgba(239, 68, 68, 0.15);
+  --info: #38BDF8;
+  --info-soft: rgba(56, 189, 248, 0.15);
+}
+
+/* Accent Color Variations */
+[data-accent="emerald"] {
+  --accent: #059669;
+  --accent-hover: #047857;
+  --accent-soft: #D1FAE5;
+}
+.dark [data-accent="emerald"],
+.dark[data-accent="emerald"] {
+  --accent: #10B981;
+  --accent-hover: #34D399;
+  --accent-soft: rgba(16, 185, 129, 0.16);
+}
+
+[data-accent="blue"] {
+  --accent: #2563EB;
+  --accent-hover: #1D4ED8;
+  --accent-soft: #DBEAFE;
+}
+.dark [data-accent="blue"],
+.dark[data-accent="blue"] {
+  --accent: #3B82F6;
+  --accent-hover: #60A5FA;
+  --accent-soft: rgba(59, 130, 246, 0.16);
+}
+
+[data-accent="indigo"] {
+  --accent: #4F46E5;
+  --accent-hover: #4338CA;
+  --accent-soft: #E0E7FF;
+}
+.dark [data-accent="indigo"],
+.dark[data-accent="indigo"] {
+  --accent: #6366F1;
+  --accent-hover: #818CF8;
+  --accent-soft: rgba(99, 102, 241, 0.16);
+}
+
+[data-accent="violet"] {
+  --accent: #7C3AED;
+  --accent-hover: #6D28D9;
+  --accent-soft: #EDE9FE;
+}
+.dark [data-accent="violet"],
+.dark[data-accent="violet"] {
+  --accent: #8B5CF6;
+  --accent-hover: #A78BFA;
+  --accent-soft: rgba(139, 92, 246, 0.16);
+}
+
+/* Density Settings */
+[data-density="compact"] td,
+[data-density="compact"] th {
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
