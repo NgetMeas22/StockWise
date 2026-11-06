@@ -11,6 +11,9 @@ export interface AuthenticatedUser {
   fullName: string;
   isActive: boolean;
   mustChangePassword: boolean;
+  avatarKey?: string | null;
+  avatarUrl?: string | null;
+  phone?: string | null;
 }
 
 export interface UserSession {
@@ -114,6 +117,9 @@ export async function sessionMiddleware(req: Request, res: Response, next: NextF
       fullName: session.user.fullName,
       isActive: session.user.isActive,
       mustChangePassword: session.user.mustChangePassword,
+      avatarKey: (session.user as any).avatarKey || null,
+      avatarUrl: (session.user as any).avatarKey ? `/api/v1/public/images/${(session.user as any).avatarKey}` : null,
+      phone: (session.user as any).phone || null,
     };
 
     req.session = {

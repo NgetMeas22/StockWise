@@ -154,8 +154,31 @@ export default function HomePage() {
               className="group bg-surface rounded-[8px] border border-border hover:border-accent hover:shadow-md transition-all overflow-hidden flex flex-col"
             >
               {/* Product 4:3 Image Area */}
-              <div className="aspect-[4/3] bg-surface-muted flex items-center justify-center p-4 border-b border-border group-hover:bg-accent-soft/20 transition-colors">
-                <Box className="w-12 h-12 text-text-muted group-hover:text-accent transition-colors" />
+              <div className="relative aspect-[4/3] bg-surface-muted/60 flex items-center justify-center p-3 border-b border-border group-hover:bg-accent-soft/10 transition-colors overflow-hidden">
+                {prod.imageUrl ? (
+                  <img
+                    src={prod.imageUrl}
+                    alt={prod.name}
+                    className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                    onError={(e) => {
+                      const img = e.currentTarget;
+                      img.style.display = 'none';
+                      const fallback = img.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div
+                  className={`flex-col items-center justify-center text-text-muted/60 group-hover:text-accent transition-colors ${
+                    prod.imageUrl ? 'hidden' : 'flex'
+                  }`}
+                >
+                  <Box className="w-12 h-12 stroke-[1.5]" />
+                  <span className="text-[10px] font-semibold uppercase tracking-wider mt-1 text-text-muted/70">
+                    {prod.brand || 'Khema Dental'}
+                  </span>
+                </div>
               </div>
               <div className="p-4 flex-1 flex flex-col justify-between">
                 <div>

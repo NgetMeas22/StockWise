@@ -147,16 +147,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       >
         <div className="flex flex-col flex-1 overflow-y-auto">
           {/* Logo Header */}
-          <div className="h-16 px-5 border-b border-border flex items-center justify-between">
-            <Link href="/app/dashboard" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-white shadow-sm">
-                <Package className="w-5 h-5" />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-sm tracking-tight text-text leading-tight">
-                  StockWise IMS
+          <div className="h-16 px-4 border-b border-border flex items-center justify-between bg-surface">
+            <Link href="/app/dashboard" className="flex items-center gap-2.5 min-w-0">
+              <img
+                src="/images/khema-logo.png"
+                alt="Khema Digital Dental Solution"
+                className="h-9 w-auto object-contain rounded bg-white p-1 border border-border shadow-2xs shrink-0"
+              />
+              <div className="flex flex-col min-w-0">
+                <span className="font-bold text-xs tracking-tight text-text leading-tight truncate">
+                  Khema Dental
                 </span>
-                <span className="text-[10px] text-text-muted font-medium">Enterprise Suite</span>
+                <span className="text-[10px] text-text-muted font-medium truncate">Inventory Suite</span>
               </div>
             </Link>
             <button
@@ -210,18 +212,45 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <ChevronRight className="w-3.5 h-3.5 text-text-muted" />
           </Link>
 
-          <Link
-            href="/app/profile"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-[6px] hover:bg-surface-muted transition-colors"
-          >
-            <div className="w-7 h-7 rounded-full bg-accent/10 text-accent font-bold text-xs flex items-center justify-center shrink-0 border border-accent/20">
-              {user?.fullName?.charAt(0) || 'U'}
-            </div>
-            <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-xs font-semibold text-text truncate">{user?.fullName}</span>
-              <span className="text-[10px] text-text-muted font-mono truncate">{role || 'STAFF'}</span>
-            </div>
-          </Link>
+          {/* User profile row with integrated Sign Out icon button */}
+          <div className="flex items-center justify-between gap-2 p-2 rounded-[8px] bg-surface border border-border hover:border-text-muted/30 transition-colors">
+            <Link
+              href="/app/profile"
+              className="flex items-center gap-2.5 min-w-0 flex-1 group"
+              title="View & Edit Profile"
+            >
+              {user?.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt={user.fullName || 'User'}
+                  className="w-8 h-8 rounded-full object-cover border border-accent/30 shrink-0"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-accent/10 text-accent font-bold text-xs flex items-center justify-center shrink-0 border border-accent/20">
+                  {user?.fullName?.charAt(0) || 'U'}
+                </div>
+              )}
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-semibold text-text truncate group-hover:text-accent transition-colors leading-tight">
+                  {user?.fullName || 'User'}
+                </span>
+                <span className="text-[10px] text-text-muted font-mono uppercase tracking-wider truncate">
+                  {role || 'STAFF'}
+                </span>
+              </div>
+            </Link>
+
+            {/* Sign Out Button (Icon Only next to Admin/User Profile) */}
+            <button
+              type="button"
+              onClick={() => setShowLogoutConfirm(true)}
+              className="p-1.5 rounded-[6px] text-text-muted hover:text-danger hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0"
+              title={t('nav.signOut') || 'Sign Out'}
+              aria-label={t('nav.signOut') || 'Sign Out'}
+            >
+              <LogOut className="w-4 h-4 text-text-muted hover:text-danger transition-colors" />
+            </button>
+          </div>
         </div>
       </aside>
 

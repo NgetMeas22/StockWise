@@ -68,17 +68,19 @@ export default function LoginPage() {
       </div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Link href="/" className="flex items-center justify-center gap-2.5 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center text-white shadow-sm">
-            <Package className="w-6 h-6" />
-          </div>
-          <span className="font-bold text-xl tracking-tight text-text">StockWise IMS</span>
+        <Link href="/" className="flex flex-col items-center justify-center gap-2 mb-4">
+          <img
+            src="/images/khema-logo.png"
+            alt="Khema Digital Dental Solution"
+            className="h-14 w-auto object-contain bg-white rounded-lg p-2 border border-border shadow-xs"
+          />
+          <span className="font-bold text-lg tracking-tight text-text">Khema Dental Inventory</span>
         </Link>
         <h2 className="text-center text-xl font-bold tracking-tight text-text">
           {t('auth.login')}
         </h2>
         <p className="mt-1 text-center text-xs text-text-muted">
-          {t('auth.subtitle')}
+          Staff Portal & Clinical Inventory Access
         </p>
       </div>
 

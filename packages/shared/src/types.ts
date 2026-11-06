@@ -20,6 +20,9 @@ export interface UserDTO {
   lockedUntil: string | null;
   lastLoginAt: string | null;
   passwordChangedAt: string | null;
+  avatarKey?: string | null;
+  avatarUrl?: string | null;
+  phone?: string | null;
   createdAt: string;
   updatedAt: string;
 }

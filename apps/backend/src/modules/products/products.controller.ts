@@ -158,6 +158,26 @@ export class ProductsController {
       next(err);
     }
   }
+
+  public async removeImage(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const updated = await productsService.updateProductImage(
+        req.params.id,
+        null,
+        req.user?.id,
+        req.ip,
+        req.headers['user-agent'],
+        req.requestId
+      );
+
+      sendSuccess(res, {
+        imageKey: null,
+        product: updated,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export const productsController = new ProductsController();

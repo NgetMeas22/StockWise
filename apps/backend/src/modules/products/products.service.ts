@@ -117,6 +117,7 @@ export class ProductsService {
         description: p.description,
         brand: p.brand,
         imageKey: p.imageKey,
+        imageUrl: p.imageKey ? `/api/v1/public/images/${p.imageKey}` : null,
         unit: p.unit,
         costPrice: canViewCost ? Number(p.costPrice).toFixed(4) : undefined,
         averageCost: canViewCost ? Number(p.averageCost).toFixed(4) : undefined,
@@ -186,6 +187,7 @@ export class ProductsService {
       description: p.description,
       brand: p.brand,
       imageKey: p.imageKey,
+      imageUrl: p.imageKey ? `/api/v1/public/images/${p.imageKey}` : null,
       unit: p.unit,
       costPrice: canViewCost ? Number(p.costPrice).toFixed(4) : undefined,
       averageCost: canViewCost ? Number(p.averageCost).toFixed(4) : undefined,
@@ -245,6 +247,7 @@ export class ProductsService {
       slug: p.slug,
       brand: p.brand,
       imageKey: p.imageKey,
+      imageUrl: p.imageKey ? `/api/v1/public/images/${p.imageKey}` : null,
       unit: p.unit,
       costPrice: canViewCost ? Number(p.costPrice).toFixed(4) : undefined,
       sellingPrice: Number(p.sellingPrice).toFixed(2),
@@ -513,7 +516,7 @@ export class ProductsService {
 
   public async updateProductImage(
     id: string,
-    imageKey: string,
+    imageKey: string | null,
     actorUserId?: string,
     ip?: string,
     userAgent?: string,

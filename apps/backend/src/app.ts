@@ -1,4 +1,5 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
+import path from 'path';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -80,10 +81,13 @@ export function createApp(): Express {
   // 8. Session resolution
   app.use(sessionMiddleware);
 
-  // 9. CSRF protection on state-changing requests
+  // 9. Static uploads directory
+  app.use('/uploads', express.static(path.resolve(process.cwd(), env.UPLOAD_DIR)));
+
+  // 10. CSRF protection on state-changing requests
   app.use(csrfProtection);
 
-  // 10. Mount API Routers
+  // 11. Mount API Routers
   const apiV1 = express.Router();
 
   apiV1.use('/', systemRoutes);

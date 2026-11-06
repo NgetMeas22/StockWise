@@ -20,6 +20,7 @@ router.patch('/:id', requirePermission('products:update'), validate({ body: upda
 router.delete('/:id', requirePermission('products:archive'), productsController.archiveProduct);
 router.post('/:id/restore', requirePermission('products:archive'), productsController.restoreProduct);
 router.post('/:id/image', requirePermission('products:update'), upload.single('image'), productsController.uploadImage);
+router.delete('/:id/image', requirePermission('products:update'), productsController.removeImage);
 
 export const productsRoutes = router;
 

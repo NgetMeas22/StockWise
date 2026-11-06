@@ -4,6 +4,8 @@ import { sendSuccess } from '../../http/response.js';
 import { env } from '../../config/env.js';
 import { prisma } from '../../lib/prisma.js';
 import { generateCsrfToken, hashCsrfToken } from '../../lib/tokens.js';
+import { storage } from '../../lib/storage.js';
+import { ValidationError } from '../../http/errors.js';
 
 export class AuthController {
   public async login(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -74,12 +76,97 @@ export class AuthController {
         });
       }
 
+      // Query latest user details to include avatarKey, phone, etc.
+      let latestUser = req.user;
+      if (req.user?.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: req.user.id },
+          select: {
+            id: true,
+            email: true,
+            fullName: true,
+            isActive: true,
+            mustChangePassword: true,
+            failedLoginCount: true,
+            lockedUntil: true,
+            lastLoginAt: true,
+            passwordChangedAt: true,
+            avatarKey: true,
+            phone: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        });
+        if (dbUser) {
+          latestUser = {
+            id: dbUser.id,
+            email: dbUser.email,
+            fullName: dbUser.fullName,
+            isActive: dbUser.isActive,
+            mustChangePassword: dbUser.mustChangePassword,
+            avatarKey: dbUser.avatarKey,
+            avatarUrl: dbUser.avatarKey ? `/api/v1/public/images/${dbUser.avatarKey}` : null,
+            phone: dbUser.phone,
+          } as any;
+        }
+      }
+
       sendSuccess(res, {
-        user: req.user,
+        user: latestUser,
         role: req.role,
         permissions: req.permissions,
         csrfToken,
       });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public async updateProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const updated = await authService.updateProfile(
+        req.user!.id,
+        req.body,
+        req.ip,
+        req.headers['user-agent'],
+        req.requestId
+      );
+      sendSuccess(res, updated);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public async uploadAvatar(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.file) {
+        throw new ValidationError('No image file uploaded');
+      }
+
+      const saveResult = await storage.saveImage(req.file.buffer, req.file.originalname);
+      const result = await authService.updateAvatar(
+        req.user!.id,
+        saveResult.fileKey,
+        req.ip,
+        req.headers['user-agent'],
+        req.requestId
+      );
+      sendSuccess(res, result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public async removeAvatar(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const result = await authService.updateAvatar(
+        req.user!.id,
+        null,
+        req.ip,
+        req.headers['user-agent'],
+        req.requestId
+      );
+      sendSuccess(res, result);
     } catch (err) {
       next(err);
     }

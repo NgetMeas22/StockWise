@@ -20,6 +20,9 @@ export interface LoginResult {
     fullName: string;
     isActive: boolean;
     mustChangePassword: boolean;
+    avatarKey?: string | null;
+    avatarUrl?: string | null;
+    phone?: string | null;
   };
   role: RoleKey;
   permissions: PermissionKey[];
@@ -155,6 +158,9 @@ export class AuthService {
         fullName: user.fullName,
         isActive: user.isActive,
         mustChangePassword: user.mustChangePassword,
+        avatarKey: (user as any).avatarKey || null,
+        avatarUrl: (user as any).avatarKey ? `/api/v1/public/images/${(user as any).avatarKey}` : null,
+        phone: (user as any).phone || null,
       },
       role: roleKey,
       permissions,
@@ -239,6 +245,107 @@ export class AuthService {
       userAgent,
       requestId,
     });
+  }
+
+  public async updateProfile(
+    userId: string,
+    input: { fullName?: string; email?: string; phone?: string | null },
+    ip?: string,
+    userAgent?: string,
+    requestId?: string | number | null
+  ) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new AuthError('User not found');
+    }
+
+    if (input.email && input.email !== user.email) {
+      const existing = await prisma.user.findUnique({ where: { email: input.email } });
+      if (existing) {
+        throw new ValidationError('Email address is already in use by another account');
+      }
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        fullName: input.fullName !== undefined ? input.fullName.trim() : undefined,
+        email: input.email !== undefined ? input.email.trim().toLowerCase() : undefined,
+        phone: input.phone !== undefined ? (input.phone ? input.phone.trim() : null) : undefined,
+      },
+      include: {
+        userRole: {
+          include: {
+            role: true,
+          },
+        },
+      },
+    });
+
+    await writeAuditLog({
+      actorUserId: userId,
+      action: 'USER_PROFILE_UPDATED',
+      entityType: 'USER',
+      entityId: userId,
+      before: { fullName: user.fullName, email: user.email, phone: user.phone },
+      after: { fullName: updated.fullName, email: updated.email, phone: updated.phone },
+      ip,
+      userAgent,
+      requestId,
+    });
+
+    return {
+      id: updated.id,
+      email: updated.email,
+      fullName: updated.fullName,
+      roleKey: (updated.userRole?.role.key as RoleKey) || 'VIEWER',
+      isActive: updated.isActive,
+      mustChangePassword: updated.mustChangePassword,
+      failedLoginCount: updated.failedLoginCount,
+      lockedUntil: updated.lockedUntil ? updated.lockedUntil.toISOString() : null,
+      lastLoginAt: updated.lastLoginAt ? updated.lastLoginAt.toISOString() : null,
+      passwordChangedAt: updated.passwordChangedAt ? updated.passwordChangedAt.toISOString() : null,
+      avatarKey: updated.avatarKey,
+      avatarUrl: updated.avatarKey ? `/api/v1/public/images/${updated.avatarKey}` : null,
+      phone: updated.phone,
+      createdAt: updated.createdAt.toISOString(),
+      updatedAt: updated.updatedAt.toISOString(),
+    };
+  }
+
+  public async updateAvatar(
+    userId: string,
+    avatarKey: string | null,
+    ip?: string,
+    userAgent?: string,
+    requestId?: string | number | null
+  ) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new AuthError('User not found');
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { avatarKey },
+    });
+
+    await writeAuditLog({
+      actorUserId: userId,
+      action: 'USER_AVATAR_UPDATED',
+      entityType: 'USER',
+      entityId: userId,
+      before: { avatarKey: user.avatarKey },
+      after: { avatarKey: updated.avatarKey },
+      ip,
+      userAgent,
+      requestId,
+    });
+
+    return {
+      avatarKey: updated.avatarKey,
+      avatarUrl: updated.avatarKey ? `/api/v1/public/images/${updated.avatarKey}` : null,
+    };
   }
 }
 

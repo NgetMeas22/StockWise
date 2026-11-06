@@ -46,6 +46,14 @@ export const updateUserSchema = z.object({
   roleKey: z.enum(ROLE_KEYS).optional(),
 });
 
+export const updateProfileSchema = z.object({
+  fullName: z.string().trim().min(2, 'Full name must be at least 2 characters').max(100).optional(),
+  email: z.string().trim().toLowerCase().email('Invalid email address').optional(),
+  phone: z.string().trim().max(30).nullable().optional(),
+});
+
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
 // Roles
 export const updateRolePermissionsSchema = z.object({
   permissions: z.array(z.enum(PERMISSION_KEYS)),

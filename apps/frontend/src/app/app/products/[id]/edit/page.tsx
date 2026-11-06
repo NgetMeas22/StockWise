@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, use, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -12,7 +12,7 @@ import { FormField } from '../../../../../components/ui/FormField';
 import { Input } from '../../../../../components/ui/Input';
 import { useToast } from '../../../../../lib/toast-context';
 import { useTranslation } from '../../../../../i18n/i18n-context';
-import { ArrowLeft, Save, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Save, AlertCircle, Upload, Trash2, ImageIcon, Loader2 } from 'lucide-react';
 
 interface EditProductPageProps {
   params: Promise<{ id: string }>;
@@ -43,6 +43,55 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const [version, setVersion] = useState(1);
 
   const [formError, setFormError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('image', file);
+      return apiRequest(`/products/${productId}/image`, {
+        method: 'POST',
+        body: formData,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['product-detail', productId] });
+      queryClient.invalidateQueries({ queryKey: ['products-list'] });
+      queryClient.invalidateQueries({ queryKey: ['public-products'] });
+      toast.success('Product image updated successfully.');
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to upload product image.');
+    },
+  });
+
+  const removeImageMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest(`/products/${productId}/image`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['product-detail', productId] });
+      queryClient.invalidateQueries({ queryKey: ['products-list'] });
+      queryClient.invalidateQueries({ queryKey: ['public-products'] });
+      toast.success('Product image removed.');
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to remove image.');
+    },
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('File too large', 'Product image must be less than 5MB');
+        return;
+      }
+      uploadImageMutation.mutate(file);
+    }
+  };
 
   // Fetch product data
   const { data: productRes, isLoading: isProductLoading } = useQuery({
@@ -314,6 +363,90 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                 required
               />
             </FormField>
+          </div>
+        </div>
+
+        {/* Section 2.5: Product Photo */}
+        <div className="bg-surface rounded-[8px] border border-border p-6 shadow-subtle space-y-4">
+          <div className="flex items-center justify-between border-b border-border pb-3">
+            <div>
+              <h2 className="text-base font-semibold text-text flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 text-accent" />
+                <span>Product Image</span>
+              </h2>
+              <p className="text-xs text-text-muted mt-0.5">
+                Upload or replace the primary product catalog image (PNG, JPEG, WebP up to 5MB).
+              </p>
+            </div>
+            {productRes?.data?.imageUrl && (
+              <span className="text-[10px] uppercase font-bold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                Uploaded
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <div className="relative w-40 h-32 bg-surface-muted/60 rounded-[8px] border border-border flex items-center justify-center p-2 overflow-hidden shrink-0">
+              {productRes?.data?.imageUrl ? (
+                <img
+                  src={productRes.data.imageUrl}
+                  alt={name}
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center text-text-muted/60 text-center">
+                  <ImageIcon className="w-8 h-8 stroke-[1.5] mb-1" />
+                  <span className="text-[10px] font-medium">No photo</span>
+                </div>
+              )}
+
+              {uploadImageMutation.isPending && (
+                <div className="absolute inset-0 bg-surface/80 backdrop-blur-xs flex flex-col items-center justify-center gap-1.5 text-xs font-semibold text-accent">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Uploading...</span>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-3 flex-1 text-center sm:text-left">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+              />
+              <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1.5 text-xs"
+                  disabled={uploadImageMutation.isPending || removeImageMutation.isPending}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>{productRes?.data?.imageUrl ? 'Change Photo' : 'Upload Photo'}</span>
+                </Button>
+
+                {productRes?.data?.imageUrl && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-danger hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs flex items-center gap-1.5"
+                    disabled={uploadImageMutation.isPending || removeImageMutation.isPending}
+                    onClick={() => removeImageMutation.mutate()}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Remove</span>
+                  </Button>
+                )}
+              </div>
+              <p className="text-[11px] text-text-muted leading-relaxed">
+                Images are automatically optimized and served with high-performance edge caching across public and staff portals.
+              </p>
+            </div>
           </div>
         </div>
 
