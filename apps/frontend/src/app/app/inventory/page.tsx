@@ -360,15 +360,15 @@ export default function InventoryBalancesPage() {
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full min-w-[850px] text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="px-4 py-3">{t('products.productName')}</th>
-                  <th className="px-4 py-3">Warehouse</th>
-                  <th className="px-4 py-3 text-right">{t('products.stockOnHand')}</th>
-                  <th className="px-4 py-3 text-right">{t('products.reorderLevel')}</th>
-                  <th className="px-4 py-3 text-center">{t('common.status')}</th>
-                  <th className="px-4 py-3 text-right">{t('common.actions')}</th>
+                  <th className="px-4 py-3 min-w-[200px]">{t('products.productName')}</th>
+                  <th className="px-4 py-3 min-w-[150px]">Warehouse</th>
+                  <th className="px-4 py-3 text-right min-w-[120px]">{t('products.stockOnHand')}</th>
+                  <th className="px-4 py-3 text-right min-w-[110px]">{t('products.reorderLevel')}</th>
+                  <th className="px-4 py-3 text-center min-w-[90px]">{t('common.status')}</th>
+                  <th className="px-4 py-3 text-right min-w-[90px] pr-5">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

@@ -53,15 +53,24 @@ export const updateRolePermissionsSchema = z.object({
 
 // Categories
 export const createCategorySchema = z.object({
-  parentId: z.string().uuid().nullable().optional(),
+  parentId: z.string().uuid().nullable().optional().or(z.literal('')).transform((v) => v || null),
   name: z.string().trim().min(1, 'Category name is required').max(100),
   slug: z
     .string()
     .trim()
-    .min(1)
+    .min(1, 'Slug is required')
     .max(100)
-    .regex(/^[a-z0-9-]+$/, 'Slug must consist of lowercase letters, numbers, and hyphens'),
-  description: z.string().trim().max(1000).nullable().optional(),
+    .transform((val) =>
+      val
+        .toLowerCase()
+        .replace(/[^a-z0-9-]+/g, '-')
+        .replace(/--+/g, '-')
+        .replace(/^-+|-+$/g, '')
+    )
+    .refine((val) => val.length >= 1, {
+      message: 'Slug must consist of lowercase letters, numbers, and hyphens',
+    }),
+  description: z.string().trim().max(1000).nullable().optional().or(z.literal('')).transform((v) => v || null),
   sortOrder: z.coerce.number().int().default(0),
   status: z.enum([RecordStatus.ACTIVE, RecordStatus.ARCHIVED]).default(RecordStatus.ACTIVE),
 });
@@ -91,17 +100,26 @@ export const createProductSchema = z.object({
     .trim()
     .min(2, 'SKU must be at least 2 characters')
     .max(50)
-    .transform((val) => val.toUpperCase()),
-  barcode: z.string().trim().max(50).nullable().optional(),
+    .transform((val) => val.toUpperCase().replace(/\s+/g, '-')),
+  barcode: z.string().trim().max(50).nullable().optional().or(z.literal('')).transform((v) => v || null),
   name: z.string().trim().min(2, 'Product name must be at least 2 characters').max(200),
   slug: z
     .string()
     .trim()
-    .min(2)
+    .min(2, 'Slug must be at least 2 characters')
     .max(200)
-    .regex(/^[a-z0-9-]+$/, 'Slug must contain only lowercase letters, numbers, and hyphens'),
-  description: z.string().trim().max(5000).nullable().optional(),
-  brand: z.string().trim().max(100).nullable().optional(),
+    .transform((val) =>
+      val
+        .toLowerCase()
+        .replace(/[^a-z0-9-]+/g, '-')
+        .replace(/--+/g, '-')
+        .replace(/^-+|-+$/g, '')
+    )
+    .refine((val) => val.length >= 2, {
+      message: 'Slug must contain only lowercase letters, numbers, and hyphens',
+    }),
+  description: z.string().trim().max(5000).nullable().optional().or(z.literal('')).transform((v) => v || null),
+  brand: z.string().trim().max(100).nullable().optional().or(z.literal('')).transform((v) => v || null),
   unit: z.enum([
     UnitOfMeasure.EACH,
     UnitOfMeasure.BOX,
@@ -118,6 +136,7 @@ export const createProductSchema = z.object({
   reorderLevel: z.coerce.number().min(0, 'Reorder level cannot be negative').default(0),
   status: z.enum([RecordStatus.ACTIVE, RecordStatus.ARCHIVED]).default(RecordStatus.ACTIVE),
   isPublished: z.boolean().default(false),
+  imageUrl: z.string().url().nullable().optional().or(z.literal('')).transform((v) => v || null),
 });
 
 export const updateProductSchema = createProductSchema.partial().extend({

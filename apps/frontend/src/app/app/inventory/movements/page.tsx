@@ -264,18 +264,18 @@ export default function StockMovementsPage() {
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full min-w-[950px] text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="px-4 py-3">Seq / Time</th>
-                  <th className="px-4 py-3">Type</th>
-                  <th className="px-4 py-3">{t('products.productName')}</th>
-                  <th className="px-4 py-3">Warehouse</th>
-                  <th className="px-4 py-3 text-right">Delta</th>
-                  <th className="px-4 py-3 text-right">Balance After</th>
-                  {canViewCost && <th className="px-4 py-3 text-right">Unit Cost</th>}
-                  <th className="px-4 py-3">Actor / Reason</th>
-                  <th className="px-4 py-3 text-right">{t('common.actions')}</th>
+                  <th className="px-4 py-3 min-w-[120px]">Seq / Time</th>
+                  <th className="px-4 py-3 min-w-[100px]">Type</th>
+                  <th className="px-4 py-3 min-w-[180px]">{t('products.productName')}</th>
+                  <th className="px-4 py-3 min-w-[140px]">Warehouse</th>
+                  <th className="px-4 py-3 text-right min-w-[90px]">Delta</th>
+                  <th className="px-4 py-3 text-right min-w-[110px]">Balance After</th>
+                  {canViewCost && <th className="px-4 py-3 text-right min-w-[90px]">Unit Cost</th>}
+                  <th className="px-4 py-3 min-w-[140px]">Actor / Reason</th>
+                  <th className="px-4 py-3 text-right min-w-[80px] pr-5">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

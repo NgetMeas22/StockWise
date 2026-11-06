@@ -290,18 +290,18 @@ export default function ProductsPage() {
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full min-w-[1050px] text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-border bg-surface-muted/60 text-text font-bold uppercase tracking-wider text-[10px]">
-                  <th className="px-4 py-3.5">{t('products.productName')}</th>
-                  <th className="px-4 py-3.5">SKU Code / Barcode</th>
-                  <th className="px-4 py-3.5">{t('products.category')}</th>
-                  <th className="px-4 py-3.5 text-right">{t('products.stockLevel')}</th>
-                  <th className="px-4 py-3.5 text-right">{t('products.reorderLevel')}</th>
-                  {canViewCost && <th className="px-4 py-3.5 text-right">{t('products.costPrice')}</th>}
-                  <th className="px-4 py-3.5 text-right">{t('products.sellingPrice')}</th>
-                  <th className="px-4 py-3.5 text-center">{t('common.status')}</th>
-                  <th className="px-4 py-3.5 text-right">{t('common.actions')}</th>
+                  <th className="px-4 py-3.5 min-w-[220px]">{t('products.productName')}</th>
+                  <th className="px-4 py-3.5 min-w-[160px]">SKU Code / Barcode</th>
+                  <th className="px-4 py-3.5 min-w-[130px]">{t('products.category')}</th>
+                  <th className="px-4 py-3.5 text-right min-w-[140px]">{t('products.stockLevel')}</th>
+                  <th className="px-4 py-3.5 text-right min-w-[110px]">{t('products.reorderLevel')}</th>
+                  {canViewCost && <th className="px-4 py-3.5 text-right min-w-[90px]">{t('products.costPrice')}</th>}
+                  <th className="px-4 py-3.5 text-right min-w-[90px]">{t('products.sellingPrice')}</th>
+                  <th className="px-4 py-3.5 text-center min-w-[100px]">{t('common.status')}</th>
+                  <th className="px-4 py-3.5 text-right min-w-[90px] pr-5">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -399,8 +399,8 @@ export default function ProductsPage() {
                       </td>
 
                       {/* Actions */}
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                      <td className="px-4 py-3 text-right pr-5">
+                        <div className="flex items-center justify-end gap-1.5">
                           <Link href={`/app/products/${p.id}`}>
                             <button
                               title="View Details"

@@ -89,13 +89,16 @@ export default function CategoriesPage() {
   const handleNameChange = (val: string) => {
     setName(val);
     if (!editingCategory) {
-      setSlug(
-        val
-          .toLowerCase()
-          .trim()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-+|-+$/g, '')
-      );
+      const sanitized = val
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      if (sanitized) {
+        setSlug(sanitized);
+      } else if (val.trim()) {
+        setSlug(`cat-${Date.now().toString().slice(-6)}`);
+      }
     }
   };
 
@@ -121,8 +124,15 @@ export default function CategoriesPage() {
       toast.success(t('toasts.categorySaved'));
     },
     onError: (err: any) => {
-      setFormError(err.message || 'Failed to save category.');
-      toast.error(err.message || 'Failed to save category.');
+      let msg = err.message || 'Failed to save category.';
+      if (err.details && Array.isArray(err.details) && err.details.length > 0) {
+        const detailsList = err.details
+          .map((d: any) => `• ${d.field ? `${d.field}: ` : ''}${d.message}`)
+          .join('\n');
+        msg = `${msg}\n${detailsList}`;
+      }
+      setFormError(msg);
+      toast.error(err.message || 'Validation error');
     },
   });
 
@@ -130,18 +140,26 @@ export default function CategoriesPage() {
     e.preventDefault();
     setFormError(null);
 
+    const cleanSlug =
+      slug
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9-]+/g, '-')
+        .replace(/--+/g, '-')
+        .replace(/^-+|-+$/g, '') || `cat-${Date.now().toString().slice(-6)}`;
+
     if (!name.trim()) {
       setFormError('Category name is required');
       return;
     }
-    if (!slug.trim()) {
+    if (!cleanSlug) {
       setFormError('Category slug is required');
       return;
     }
 
     const payload = {
       name: name.trim(),
-      slug: slug.trim(),
+      slug: cleanSlug,
       parentId: parentId || null,
       description: description.trim() || null,
       sortOrder: Number(sortOrder) || 0,
@@ -353,9 +371,9 @@ export default function CategoriesPage() {
       >
         <form onSubmit={handleFormSubmit} className="space-y-4">
           {formError && (
-            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-xs rounded-[6px] flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{formError}</span>
+            <div className="p-3.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-xs rounded-[8px] flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <div className="whitespace-pre-line font-medium">{formError}</div>
             </div>
           )}
 
@@ -368,17 +386,17 @@ export default function CategoriesPage() {
             />
           </FormField>
 
-          <FormField label={t('categories.slug')} required hint="Lowercase letters, numbers, and hyphens">
+          <FormField label={t('categories.slug')} required hint={t('categories.slugHint') || 'Lowercase letters, numbers, and hyphens'}>
             <Input
               value={slug}
-              onChange={(e) => setSlug(e.target.value)}
+              onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, '-'))}
               placeholder="e.g. ergonomic-desks"
-              className="font-mono text-xs"
+              className="text-xs"
               required
             />
           </FormField>
 
-          <FormField label={t('categories.parentCategory')} hint="Leave blank to create a top-level department">
+          <FormField label={t('categories.parentCategory')} hint={t('categories.parentHint') || 'Leave blank to create a top-level department'}>
             <select
               value={parentId}
               onChange={(e) => setParentId(e.target.value)}
@@ -405,12 +423,11 @@ export default function CategoriesPage() {
             />
           </FormField>
 
-          <FormField label={t('categories.sortOrder')} hint="Lower numbers appear first">
+          <FormField label={t('categories.sortOrder')} hint={t('categories.sortOrderHint') || 'Lower numbers appear first'}>
             <Input
               type="number"
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
-              className="font-mono"
             />
           </FormField>
         </form>

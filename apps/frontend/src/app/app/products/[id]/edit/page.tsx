@@ -93,9 +93,15 @@ export default function EditProductPage({ params }: EditProductPageProps) {
       router.push(`/app/products/${productId}`);
     },
     onError: (err: any) => {
-      const msg = err.message || 'Failed to update product. Optimistic locking or validation error.';
+      let msg = err.message || 'Failed to update product. Optimistic locking or validation error.';
+      if (err.details && Array.isArray(err.details) && err.details.length > 0) {
+        const detailsList = err.details
+          .map((d: any) => `• ${d.field ? `${d.field}: ` : ''}${d.message}`)
+          .join('\n');
+        msg = `${msg}\n${detailsList}`;
+      }
       setFormError(msg);
-      toast.error(msg);
+      toast.error(err.message || 'Validation error');
     },
   });
 
@@ -103,11 +109,20 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     e.preventDefault();
     setFormError(null);
 
+    const cleanSku = sku.trim().toUpperCase().replace(/\s+/g, '-');
+    const cleanSlug =
+      slug
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9-]+/g, '-')
+        .replace(/--+/g, '-')
+        .replace(/^-+|-+$/g, '') || `prod-${Date.now().toString().slice(-6)}`;
+
     const payload: any = {
-      sku: sku.trim().toUpperCase(),
+      sku: cleanSku,
       barcode: barcode.trim() || null,
       name: name.trim(),
-      slug: slug.trim(),
+      slug: cleanSlug,
       brand: brand.trim() || null,
       description: description.trim() || null,
       categoryId,
@@ -154,9 +169,9 @@ export default function EditProductPage({ params }: EditProductPageProps) {
       </div>
 
       {formError && (
-        <div className="p-4 rounded-[6px] bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-sm flex items-start gap-2.5">
+        <div className="p-4 rounded-[8px] bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-sm flex items-start gap-2.5">
           <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-          <div>{formError}</div>
+          <div className="whitespace-pre-line font-medium">{formError}</div>
         </div>
       )}
 
@@ -168,20 +183,20 @@ export default function EditProductPage({ params }: EditProductPageProps) {
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField label={t('products.sku')} required>
+            <FormField label={t('products.sku')} required hint={t('products.skuHint')}>
               <Input
                 value={sku}
-                onChange={(e) => setSku(e.target.value.toUpperCase())}
-                className="font-mono uppercase font-semibold"
+                onChange={(e) => setSku(e.target.value.toUpperCase().replace(/\s+/g, '-'))}
+                className="uppercase font-semibold tracking-wide"
                 required
               />
             </FormField>
 
-            <FormField label={t('products.barcode')}>
+            <FormField label={t('products.barcode')} hint={t('products.barcodeHint')}>
               <Input
                 value={barcode}
                 onChange={(e) => setBarcode(e.target.value)}
-                className="font-mono"
+                className="tracking-wide"
               />
             </FormField>
 
@@ -196,11 +211,11 @@ export default function EditProductPage({ params }: EditProductPageProps) {
             </div>
 
             <div className="sm:col-span-2">
-              <FormField label={t('products.urlSlug')} required>
+              <FormField label={t('products.urlSlug')} required hint={t('products.slugHint')}>
                 <Input
                   value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
-                  className="font-mono text-xs"
+                  onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, '-'))}
+                  className="text-xs"
                   required
                 />
               </FormField>
