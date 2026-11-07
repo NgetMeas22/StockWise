@@ -28,12 +28,16 @@ export interface AccentPreset {
 }
 
 export const ACCENT_PRESETS: AccentPreset[] = [
-  { key: 'cyan', name: 'Khema Dental Cyan', color: '#0284C7' },
-  { key: 'teal', name: 'Clinical Teal', color: '#0F766E' },
+  { key: 'teal', name: 'StockWise Teal', color: '#0F766E' },
+  { key: 'emerald', name: 'Emerald Green', color: '#10B981' },
   { key: 'blue', name: 'Classic Blue', color: '#2563EB' },
   { key: 'indigo', name: 'Modern Indigo', color: '#4F46E5' },
-  { key: 'emerald', name: 'Emerald Green', color: '#10B981' },
-  { key: 'slate', name: 'Titanium Slate', color: '#475569' },
+  { key: 'violet', name: 'Royal Violet', color: '#8B5CF6' },
+  { key: 'purple', name: 'Deep Purple', color: '#A855F7' },
+  { key: 'rose', name: 'Rose Crimson', color: '#F43F5E' },
+  { key: 'amber', name: 'Amber Gold', color: '#F59E0B' },
+  { key: 'cyan', name: 'Dental Cyan', color: '#06B6D4' },
+  { key: 'slate', name: 'Graphite Slate', color: '#64748B' },
 ];
 
 interface ThemeContextType {

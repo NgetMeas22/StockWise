@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useIsFetching } from '@tanstack/react-query';
 import { useAuth } from '../../lib/auth-context';
 import { useTheme } from '../../lib/theme-context';
 import { useTranslation } from '../../i18n/i18n-context';
@@ -42,6 +43,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { resolvedTheme, toggleTheme } = useTheme();
   const { t, language, setLanguage, languages } = useTranslation();
   const { toasts } = useToast();
+  const isFetching = useIsFetching();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -138,6 +140,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex bg-bg text-text">
+      {/* Top Global Loading Bar on Active Queries / Fetching */}
+      {isFetching > 0 && (
+        <div className="fixed top-0 left-0 right-0 h-0.5 z-[99999] bg-accent/20 overflow-hidden pointer-events-none">
+          <div className="h-full bg-accent animate-top-loading w-1/3 rounded-full shadow-sm" />
+        </div>
+      )}
+
       {/* Mobile Drawer Backdrop */}
       {sidebarOpen && (
         <div

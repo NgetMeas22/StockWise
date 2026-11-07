@@ -410,119 +410,119 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Accent Color Selection (Clean, Compact, Short + Custom Color Setter) */}
-          <div className="bg-surface rounded-[8px] border border-border p-5 shadow-subtle space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-border">
+          {/* Accent Color Selection (Matching Pic 5 Exactly + Custom Color Setter) */}
+          <div className="bg-surface rounded-[12px] border border-border p-6 shadow-subtle space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border">
               <div>
-                <h2 className="text-base font-semibold text-text">{t('settings.accentColorLabel')}</h2>
+                <h2 className="text-base font-bold text-text">Primary Accent Color</h2>
                 <p className="text-xs text-text-muted mt-0.5">
-                  Pick a curated brand accent or set a custom hex color for buttons, badges, and highlights.
+                  Select your preferred brand accent color for primary buttons, active badges, and focus rings.
                 </p>
               </div>
               <div className="flex items-center gap-2 self-start sm:self-auto">
                 <span className="text-xs text-text-muted font-medium">Active:</span>
                 <span
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold text-white shadow-xs"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-white shadow-xs"
                   style={{ backgroundColor: accentColor === 'custom' ? customColor : (ACCENT_PRESETS.find(p => p.key === accentColor)?.color || customColor) }}
                 >
-                  <span className="w-2 h-2 rounded-full bg-white/80 animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-white/90 animate-pulse" />
                   {accentColor === 'custom' ? customColor.toUpperCase() : (ACCENT_PRESETS.find(p => p.key === accentColor)?.name || 'Custom')}
                 </span>
               </div>
             </div>
 
-            {/* Presets and Custom Picker in one compact row/block */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center pt-1">
-              {/* Left: Quick Preset Swatches */}
-              <div className="space-y-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-text-muted">Curated Themes</span>
-                <div className="flex flex-wrap items-center gap-2.5">
-                  {ACCENT_PRESETS.map((opt) => {
-                    const isSelected = accentColor === opt.key;
-                    return (
-                      <button
-                        key={opt.key}
-                        type="button"
-                        onClick={() => {
-                          setAccentColor(opt.key);
-                          setHexInput(opt.color);
-                          toast.success('Accent color updated', `Brand accent set to ${opt.name}.`);
-                        }}
-                        title={opt.name}
-                        className={`group relative flex items-center gap-2 p-1.5 pr-3 rounded-full border transition-all ${
-                          isSelected
-                            ? 'border-accent bg-accent/10 ring-2 ring-accent/30 font-semibold'
-                            : 'border-border bg-surface hover:border-text-muted/40 hover:bg-surface-muted'
-                        }`}
-                      >
-                        <div
-                          className="w-6 h-6 rounded-full flex items-center justify-center shadow-xs shrink-0 transition-transform group-hover:scale-110"
-                          style={{ backgroundColor: opt.color }}
-                        >
-                          {isSelected && <Check className="w-3.5 h-3.5 text-white stroke-[2.5]" />}
-                        </div>
-                        <span className="text-xs text-text">{opt.name.replace('Khema Dental ', '').replace('StockWise ', '')}</span>
-                      </button>
-                    );
-                  })}
+            {/* Pic 5 Style Large Swatch Cards Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5">
+              {ACCENT_PRESETS.map((opt) => {
+                const isSelected = accentColor === opt.key;
+                return (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => {
+                      setAccentColor(opt.key);
+                      setHexInput(opt.color);
+                      toast.success('Accent Color Updated', `Primary accent changed to ${opt.name}.`);
+                    }}
+                    className={`flex flex-col items-center justify-center p-4 rounded-[10px] border transition-all duration-150 ${
+                      isSelected
+                        ? 'border-white/80 dark:border-white/70 bg-surface ring-2 ring-accent shadow-md scale-[1.02]'
+                        : 'border-border/80 bg-surface hover:border-text-muted/40 hover:bg-surface-muted/60'
+                    }`}
+                  >
+                    <div
+                      className="w-9 h-9 rounded-full flex items-center justify-center shadow-md shrink-0 mb-2.5 transition-transform group-hover:scale-105"
+                      style={{ backgroundColor: opt.color }}
+                    >
+                      {isSelected && <Check className="w-5 h-5 text-white stroke-[2.5] drop-shadow-sm" />}
+                    </div>
+                    <span className="text-xs font-semibold text-text text-center truncate w-full">
+                      {opt.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Custom Color Setter Card */}
+            <div className="p-4 rounded-[10px] bg-surface-muted/50 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Palette className="w-4 h-4 text-accent" />
+                <div>
+                  <span className="text-xs font-bold text-text block">Custom Hex Color Setter</span>
+                  <span className="text-[11px] text-text-muted">Need a specific clinical or corporate brand code? Enter any 6-digit hex.</span>
                 </div>
               </div>
 
-              {/* Right: Custom Color Setter */}
-              <div className="p-3.5 rounded-[8px] bg-surface-muted/40 border border-border space-y-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-text-muted flex items-center gap-1.5">
-                  <Palette className="w-3.5 h-3.5 text-accent" /> Set Custom Color
-                </span>
-                <div className="flex items-center gap-2">
-                  <div className="relative w-9 h-9 rounded-lg border border-border shadow-xs overflow-hidden shrink-0 cursor-pointer hover:ring-2 hover:ring-accent transition-all">
-                    <input
-                      type="color"
-                      value={hexInput}
-                      onChange={(e) => {
-                        setHexInput(e.target.value);
-                        setCustomColor(e.target.value);
-                      }}
-                      className="absolute -inset-2 w-14 h-14 opacity-0 cursor-pointer"
-                      title="Click to open color picker"
-                    />
-                    <div
-                      className="w-full h-full flex items-center justify-center transition-colors"
-                      style={{ backgroundColor: hexInput }}
-                    >
-                      {accentColor === 'custom' && <Check className="w-4 h-4 text-white drop-shadow" />}
-                    </div>
-                  </div>
-
+              <div className="flex items-center gap-2">
+                <div className="relative w-9 h-9 rounded-lg border border-border shadow-xs overflow-hidden shrink-0 cursor-pointer hover:ring-2 hover:ring-accent transition-all">
                   <input
-                    type="text"
+                    type="color"
                     value={hexInput}
                     onChange={(e) => {
-                      const val = e.target.value;
-                      setHexInput(val);
-                      if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-                        setCustomColor(val);
-                      }
+                      setHexInput(e.target.value);
+                      setCustomColor(e.target.value);
                     }}
-                    placeholder="#0284C7"
-                    className="w-28 px-2.5 py-1.5 text-xs font-mono font-semibold rounded-[6px] border border-border bg-surface text-text uppercase focus:outline-none focus:ring-2 focus:ring-accent"
+                    className="absolute -inset-2 w-14 h-14 opacity-0 cursor-pointer"
+                    title="Click to open color picker"
                   />
-
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={accentColor === 'custom' ? 'primary' : 'outline'}
-                    onClick={() => {
-                      if (/^#[0-9A-Fa-f]{6}$/.test(hexInput)) {
-                        setCustomColor(hexInput);
-                        toast.success('Custom Color Applied', `Brand accent hex set to ${hexInput.toUpperCase()}`);
-                      } else {
-                        toast.error('Invalid Hex Format', 'Please enter a valid 6-character hex code like #0284C7');
-                      }
-                    }}
+                  <div
+                    className="w-full h-full flex items-center justify-center transition-colors"
+                    style={{ backgroundColor: hexInput }}
                   >
-                    Apply
-                  </Button>
+                    {accentColor === 'custom' && <Check className="w-4 h-4 text-white drop-shadow" />}
+                  </div>
                 </div>
+
+                <input
+                  type="text"
+                  value={hexInput}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setHexInput(val);
+                    if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+                      setCustomColor(val);
+                    }
+                  }}
+                  placeholder="#0F766E"
+                  className="w-28 px-3 py-1.5 text-xs font-mono font-semibold rounded-[6px] border border-border bg-surface text-text uppercase focus:outline-none focus:ring-2 focus:ring-accent"
+                />
+
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={accentColor === 'custom' ? 'primary' : 'outline'}
+                  onClick={() => {
+                    if (/^#[0-9A-Fa-f]{6}$/.test(hexInput)) {
+                      setCustomColor(hexInput);
+                      toast.success('Custom Color Applied', `Brand accent hex set to ${hexInput.toUpperCase()}`);
+                    } else {
+                      toast.error('Invalid Hex Format', 'Please enter a valid 6-character hex code like #0F766E');
+                    }
+                  }}
+                >
+                  Apply Custom Color
+                </Button>
               </div>
             </div>
           </div>
