@@ -54,16 +54,16 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           {/* Logo Brand Pill */}
           <Link href="/" className="flex items-center gap-3 group">
             <img
-              src="/images/khema-logo.png"
-              alt="Khema Digital Dental Solution"
-              className="h-9 sm:h-10 w-auto object-contain rounded-lg bg-white p-1 border border-border shadow-xs group-hover:scale-105 transition-transform"
+              src="/images/dental-logo.webp"
+              alt="Dental Systems Platform"
+              className="h-10 sm:h-11 w-auto object-contain rounded-lg bg-white p-1 border border-border shadow-xs group-hover:scale-105 transition-transform"
             />
             <div className="flex flex-col">
               <span className="font-extrabold text-sm sm:text-base tracking-tight text-text leading-tight group-hover:text-accent transition-colors">
-                Khema Dental
+                Dental Systems
               </span>
               <span className="text-[10px] text-text-muted font-medium tracking-wide">
-                Digital Dental Platform
+                Inventory Platform
               </span>
             </div>
           </Link>
@@ -355,11 +355,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <div className="space-y-3">
             <div className="flex items-center gap-2.5">
               <img
-                src="/images/khema-logo.png"
-                alt="Khema Digital Dental Solution"
-                className="h-8 w-auto object-contain bg-white rounded-lg p-1 border border-border"
+                src="/images/dental-logo.webp"
+                alt="Dental Systems Platform"
+                className="h-9 w-auto object-contain bg-white rounded-lg p-1 border border-border shadow-2xs"
               />
-              <span className="font-bold text-text text-sm">Khema Dental</span>
+              <span className="font-bold text-text text-sm">Dental Systems</span>
             </div>
             <p className="text-text-muted leading-relaxed max-w-xs">
               Complete dental inventory management, room replenishment queues, and treatment-linked material traceability.
@@ -390,11 +390,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <h4 className="font-bold text-text mb-3 uppercase tracking-wider text-[11px]">Contact & Support</h4>
             <p className="text-text-muted leading-relaxed">
               Phnom Penh, Cambodia<br />
-              Email: support@khemadental.com<br />
+              Email: support@dentalsystems.com<br />
               Phone: +855 23 888 999
             </p>
             <div className="mt-4 pt-3 border-t border-border/60 text-[10px]">
-              © {new Date().getFullYear()} Khema Dental. All rights reserved.
+              © {new Date().getFullYear()} Dental Systems. All rights reserved.
             </div>
           </div>
         </div>

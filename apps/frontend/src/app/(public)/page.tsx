@@ -250,7 +250,7 @@ export default function HomePage() {
                 <span className="w-3 h-3 rounded-full bg-rose-500/80 inline-block" />
                 <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block" />
                 <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
-                <span className="text-xs font-semibold text-text-muted ml-2">Khema Dental Clinical Workspace — Operatory 101</span>
+                <span className="text-xs font-semibold text-text-muted ml-2">Dental Systems Clinical Workspace — Operatory 101</span>
               </div>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-accent/10 text-accent border border-accent/20">
                 Live Inventory Connected

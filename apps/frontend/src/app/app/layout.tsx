@@ -166,13 +166,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="h-16 px-4 border-b border-border flex items-center justify-between bg-surface">
             <Link href="/app/dashboard" className="flex items-center gap-2.5 min-w-0">
               <img
-                src="/images/khema-logo.png"
-                alt="Khema Digital Dental Solution"
-                className="h-9 w-auto object-contain rounded bg-white p-1 border border-border shadow-2xs shrink-0"
+                src="/images/dental-logo.webp"
+                alt="Dental Systems Platform"
+                className="h-10 w-auto object-contain rounded-lg bg-white p-1 border border-border shadow-2xs shrink-0"
               />
               <div className="flex flex-col min-w-0">
                 <span className="font-bold text-xs tracking-tight text-text leading-tight truncate">
-                  Khema Dental
+                  Dental Systems
                 </span>
                 <span className="text-[10px] text-text-muted font-medium truncate">Inventory Suite</span>
               </div>

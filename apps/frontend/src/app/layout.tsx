@@ -4,10 +4,10 @@ import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'Khema Dental — Digital Dental Solution & Inventory',
-  description: 'Enterprise-grade dental inventory management, stock ledger, procurement, and public catalog.',
+  title: 'Dental Systems — Smart Dental Inventory Platform',
+  description: 'Enterprise-grade dental inventory management, stock ledger, procurement, and clinical supply tracking.',
   icons: {
-    icon: '/images/khema-logo.png',
+    icon: '/images/dental-logo.webp',
   },
 };
 

@@ -69,13 +69,13 @@ export default function LoginPage() {
       </div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Link href="/" className="flex flex-col items-center justify-center gap-2 mb-4">
+        <Link href="/" className="flex flex-col items-center justify-center gap-2 mb-4 group">
           <img
-            src="/images/khema-logo.png"
-            alt="Khema Digital Dental Solution"
-            className="h-14 w-auto object-contain bg-white rounded-lg p-2 border border-border shadow-xs"
+            src="/images/dental-logo.webp"
+            alt="Dental Systems Platform"
+            className="h-16 w-auto object-contain bg-white rounded-xl p-2 border border-border shadow-xs group-hover:scale-105 transition-transform"
           />
-          <span className="font-bold text-lg tracking-tight text-text">Khema Dental Inventory</span>
+          <span className="font-bold text-lg tracking-tight text-text">Dental Systems Inventory</span>
         </Link>
         <h2 className="text-center text-xl font-bold tracking-tight text-text">
           {t('auth.login')}
