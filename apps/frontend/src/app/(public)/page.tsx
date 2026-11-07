@@ -29,11 +29,92 @@ import {
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 
+function ToothSvg({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className || "w-3.5 h-3.5"}>
+      <path d="M7 2c-2.5 0-4.5 2-4.5 4.5 0 2.2 1.2 4.1 3 5 0 2.5 1 7.5 3 10.5.8 1.2 2.5 1.2 3.3 0 1.2-1.8 2.2-5 2.2-8.5 0 3.5 1 6.7 2.2 8.5.8 1.2 2.5 1.2 3.3 0 2-3 3-8 3-10.5 1.8-.9 3-2.8 3-5C21.5 4 19.5 2 17 2c-1.8 0-3.3 1-4.1 2.5C12.1 3.5 11 3 9.8 3 8.6 3 7.6 3.5 7 2z" />
+    </svg>
+  );
+}
+
 export default function HomePage() {
   const router = useRouter();
   const { language } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [selectedTooth, setSelectedTooth] = useState('UL4');
+
+  const upperTeeth = [
+    { code: 'UR8', fdi: '18' },
+    { code: 'UR7', fdi: '17' },
+    { code: 'UR6', fdi: '16' },
+    { code: 'UR5', fdi: '15' },
+    { code: 'UR4', fdi: '14' },
+    { code: 'UR3', fdi: '13' },
+    { code: 'UR2', fdi: '12' },
+    { code: 'UR1', fdi: '11' },
+    { code: 'UL1', fdi: '21' },
+    { code: 'UL2', fdi: '22' },
+    { code: 'UL3', fdi: '23' },
+    { code: 'UL4', fdi: '24' },
+    { code: 'UL5', fdi: '25' },
+    { code: 'UL6', fdi: '26' },
+    { code: 'UL7', fdi: '27' },
+    { code: 'UL8', fdi: '28' },
+  ];
+
+  const lowerTeeth = [
+    { code: 'LR8', fdi: '48' },
+    { code: 'LR7', fdi: '47' },
+    { code: 'LR6', fdi: '46' },
+    { code: 'LR5', fdi: '45' },
+    { code: 'LR4', fdi: '44' },
+    { code: 'LR3', fdi: '43' },
+    { code: 'LR2', fdi: '42' },
+    { code: 'LR1', fdi: '41' },
+    { code: 'LL1', fdi: '31' },
+    { code: 'LL2', fdi: '32' },
+    { code: 'LL3', fdi: '33' },
+    { code: 'LL4', fdi: '34' },
+    { code: 'LL5', fdi: '35' },
+    { code: 'LL6', fdi: '36' },
+    { code: 'LL7', fdi: '37' },
+    { code: 'LL8', fdi: '38' },
+  ];
+
+  const toothProcedures: Record<string, { title: string; badge: string; items: string }> = {
+    UL4: {
+      title: 'Tooth #24 (UL4) — Composite Restoration (Class II OD)',
+      badge: 'Restorative Active',
+      items: 'Composite Capsule Universal A2 (-1 EACH), Single Bond Universal Adhesive (-0.1 ML), Disposable Microbrush (-2 EACH), 37% Etchant Gel (-0.05 ML)',
+    },
+    UR6: {
+      title: 'Tooth #16 (UR6) — Zirconia Crown Impression',
+      badge: 'Prosthodontics Active',
+      items: 'Retraction Cord #00 (-1 EACH), VPS Heavy Body (-15 ML), VPS Light Body Wash (-5 ML), Automix Temp Resin (-3 G)',
+    },
+    UR1: {
+      title: 'Tooth #11 (UR1) — Anterior Cosmetic Veneer',
+      badge: 'Esthetic Active',
+      items: 'Flowable Composite Bleach White (-0.5 G), Mylar Matrix Strip (-1 EACH), Sof-Lex Finishing Discs (-2 EACH)',
+    },
+    LL6: {
+      title: 'Tooth #36 (LL6) — Molar Endodontic Therapy',
+      badge: 'Endodontics Active',
+      items: 'Rotary Endo Files WaveOne Gold (-1 PACK), Sodium Hypochlorite 3% (-10 ML), Gutta-Percha Points (-3 EACH), AH Plus Sealer (-0.2 G)',
+    },
+    LR6: {
+      title: 'Tooth #46 (LR6) — Surgical Extraction & Socket Preservation',
+      badge: 'Oral Surgery Active',
+      items: 'Lidocaine 2% w/ Epinephrine (-2 CARP), Sterile Gauze Sponges 4x4 (-4 PACK), Collagen Bone Plug (-1 EACH), Vicryl Sutures 4-0 (-1 EACH)',
+    },
+  };
+
+  const activeProcedure = toothProcedures[selectedTooth] || {
+    title: `Tooth ${selectedTooth} — Diagnostic Inspection & Fluoride Varnish`,
+    badge: 'Preventive Active',
+    items: 'Disposable Mouth Mirror (-1 EACH), Fluoride Varnish 5% Unit-Dose (-1 EACH), Prophy Angle & Paste (-1 EACH)',
+  };
 
   const { data: categoriesData } = useQuery({
     queryKey: ['public-categories'],
@@ -200,38 +281,114 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Tooth Chart Representation */}
-              <div className="bg-surface-muted/40 rounded-xl p-4 border border-border/80">
-                <div className="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2 flex items-center justify-between">
-                  <span>Permanent Adult Teeth Chart</span>
-                  <span className="text-accent font-semibold">Tooth #14 Composite Restoration Active</span>
-                </div>
-                <div className="grid grid-cols-16 gap-1 text-center py-2 border-y border-border/60">
-                  {['UR8','UR7','UR6','UR5','UR4','UR3','UR2','UR1','UL1','UL2','UL3','UL4','UL5','UL6','UL7','UL8'].map((t, idx) => (
-                    <div
-                      key={t}
-                      className={`p-1.5 rounded text-[10px] font-mono transition-colors ${
-                        t === 'UL4'
-                          ? 'bg-accent text-white font-bold shadow-xs scale-105'
-                          : 'bg-surface border border-border text-text hover:border-accent'
-                      }`}
-                    >
-                      🦷<br />{t}
-                    </div>
-                  ))}
+              {/* Interactive Adult Teeth Odontogram Chart */}
+              <div className="bg-surface-muted/50 rounded-xl p-4 sm:p-5 border border-border/80 space-y-3.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-2 border-b border-border/60">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                    <span className="text-xs font-bold text-text uppercase tracking-wider">
+                      Interactive Clinical Dental Chart (Click any tooth to test auto-deduction)
+                    </span>
+                  </div>
+                  <span className="text-xs font-semibold text-accent">
+                    {activeProcedure.badge}
+                  </span>
                 </div>
 
-                {/* Auto-Deducted Materials Banner */}
-                <div className="mt-4 p-3 rounded-lg bg-surface border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <div>
-                      <span className="font-bold text-text">Auto Inventory Deduction for Tooth #14:</span>
-                      <span className="text-text-muted ml-1.5">Composite Capsule A2 (-1 EACH), Microbrush (-2 EACH), Etchant (-0.1 ML)</span>
+                {/* Upper Jaw (Maxillary Arch) */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-text-muted px-1">
+                    <span>Upper Right (UR 18–11)</span>
+                    <span className="uppercase tracking-widest text-[9px] text-accent">Maxillary Arch</span>
+                    <span>Upper Left (UL 21–28)</span>
+                  </div>
+                  <div
+                    className="w-full overflow-x-auto pb-1 scrollbar-none"
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(16, minmax(36px, 1fr))',
+                      gap: '4px',
+                    }}
+                  >
+                    {upperTeeth.map((t) => {
+                      const isSelected = selectedTooth === t.code;
+                      return (
+                        <button
+                          key={t.code}
+                          type="button"
+                          onClick={() => setSelectedTooth(t.code)}
+                          title={`Tooth ${t.code} (FDI #${t.fdi}) - Click to inspect deduction`}
+                          className={`flex flex-col items-center justify-center p-1.5 rounded-lg border transition-all ${
+                            isSelected
+                              ? 'bg-accent text-white border-accent ring-2 ring-accent/30 font-bold shadow-xs scale-105 z-10'
+                              : 'bg-surface border-border text-text hover:border-accent hover:bg-surface-muted'
+                          }`}
+                        >
+                          <ToothSvg className={`w-3.5 h-3.5 mb-1 ${isSelected ? 'text-white' : 'text-accent'}`} />
+                          <span className="text-[10px] font-mono leading-none">{t.code}</span>
+                          <span className="text-[8px] opacity-70 leading-none mt-0.5">#{t.fdi}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Lower Jaw (Mandibular Arch) */}
+                <div className="space-y-1 pt-1 border-t border-border/40">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-text-muted px-1">
+                    <span>Lower Right (LR 48–41)</span>
+                    <span className="uppercase tracking-widest text-[9px] text-accent">Mandibular Arch</span>
+                    <span>Lower Left (LL 31–38)</span>
+                  </div>
+                  <div
+                    className="w-full overflow-x-auto pb-1 scrollbar-none"
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(16, minmax(36px, 1fr))',
+                      gap: '4px',
+                    }}
+                  >
+                    {lowerTeeth.map((t) => {
+                      const isSelected = selectedTooth === t.code;
+                      return (
+                        <button
+                          key={t.code}
+                          type="button"
+                          onClick={() => setSelectedTooth(t.code)}
+                          title={`Tooth ${t.code} (FDI #${t.fdi}) - Click to inspect deduction`}
+                          className={`flex flex-col items-center justify-center p-1.5 rounded-lg border transition-all ${
+                            isSelected
+                              ? 'bg-accent text-white border-accent ring-2 ring-accent/30 font-bold shadow-xs scale-105 z-10'
+                              : 'bg-surface border-border text-text hover:border-accent hover:bg-surface-muted'
+                          }`}
+                        >
+                          <ToothSvg className={`w-3.5 h-3.5 mb-1 ${isSelected ? 'text-white' : 'text-accent'}`} />
+                          <span className="text-[10px] font-mono leading-none">{t.code}</span>
+                          <span className="text-[8px] opacity-70 leading-none mt-0.5">#{t.fdi}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Live Auto-Deducted Materials Banner */}
+                <div className="mt-3.5 p-3.5 rounded-xl bg-surface border border-border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+                  <div className="flex items-start gap-2.5 min-w-0">
+                    <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5">
+                      <CheckCircle2 className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-bold text-text truncate">
+                        {activeProcedure.title}
+                      </div>
+                      <div className="text-[11px] text-text-muted mt-0.5 leading-snug">
+                        <span className="font-semibold text-accent">Auto-Deducted: </span>
+                        {activeProcedure.items}
+                      </div>
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-[11px] shrink-0">
-                    Stock Deducted Automatically
+                  <span className="self-start md:self-auto px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-[11px] border border-emerald-500/20 whitespace-nowrap shrink-0">
+                    Ledger Sync: Real-Time
                   </span>
                 </div>
               </div>
