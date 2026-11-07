@@ -28,6 +28,7 @@ import { settingsRoutes } from './modules/settings/settings.routes.js';
 import { publicRoutes } from './modules/public/public.routes.js';
 import { systemRoutes } from './modules/system/system.routes.js';
 import { requestsRoutes } from './modules/requests/requests.routes.js';
+import { proceduresRouter } from './modules/procedures/procedures.routes.js';
 
 // BigInt serialization polyfill for JSON.stringify
 (BigInt.prototype as any).toJSON = function () {
@@ -106,6 +107,7 @@ export function createApp(): Express {
   apiV1.use('/audit-logs', auditRoutes);
   apiV1.use('/settings', settingsRoutes);
   apiV1.use('/requests', requestsRoutes);
+  apiV1.use('/procedures', proceduresRouter);
 
   app.use('/api/v1', apiV1);
 

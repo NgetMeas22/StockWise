@@ -90,6 +90,8 @@ model User {
   orderedPOs         PurchaseOrder[]  @relation("POOrderer")
   cancelledPOs       PurchaseOrder[]  @relation("POCanceller")
   goodsReceipts      GoodsReceipt[]
+  requestedRoomRequests RoomRequest[] @relation("RoomRequester")
+  dispatchedRoomRequests RoomRequest[] @relation("RoomDispatcher")
 
   @@map("users")
 }
@@ -211,6 +213,8 @@ model Product {
   stockMovements    StockMovement[]
   poItems           PurchaseOrderItem[]
   receiptItems      GoodsReceiptItem[]
+  procedureMaterials ProcedureMaterial[]
+  roomRequests       RoomRequest[]
 
   @@index([categoryId, status])
   @@index([status, isPublished])
@@ -425,5 +429,106 @@ model DocumentCounter {
 
   @@id([scope, year])
   @@map("document_counters")
+}
+
+enum ProcedureCategory {
+  RESTORATIVE
+  ENDODONTICS
+  PROSTHODONTICS
+  ORAL_SURGERY
+  PREVENTIVE
+  PERIODONTICS
+  ORTHODONTICS
+  OTHER
+}
+
+model OperatoryRoom {
+  id          String        @id @default(uuid())
+  code        String        @unique
+  name        String
+  description String?
+  floorOrWing String?       @map("floor_or_wing")
+  status      RecordStatus  @default(ACTIVE)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  roomRequests RoomRequest[]
+
+  @@map("operatory_rooms")
+}
+
+model ClinicalProcedure {
+  id                 String             @id @default(uuid())
+  code               String             @unique
+  name               String
+  category           ProcedureCategory  @default(RESTORATIVE)
+  defaultDurationMin Int                @default(45) @map("default_duration_min")
+  description        String?
+  status             RecordStatus       @default(ACTIVE)
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  materials          ProcedureMaterial[]
+
+  @@map("clinical_procedures")
+}
+
+model ProcedureMaterial {
+  id              String            @id @default(uuid())
+  procedureId     String            @map("procedure_id")
+  productId       String            @map("product_id")
+  defaultQuantity Decimal           @default(1) @map("default_quantity") @db.Decimal(14, 3)
+  isRequired      Boolean           @default(true) @map("is_required")
+  notes           String?
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  procedure       ClinicalProcedure @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+  product         Product           @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([procedureId, productId])
+  @@index([productId])
+  @@map("procedure_materials")
+}
+
+enum RequestUrgency {
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  FULFILLED
+  REJECTED
+  CANCELLED
+}
+
+model RoomRequest {
+  id            String         @id @default(uuid())
+  requestNumber String         @unique @map("request_number")
+  room          String
+  operatoryId   String?        @map("operatory_id")
+  productId     String         @map("product_id")
+  quantity      Decimal        @db.Decimal(14, 3)
+  urgency       RequestUrgency @default(NORMAL)
+  status        RequestStatus  @default(PENDING)
+  notes         String?
+  requestedBy   String         @map("requested_by")
+  dispatchedBy  String?        @map("dispatched_by")
+  dispatchedAt  DateTime?      @map("dispatched_at")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  product       Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
+  requester     User           @relation("RoomRequester", fields: [requestedBy], references: [id], onDelete: Restrict)
+  dispatcher    User?          @relation("RoomDispatcher", fields: [dispatchedBy], references: [id], onDelete: SetNull)
+  operatory     OperatoryRoom? @relation(fields: [operatoryId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([room])
+  @@index([productId])
+  @@map("room_requests")
 }
 
