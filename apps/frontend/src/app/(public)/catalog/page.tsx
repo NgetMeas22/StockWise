@@ -258,7 +258,7 @@ function CatalogContent() {
                       >
                         <Box className="w-12 h-12 stroke-[1.5]" />
                         <span className="text-[10px] font-semibold uppercase tracking-wider mt-1 text-text-muted/70">
-                          {prod.brand || 'Khema Dental'}
+                          {prod.brand || 'Dental Systems'}
                         </span>
                       </div>
                     </div>

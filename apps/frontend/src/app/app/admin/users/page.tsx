@@ -431,7 +431,7 @@ export default function UsersAdminPage() {
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowCreateModal(false)}>
-              {t('actions.cancel')}
+              {t('common.cancel') || 'Cancel'}
             </Button>
             <Button
               onClick={() => {
@@ -560,7 +560,7 @@ export default function UsersAdminPage() {
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setEditingUser(null)}>
-              {t('actions.cancel')}
+              {t('common.cancel') || 'Cancel'}
             </Button>
             <Button
               onClick={() => {

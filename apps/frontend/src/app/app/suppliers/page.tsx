@@ -357,7 +357,7 @@ export default function SuppliersPage() {
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowModal(false)}>
-              {t('actions.cancel')}
+              {t('common.cancel') || 'Cancel'}
             </Button>
             <Button
               onClick={handleFormSubmit}

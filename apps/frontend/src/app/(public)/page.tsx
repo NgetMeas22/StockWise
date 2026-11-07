@@ -222,8 +222,8 @@ export default function HomePage() {
           {/* Subtitle from Video */}
           <p className="max-w-3xl mx-auto text-sm sm:text-lg text-text-muted leading-relaxed">
             {language === 'kh'
-              ? 'ប្រើប្រាស់ Khema Dental ជាប្រព័ន្ធគ្រប់គ្រងស្តុកពេទ្យធ្មេញ ដើម្បីតាមដានស្តុកពេលវេលាជាក់ស្តែង ស្កេនបាកូដ ស្នើសុំសម្ភារតាមបន្ទប់ គ្រប់គ្រងកាលបរិច្ឆេទផុតកំណត់ និងកាត់បន្ថយការចំណាយខ្ជះខ្ជាយ។'
-              : 'Use Khema Dental as dental inventory management software to maintain real-time stock levels, barcode updates, room requests, expiry risk, and automatically linked material costs across your clinic.'}
+              ? 'ប្រើប្រាស់ Dental Systems ជាប្រព័ន្ធគ្រប់គ្រងស្តុកពេទ្យធ្មេញ ដើម្បីតាមដានស្តុកពេលវេលាជាក់ស្តែង ស្កេនបាកូដ ស្នើសុំសម្ភារតាមបន្ទប់ គ្រប់គ្រងកាលបរិច្ឆេទផុតកំណត់ និងកាត់បន្ថយការចំណាយខ្ជះខ្ជាយ។'
+              : 'Use Dental Systems as dental inventory management software to maintain real-time stock levels, barcode updates, room requests, expiry risk, and automatically linked material costs across your clinic.'}
           </p>
 
           {/* CTA Buttons */}
@@ -488,8 +488,8 @@ export default function HomePage() {
         </h2>
         <p className="text-sm sm:text-base text-text-muted leading-relaxed max-w-2xl mx-auto">
           {language === 'kh'
-            ? 'ការខាតបង់លាក់មុខធំបំផុតនៅក្នុងគ្លីនិក គឺសម្ភារដែលអ្នកគិតថាមាន តែការពិតអស់ស្តុក។ ការតាមដានដោយដៃ ឬផ្ញើសារ WhatsApp ធ្វើឱ្យការគ្រប់គ្រងស្តុកមានភាពច្របូកច្របល់ និងពិបាកសវនកម្ម។ Khema Dental ភ្ជាប់ការងារគ្លីនិកផ្ទាល់ទៅកាន់បញ្ជីស្តុកកណ្តាល។'
-            : 'The biggest hidden cost in a clinic is materials you thought you had but actually ran out of. Manual tracking and disconnected WhatsApp messages make dental clinic inventory management reactive, expensive, and hard to audit. Khema Dental stops the guesswork by synchronizing daily operatory usage directly with your centralized stock ledger.'}
+            ? 'ការខាតបង់លាក់មុខធំបំផុតនៅក្នុងគ្លីនិក គឺសម្ភារដែលអ្នកគិតថាមាន តែការពិតអស់ស្តុក។ ការតាមដានដោយដៃ ឬផ្ញើសារ WhatsApp ធ្វើឱ្យការគ្រប់គ្រងស្តុកមានភាពច្របូកច្របល់ និងពិបាកសវនកម្ម។ Dental Systems ភ្ជាប់ការងារគ្លីនិកផ្ទាល់ទៅកាន់បញ្ជីស្តុកកណ្តាល។'
+            : 'The biggest hidden cost in a clinic is materials you thought you had but actually ran out of. Manual tracking and disconnected WhatsApp messages make dental clinic inventory management reactive, expensive, and hard to audit. Dental Systems stops the guesswork by synchronizing daily operatory usage directly with your centralized stock ledger.'}
         </p>
       </section>
 

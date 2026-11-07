@@ -406,7 +406,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowReceiveModal(false)}>
-              {t('actions.cancel')}
+              {t('common.cancel') || 'Cancel'}
             </Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700"
@@ -500,7 +500,7 @@ export default function PurchaseOrderDetailPage({ params }: PurchaseOrderDetailP
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowCancelModal(false)}>
-              {t('actions.cancel')}
+              {t('common.cancel') || 'Cancel'}
             </Button>
             <Button
               variant="danger"

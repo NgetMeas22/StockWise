@@ -502,7 +502,7 @@ export default function InventoryBalancesPage() {
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setActiveModal(null)}>
-              {t('actions.cancel')}
+              {t('common.cancel') || 'Cancel'}
             </Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700"
@@ -619,7 +619,7 @@ export default function InventoryBalancesPage() {
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setActiveModal(null)}>
-              {t('actions.cancel')}
+              {t('common.cancel') || 'Cancel'}
             </Button>
             <Button
               variant="danger"
@@ -721,7 +721,7 @@ export default function InventoryBalancesPage() {
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setActiveModal(null)}>
-              {t('actions.cancel')}
+              {t('common.cancel') || 'Cancel'}
             </Button>
             <Button
               onClick={() => {
@@ -808,7 +808,7 @@ export default function InventoryBalancesPage() {
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setActiveModal(null)}>
-              {t('actions.cancel')}
+              {t('common.cancel') || 'Cancel'}
             </Button>
             <Button
               onClick={() => {

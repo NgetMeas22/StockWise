@@ -350,7 +350,7 @@ export default function NewProductPage() {
         <div className="flex items-center justify-end gap-3 pt-2">
           <Link href="/app/products">
             <Button variant="outline" type="button">
-              {t('actions.cancel')}
+              {t('common.cancel') || 'Cancel'}
             </Button>
           </Link>
           <Button

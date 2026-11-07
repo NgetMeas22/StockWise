@@ -76,7 +76,17 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
       // Fallback to English if missing in chosen language
       if (!value) {
-        value = translations.en?.[section]?.[key] || path;
+        value = translations.en?.[section]?.[key];
+      }
+
+      // Cross-fallback to common section if available (e.g. actions.cancel -> common.cancel)
+      if (!value && section !== 'common') {
+        value = langDict?.common?.[key] || translations.en?.common?.[key];
+      }
+
+      // If still missing, format key cleanly instead of leaking raw path
+      if (!value) {
+        value = path;
       }
 
       // Interpolate parameters like {count}

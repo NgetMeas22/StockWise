@@ -292,7 +292,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             </Link>
 
             <Link
-              href="/features"
+              href="/about-us"
               className="px-3.5 py-2 rounded-full hover:text-text hover:bg-surface-muted transition-colors"
             >
               {language === 'kh' ? 'អំពីយើង' : 'About Us'}
@@ -377,11 +377,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           </div>
 
           <div>
-            <h4 className="font-bold text-text mb-3 uppercase tracking-wider text-[11px]">Solutions</h4>
+            <h4 className="font-bold text-text mb-3 uppercase tracking-wider text-[11px]">Solutions & Company</h4>
             <ul className="space-y-2">
+              <li><Link href="/about-us" className="hover:text-accent transition-colors font-medium">About Our Mission</Link></li>
               <li><Link href="/catalog" className="hover:text-accent transition-colors">Supplies Catalog</Link></li>
               <li><Link href="/app/requests" className="hover:text-accent transition-colors">Room Requests</Link></li>
-              <li><Link href="/pricing" className="hover:text-accent transition-colors">Multi-warehouse Audits</Link></li>
               <li><Link href="/login" className="hover:text-accent transition-colors">Staff Portal</Link></li>
             </ul>
           </div>

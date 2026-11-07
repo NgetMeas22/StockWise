@@ -50,7 +50,7 @@ export default function ProfilePage() {
   const [fullName, setFullName] = useState(user?.fullName || '');
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
-  const [clinicName] = useState('Khema Digital Dental Solution');
+  const [clinicName] = useState('Dental Systems Practice');
 
   // Password Change State
   const [currentPassword, setCurrentPassword] = useState('');
@@ -534,7 +534,7 @@ export default function ProfilePage() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="admin@khema.local"
+                      placeholder="admin@dentalsystems.local"
                       className="pl-9"
                       required
                     />

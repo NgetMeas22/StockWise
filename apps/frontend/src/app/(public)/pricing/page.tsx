@@ -441,7 +441,7 @@ export default function PricingPage() {
                 <input
                   type="email"
                   required
-                  placeholder="sokha@khemadental.com"
+                  placeholder="sokha@dentalsystems.com"
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
                   className="w-full h-9 px-3 rounded-[6px] border border-border bg-surface text-text text-xs focus:outline-none focus:ring-1 focus:ring-accent"
@@ -455,7 +455,7 @@ export default function PricingPage() {
                 <input
                   type="text"
                   required
-                  placeholder="Khema Dental Clinic"
+                  placeholder="Dental Systems Practice"
                   value={contactClinic}
                   onChange={(e) => setContactClinic(e.target.value)}
                   className="w-full h-9 px-3 rounded-[6px] border border-border bg-surface text-text text-xs focus:outline-none focus:ring-1 focus:ring-accent"
