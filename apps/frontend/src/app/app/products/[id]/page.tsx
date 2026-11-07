@@ -276,48 +276,84 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             </div>
 
             {movements.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-border text-text-muted uppercase text-[10px]">
-                      <th className="py-2">{t('common.timestamp')}</th>
-                      <th className="py-2">Type</th>
-                      <th className="py-2">{t('inventory.reasonCode')}</th>
-                      <th className="py-2 text-right">Delta</th>
-                      <th className="py-2 text-right">After</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {movements.map((m) => {
-                      const deltaNum = Number(m.quantityDelta);
-                      return (
-                        <tr key={m.id} className="hover:bg-surface-muted/50 transition-colors">
-                          <td className="py-2.5 font-mono text-[11px] text-text-muted">
-                            {new Date(m.createdAt).toLocaleDateString()}{' '}
-                            {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </td>
-                          <td className="py-2.5">
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-surface-muted text-text border border-border">
+              <>
+                {/* Mobile Movements Card List (< sm) */}
+                <div className="sm:hidden divide-y divide-border">
+                  {movements.map((m) => {
+                    const deltaNum = Number(m.quantityDelta);
+                    return (
+                      <div key={`m-mv-${m.id}`} className="py-2.5 flex items-center justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-surface-muted text-text border border-border">
                               {m.movementType}
                             </span>
-                          </td>
-                          <td className="py-2.5 text-text-muted truncate max-w-[140px]" title={m.reason}>
+                            <span className="text-[10px] text-text-muted">
+                              {new Date(m.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-text-muted mt-1 truncate" title={m.reason}>
                             {m.reasonCode}
-                          </td>
-                          <td className={`py-2.5 text-right font-mono font-semibold ${
-                            deltaNum > 0 ? 'text-ok' : 'text-danger'
-                          }`}>
+                          </div>
+                        </div>
+
+                        <div className="text-right shrink-0">
+                          <div className={`text-xs font-bold font-mono ${deltaNum > 0 ? 'text-ok' : 'text-danger'}`}>
                             {deltaNum > 0 ? `+${m.quantityDelta}` : m.quantityDelta}
-                          </td>
-                          <td className="py-2.5 text-right font-mono text-text">
-                            {m.quantityAfter}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                          </div>
+                          <div className="text-[10px] text-text-muted font-mono mt-0.5">
+                            Bal: {m.quantityAfter}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Desktop Movements Table (>= sm) */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-border text-text-muted uppercase text-[10px]">
+                        <th className="py-2">{t('common.timestamp')}</th>
+                        <th className="py-2">Type</th>
+                        <th className="py-2">{t('inventory.reasonCode')}</th>
+                        <th className="py-2 text-right">Delta</th>
+                        <th className="py-2 text-right">After</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {movements.map((m) => {
+                        const deltaNum = Number(m.quantityDelta);
+                        return (
+                          <tr key={m.id} className="hover:bg-surface-muted/50 transition-colors">
+                            <td className="py-2.5 font-mono text-[11px] text-text-muted">
+                              {new Date(m.createdAt).toLocaleDateString()}{' '}
+                              {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </td>
+                            <td className="py-2.5">
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-surface-muted text-text border border-border">
+                                {m.movementType}
+                              </span>
+                            </td>
+                            <td className="py-2.5 text-text-muted truncate max-w-[140px]" title={m.reason}>
+                              {m.reasonCode}
+                            </td>
+                            <td className={`py-2.5 text-right font-mono font-semibold ${
+                              deltaNum > 0 ? 'text-ok' : 'text-danger'
+                            }`}>
+                              {deltaNum > 0 ? `+${m.quantityDelta}` : m.quantityDelta}
+                            </td>
+                            <td className="py-2.5 text-right font-mono text-text">
+                              {m.quantityAfter}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             ) : (
               <div className="py-6 text-center text-xs text-text-muted">
                 No movements recorded for this product yet.

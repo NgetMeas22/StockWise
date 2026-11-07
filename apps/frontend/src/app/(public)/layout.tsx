@@ -21,6 +21,7 @@ import {
   ShieldAlert,
   BarChart3,
   X,
+  Menu,
   Stethoscope,
   Sparkles,
 } from 'lucide-react';
@@ -32,6 +33,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   const { t, language, setLanguage } = useTranslation();
   const [featuresOpen, setFeaturesOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const megaMenuRef = useRef<HTMLDivElement>(null);
 
   // Close mega menu on outside click
@@ -300,7 +302,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           </nav>
 
           {/* Right Action Controls */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
             {/* Language Switcher */}
             <button
               type="button"
@@ -337,13 +339,86 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             {/* "Try the product" Prominent Pill Button (Exact Medicasimple CTA) */}
             <Link
               href="/pricing"
-              className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-full bg-accent text-white hover:bg-accent-hover transition-all shadow-sm hover:shadow"
+              className="hidden xs:inline-flex items-center gap-1.5 text-xs font-bold px-3 sm:px-4 py-2 rounded-full bg-accent text-white hover:bg-accent-hover transition-all shadow-sm hover:shadow"
             >
-              <span>{language === 'kh' ? 'សាកល្បងឥតគិតថ្លៃ' : 'Try the product'}</span>
+              <span>{language === 'kh' ? 'សាកល្បង' : 'Try product'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
+
+            {/* Mobile Hamburger Menu Button (lg:hidden) */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-lg border border-border bg-surface text-text hover:bg-surface-muted transition-colors"
+              aria-label="Toggle Navigation Menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5 text-accent" /> : <Menu className="w-5 h-5 text-text" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Slide-down Navigation Drawer */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-t border-border bg-surface/98 backdrop-blur-lg px-4 py-4 space-y-3 animate-in slide-in-from-top-2 duration-150 shadow-xl">
+            <div className="flex flex-col space-y-1 text-sm font-semibold text-text">
+              <Link
+                href="/features"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between p-2.5 rounded-lg hover:bg-surface-muted text-text transition-colors"
+              >
+                <span>{language === 'kh' ? 'មុខងារ (Features)' : 'Features & Workflows'}</span>
+                <ChevronDown className="w-4 h-4 -rotate-90 text-text-muted" />
+              </Link>
+
+              <Link
+                href="/catalog"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between p-2.5 rounded-lg hover:bg-surface-muted text-text transition-colors"
+              >
+                <span>{language === 'kh' ? 'កាតាឡុកទំនិញ (Catalog)' : 'Supplies Catalog'}</span>
+                <ChevronDown className="w-4 h-4 -rotate-90 text-text-muted" />
+              </Link>
+
+              <Link
+                href="/pricing"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between p-2.5 rounded-lg hover:bg-surface-muted text-text transition-colors"
+              >
+                <span>{language === 'kh' ? 'តម្លៃសេវា (Pricing)' : 'Pricing & ROI'}</span>
+                <ChevronDown className="w-4 h-4 -rotate-90 text-text-muted" />
+              </Link>
+
+              <Link
+                href="/about-us"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between p-2.5 rounded-lg hover:bg-surface-muted text-text transition-colors"
+              >
+                <span>{language === 'kh' ? 'អំពីយើង (About Us)' : 'About Us'}</span>
+                <ChevronDown className="w-4 h-4 -rotate-90 text-text-muted" />
+              </Link>
+
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between p-2.5 rounded-lg hover:bg-surface-muted text-accent font-bold transition-colors"
+              >
+                <span>{language === 'kh' ? 'ចូលប្រើប្រព័ន្ធ (Staff Login)' : 'Staff Portal Login'}</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <div className="pt-2 border-t border-border">
+              <Link
+                href="/pricing"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center justify-center gap-2 text-xs font-bold px-4 py-2.5 rounded-xl bg-accent text-white shadow-sm"
+              >
+                <span>{language === 'kh' ? 'សាកល្បងឥតគិតថ្លៃ' : 'Try the product free'}</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Main Page Content */}

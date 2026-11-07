@@ -273,6 +273,78 @@ export default function CategoriesPage() {
     );
   };
 
+  // Mobile card view for hierarchical categories
+  const renderCategoryMobileCard = (cat: CategoryDTO, depth = 0) => {
+    const hasChildren = cat.children && cat.children.length > 0;
+
+    return (
+      <React.Fragment key={`m-${cat.id}`}>
+        <div
+          className="p-3.5 space-y-2 hover:bg-surface-muted/30 transition-colors"
+          style={{ paddingLeft: `${Math.max(14, depth * 16 + 14)}px` }}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start gap-2 min-w-0 flex-1">
+              {depth > 0 && <span className="text-border text-xs shrink-0 mt-0.5">└─</span>}
+              {hasChildren ? (
+                <FolderOpen className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+              ) : (
+                <Folder className="w-4 h-4 text-text-muted shrink-0 mt-0.5" />
+              )}
+              <div className="min-w-0">
+                <div className="font-bold text-text text-xs leading-snug">{cat.name}</div>
+                <div className="text-[10px] text-text-muted font-mono truncate">/{cat.slug}</div>
+                {cat.description && (
+                  <p className="text-[11px] text-text-muted line-clamp-1 mt-0.5">{cat.description}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="shrink-0 flex items-center gap-1.5">
+              {cat.status === 'ARCHIVED' ? (
+                <Badge variant="neutral">Archived</Badge>
+              ) : (
+                <Badge variant="success">Active</Badge>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/50 text-[11px]">
+            <div className="flex items-center gap-2 text-text-muted">
+              <span>{cat.productCount ?? 0} products</span>
+              <span>•</span>
+              <span>Sort: {cat.sortOrder ?? 0}</span>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <Can permission="categories:manage">
+                <button
+                  onClick={() => openEditModal(cat)}
+                  title={t('categories.editCategory')}
+                  className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setArchiveTarget(cat)}
+                  title={cat.status === 'ARCHIVED' ? t('categories.confirmRestore') : t('categories.confirmArchive')}
+                  className="p-1.5 text-text-muted hover:text-danger rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  {cat.status === 'ARCHIVED' ? (
+                    <RotateCcw className="w-3.5 h-3.5 text-emerald-500" />
+                  ) : (
+                    <Archive className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </Can>
+            </div>
+          </div>
+        </div>
+        {hasChildren && cat.children!.map((child) => renderCategoryMobileCard(child, depth + 1))}
+      </React.Fragment>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Header */}
@@ -328,23 +400,31 @@ export default function CategoriesPage() {
             }
           />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="px-4 py-3">{t('categories.categoryName')}</th>
-                  <th className="px-4 py-3">{t('categories.slug')}</th>
-                  <th className="px-4 py-3 text-center">{t('categories.productsCount')}</th>
-                  <th className="px-4 py-3 text-center">{t('categories.sortOrder')}</th>
-                  <th className="px-4 py-3 text-center">{t('common.status')}</th>
-                  <th className="px-4 py-3 text-right">{t('common.actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {treeCategories.map((c) => renderCategoryRow(c, 0))}
-              </tbody>
-            </table>
-          </div>
+          <>
+            {/* Mobile Card List View (< md) */}
+            <div className="md:hidden divide-y divide-border">
+              {treeCategories.map((c) => renderCategoryMobileCard(c, 0))}
+            </div>
+
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
+                    <th className="px-4 py-3">{t('categories.categoryName')}</th>
+                    <th className="px-4 py-3">{t('categories.slug')}</th>
+                    <th className="px-4 py-3 text-center">{t('categories.productsCount')}</th>
+                    <th className="px-4 py-3 text-center">{t('categories.sortOrder')}</th>
+                    <th className="px-4 py-3 text-center">{t('common.status')}</th>
+                    <th className="px-4 py-3 text-right">{t('common.actions')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {treeCategories.map((c) => renderCategoryRow(c, 0))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 

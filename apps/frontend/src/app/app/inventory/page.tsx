@@ -359,109 +359,218 @@ export default function InventoryBalancesPage() {
             description="Adjust your search filters or record initial stock receipts."
           />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[850px] text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="px-4 py-3 min-w-[200px]">{t('products.productName')}</th>
-                  <th className="px-4 py-3 min-w-[150px]">Warehouse</th>
-                  <th className="px-4 py-3 text-right min-w-[120px]">{t('products.stockOnHand')}</th>
-                  <th className="px-4 py-3 text-right min-w-[110px]">{t('products.reorderLevel')}</th>
-                  <th className="px-4 py-3 text-center min-w-[90px]">{t('common.status')}</th>
-                  <th className="px-4 py-3 text-right min-w-[90px] pr-5">{t('common.actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {balances.map((b) => {
-                  const qty = Number(b.quantityOnHand);
-                  const reorder = Number(b.reorderLevel);
+          <>
+            {/* Mobile Card List View (< md) */}
+            <div className="md:hidden divide-y divide-border">
+              {balances.map((b) => {
+                const qty = Number(b.quantityOnHand);
+                const reorder = Number(b.reorderLevel);
 
-                  return (
-                    <tr key={`${b.productId}-${b.warehouseId}`} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="px-4 py-3">
+                return (
+                  <div
+                    key={`m-${b.productId}-${b.warehouseId}`}
+                    className="p-4 space-y-3 hover:bg-surface-muted/30 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
                         <Link
                           href={`/app/products/${b.productId}`}
-                          className="font-semibold text-text hover:text-accent block"
+                          className="font-bold text-sm text-text hover:text-accent leading-snug line-clamp-1"
                         >
                           {b.productName}
                         </Link>
-                        <span className="text-[11px] text-text-muted">{b.productSku}</span>
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1.5 text-text">
-                          <Building2 className="w-3.5 h-3.5 text-text-muted" />
-                          <span className="font-medium">{b.warehouseName}</span>
-                        </div>
-                        <span className="text-[10px] text-text-muted ml-5">
-                          {b.warehouseId.slice(0, 8)}
-                        </span>
-                      </td>
-
-                      <td className="px-4 py-3 text-right">
-                        <span className="tabular-nums text-xs font-bold text-text">
-                          {qty.toFixed(2)} <span className="text-[10px] font-medium text-text-muted uppercase">{b.unit}</span>
-                        </span>
-                      </td>
-
-                      <td className="px-4 py-3 text-right tabular-nums text-xs text-text-muted">
-                        <span className="font-medium text-text">{reorder.toFixed(2)}</span>{' '}
-                        <span className="text-[10px] uppercase">{b.unit}</span>
-                      </td>
-
-                      <td className="px-4 py-3 text-center">
+                        <div className="text-[11px] font-mono text-text-muted mt-0.5">{b.productSku}</div>
+                      </div>
+                      <div className="shrink-0">
                         <StockBadge quantity={qty} reorderLevel={reorder} />
-                      </td>
+                      </div>
+                    </div>
 
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Can permission="inventory:receive">
-                            <button
-                              onClick={() => openReceiveModal(b)}
-                              title={t('inventory.receiveStock')}
-                              className="p-1.5 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded transition-colors"
-                            >
-                              <ArrowDownLeft className="w-3.5 h-3.5" />
-                            </button>
-                          </Can>
+                    <div className="flex items-center gap-1.5 text-xs text-text-muted">
+                      <Building2 className="w-3.5 h-3.5 text-accent shrink-0" />
+                      <span className="font-medium text-text">{b.warehouseName}</span>
+                      <span className="text-[10px] text-text-muted font-mono">({b.warehouseId.slice(0, 8)})</span>
+                    </div>
 
-                          <Can permission="inventory:issue">
-                            <button
-                              onClick={() => openIssueModal(b)}
-                              title={t('inventory.issueStock')}
-                              className="p-1.5 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded transition-colors"
-                            >
-                              <ArrowUpRight className="w-3.5 h-3.5" />
-                            </button>
-                          </Can>
-
-                          <Can permission="inventory:adjust">
-                            <button
-                              onClick={() => openAdjustModal(b)}
-                              title={t('inventory.adjustStock')}
-                              className="p-1.5 text-text-muted hover:text-text hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
-                            >
-                              <Sliders className="w-3.5 h-3.5" />
-                            </button>
-                          </Can>
-
-                          <Can permission="inventory:transfer">
-                            <button
-                              onClick={() => openTransferModal(b)}
-                              title={t('inventory.transferStock')}
-                              className="p-1.5 text-text-muted hover:text-text hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
-                            >
-                              <ArrowRightLeft className="w-3.5 h-3.5" />
-                            </button>
-                          </Can>
+                    <div className="flex items-center justify-between gap-3 pt-2 border-t border-border/60">
+                      <div className="flex items-center gap-4 text-xs">
+                        <div>
+                          <span className="text-[10px] text-text-muted block font-medium">On Hand</span>
+                          <span className={`text-sm font-bold tabular-nums ${qty <= 0 ? 'text-danger' : qty <= reorder ? 'text-amber-500' : 'text-text'}`}>
+                            {Number(qty).toLocaleString(undefined, { maximumFractionDigits: 2 })}{' '}
+                            <span className="text-[10px] font-normal text-text-muted uppercase">{b.unit}</span>
+                          </span>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        <div className="h-7 w-px bg-border" />
+                        <div>
+                          <span className="text-[10px] text-text-muted block font-medium">Reorder At</span>
+                          <span className="text-xs font-semibold text-text-muted tabular-nums">
+                            {Number(reorder).toLocaleString(undefined, { maximumFractionDigits: 2 })}{' '}
+                            <span className="text-[10px] font-normal uppercase">{b.unit}</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Quick Operation Action Buttons */}
+                      <div className="flex items-center gap-1">
+                        <Can permission="inventory:receive">
+                          <button
+                            onClick={() => openReceiveModal(b)}
+                            title={t('inventory.receiveStock')}
+                            aria-label={t('inventory.receiveStock')}
+                            className="p-2 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-lg transition-colors border border-emerald-500/20"
+                          >
+                            <ArrowDownLeft className="w-4 h-4" />
+                          </button>
+                        </Can>
+
+                        <Can permission="inventory:issue">
+                          <button
+                            onClick={() => openIssueModal(b)}
+                            title={t('inventory.issueStock')}
+                            aria-label={t('inventory.issueStock')}
+                            className="p-2 text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg transition-colors border border-rose-500/20"
+                          >
+                            <ArrowUpRight className="w-4 h-4" />
+                          </button>
+                        </Can>
+
+                        <Can permission="inventory:adjust">
+                          <button
+                            onClick={() => openAdjustModal(b)}
+                            title={t('inventory.adjustStock')}
+                            aria-label={t('inventory.adjustStock')}
+                            className="p-2 text-text-muted hover:text-text bg-surface-muted hover:bg-border rounded-lg transition-colors border border-border"
+                          >
+                            <Sliders className="w-4 h-4" />
+                          </button>
+                        </Can>
+
+                        <Can permission="inventory:transfer">
+                          <button
+                            onClick={() => openTransferModal(b)}
+                            title={t('inventory.transferStock')}
+                            aria-label={t('inventory.transferStock')}
+                            className="p-2 text-accent bg-accent-soft hover:bg-accent/20 rounded-lg transition-colors border border-accent/20"
+                          >
+                            <ArrowRightLeft className="w-4 h-4" />
+                          </button>
+                        </Can>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full min-w-[850px] text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
+                    <th className="px-4 py-3 min-w-[200px]">{t('products.productName')}</th>
+                    <th className="px-4 py-3 min-w-[150px]">Warehouse</th>
+                    <th className="px-4 py-3 text-right min-w-[120px]">{t('products.stockOnHand')}</th>
+                    <th className="px-4 py-3 text-right min-w-[110px]">{t('products.reorderLevel')}</th>
+                    <th className="px-4 py-3 text-center min-w-[90px]">{t('common.status')}</th>
+                    <th className="px-4 py-3 text-right min-w-[90px] pr-5">{t('common.actions')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {balances.map((b) => {
+                    const qty = Number(b.quantityOnHand);
+                    const reorder = Number(b.reorderLevel);
+
+                    return (
+                      <tr key={`${b.productId}-${b.warehouseId}`} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                        <td className="px-4 py-3">
+                          <Link
+                            href={`/app/products/${b.productId}`}
+                            className="font-semibold text-text hover:text-accent block"
+                          >
+                            {b.productName}
+                          </Link>
+                          <span className="text-[11px] text-text-muted">{b.productSku}</span>
+                        </td>
+
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1.5 text-text">
+                            <Building2 className="w-3.5 h-3.5 text-text-muted" />
+                            <span className="font-medium">{b.warehouseName}</span>
+                          </div>
+                          <span className="text-[10px] text-text-muted ml-5">
+                            {b.warehouseId.slice(0, 8)}
+                          </span>
+                        </td>
+
+                        <td className="px-4 py-3 text-right">
+                          <span className="tabular-nums text-xs font-bold text-text">
+                            {Number(qty).toLocaleString(undefined, { maximumFractionDigits: 2 })}{' '}
+                            <span className="text-[10px] font-medium text-text-muted uppercase">{b.unit}</span>
+                          </span>
+                        </td>
+
+                        <td className="px-4 py-3 text-right tabular-nums text-xs text-text-muted">
+                          <span className="font-medium text-text">
+                            {Number(reorder).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                          </span>{' '}
+                          <span className="text-[10px] uppercase">{b.unit}</span>
+                        </td>
+
+                        <td className="px-4 py-3 text-center">
+                          <StockBadge quantity={qty} reorderLevel={reorder} />
+                        </td>
+
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Can permission="inventory:receive">
+                              <button
+                                onClick={() => openReceiveModal(b)}
+                                title={t('inventory.receiveStock')}
+                                className="p-1.5 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded transition-colors"
+                              >
+                                <ArrowDownLeft className="w-3.5 h-3.5" />
+                              </button>
+                            </Can>
+
+                            <Can permission="inventory:issue">
+                              <button
+                                onClick={() => openIssueModal(b)}
+                                title={t('inventory.issueStock')}
+                                className="p-1.5 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded transition-colors"
+                              >
+                                <ArrowUpRight className="w-3.5 h-3.5" />
+                              </button>
+                            </Can>
+
+                            <Can permission="inventory:adjust">
+                              <button
+                                onClick={() => openAdjustModal(b)}
+                                title={t('inventory.adjustStock')}
+                                className="p-1.5 text-text-muted hover:text-text hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
+                              >
+                                <Sliders className="w-3.5 h-3.5" />
+                              </button>
+                            </Can>
+
+                            <Can permission="inventory:transfer">
+                              <button
+                                onClick={() => openTransferModal(b)}
+                                title={t('inventory.transferStock')}
+                                className="p-1.5 text-text-muted hover:text-text hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
+                              >
+                                <ArrowRightLeft className="w-3.5 h-3.5" />
+                              </button>
+                            </Can>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {/* Pagination */}

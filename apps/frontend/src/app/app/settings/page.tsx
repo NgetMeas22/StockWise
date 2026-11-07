@@ -1449,61 +1449,107 @@ export default function SettingsPage() {
             {isWarehousesLoading ? (
               <TableSkeleton rows={4} columns={6} />
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted uppercase font-semibold text-[11px]">
-                      <th className="px-4 py-3">{t('settings.warehouseCode')}</th>
-                      <th className="px-4 py-3">{t('settings.facilityName')}</th>
-                      <th className="px-4 py-3">Physical Address</th>
-                      <th className="px-4 py-3 text-center">{t('settings.primaryDefault')}</th>
-                      <th className="px-4 py-3 text-center">Status</th>
-                      <th className="px-4 py-3 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {warehouses.map((w) => (
-                      <tr key={w.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
-                        <td className="px-4 py-3 font-bold text-text">
-                          {w.code}
-                        </td>
+              <>
+                {/* Mobile Card List View (< md) */}
+                <div className="md:hidden divide-y divide-border">
+                  {warehouses.map((w) => (
+                    <div key={`m-${w.id}`} className="p-4 space-y-2 hover:bg-surface-muted/30 transition-colors">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-xs text-text bg-surface-muted px-2 py-0.5 rounded border border-border">
+                              {w.code}
+                            </span>
+                            {w.isDefault && (
+                              <Badge variant="success">Primary Default</Badge>
+                            )}
+                          </div>
+                          <div className="font-semibold text-sm text-text mt-1">{w.name}</div>
+                        </div>
 
-                        <td className="px-4 py-3 font-semibold text-text">
-                          {w.name}
-                        </td>
+                        <Badge variant="neutral">{w.status}</Badge>
+                      </div>
 
-                        <td className="px-4 py-3 text-text-muted">
-                          {w.address || '—'}
-                        </td>
+                      {w.address && (
+                        <div className="text-xs text-text-muted">
+                          {w.address}
+                        </div>
+                      )}
 
-                        <td className="px-4 py-3 text-center">
-                          {w.isDefault ? (
-                            <Badge variant="success">Primary Default</Badge>
-                          ) : (
-                            <span className="text-text-muted">—</span>
-                          )}
-                        </td>
+                      <div className="flex items-center justify-end pt-1">
+                        <Can permission="settings:manage">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditWarehouseModal(w)}
+                            className="h-8 text-xs font-semibold px-3"
+                          >
+                            <Edit2 className="w-3.5 h-3.5 mr-1" />
+                            <span>{t('settings.editWarehouse')}</span>
+                          </Button>
+                        </Can>
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-                        <td className="px-4 py-3 text-center">
-                          <Badge variant="neutral">{w.status}</Badge>
-                        </td>
-
-                        <td className="px-4 py-3 text-right">
-                          <Can permission="settings:manage">
-                            <button
-                              onClick={() => openEditWarehouseModal(w)}
-                              title={t('settings.editWarehouse')}
-                              className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                            >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                          </Can>
-                        </td>
+                {/* Desktop Table View (>= md) */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted uppercase font-semibold text-[11px]">
+                        <th className="px-4 py-3">{t('settings.warehouseCode')}</th>
+                        <th className="px-4 py-3">{t('settings.facilityName')}</th>
+                        <th className="px-4 py-3">Physical Address</th>
+                        <th className="px-4 py-3 text-center">{t('settings.primaryDefault')}</th>
+                        <th className="px-4 py-3 text-center">Status</th>
+                        <th className="px-4 py-3 text-right">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {warehouses.map((w) => (
+                        <tr key={w.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                          <td className="px-4 py-3 font-bold text-text">
+                            {w.code}
+                          </td>
+
+                          <td className="px-4 py-3 font-semibold text-text">
+                            {w.name}
+                          </td>
+
+                          <td className="px-4 py-3 text-text-muted">
+                            {w.address || '—'}
+                          </td>
+
+                          <td className="px-4 py-3 text-center">
+                            {w.isDefault ? (
+                              <Badge variant="success">Primary Default</Badge>
+                            ) : (
+                              <span className="text-text-muted">—</span>
+                            )}
+                          </td>
+
+                          <td className="px-4 py-3 text-center">
+                            <Badge variant="neutral">{w.status}</Badge>
+                          </td>
+
+                          <td className="px-4 py-3 text-right">
+                            <Can permission="settings:manage">
+                              <button
+                                onClick={() => openEditWarehouseModal(w)}
+                                title={t('settings.editWarehouse')}
+                                className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                            </Can>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
         </div>

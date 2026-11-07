@@ -301,45 +301,25 @@ export default function RoomRequestsPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-surface-muted text-text-muted font-semibold border-b border-border">
-                <tr>
-                  <th className="px-4 py-3">Request #</th>
-                  <th className="px-4 py-3">Room / Operatory</th>
-                  <th className="px-4 py-3">Item Requested</th>
-                  <th className="px-4 py-3 text-right">Quantity</th>
-                  <th className="px-4 py-3 text-center">Urgency</th>
-                  <th className="px-4 py-3 text-center">Status</th>
-                  <th className="px-4 py-3">Requested By</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filteredRequests.map((req) => (
-                  <tr key={req.id} className="hover:bg-surface-muted/50 transition-colors">
-                    <td className="px-4 py-3 font-mono font-semibold text-text">
-                      {req.requestNumber}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="font-semibold text-text">{req.room}</div>
+          <>
+            {/* Mobile Card List View (< md) */}
+            <div className="md:hidden divide-y divide-border">
+              {filteredRequests.map((req) => (
+                <div key={`m-${req.id}`} className="p-4 space-y-3 hover:bg-surface-muted/30 transition-colors">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="font-mono font-bold text-xs text-text block">
+                        {req.requestNumber}
+                      </span>
+                      <div className="font-semibold text-sm text-text mt-0.5">{req.room}</div>
                       {req.notes && (
-                        <div className="text-[10px] text-text-muted italic truncate max-w-[200px]">
+                        <div className="text-[11px] text-text-muted italic mt-0.5 line-clamp-1">
                           &ldquo;{req.notes}&rdquo;
                         </div>
                       )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="font-semibold text-text">{req.productName}</div>
-                      <div className="font-mono text-[10px] text-text-muted">{req.productSku}</div>
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums font-bold text-text">
-                      {req.quantity}{' '}
-                      <span className="text-[10px] font-normal text-text-muted uppercase">
-                        {req.productUnit}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
                           req.urgency === 'URGENT'
@@ -351,8 +331,7 @@ export default function RoomRequestsPage() {
                       >
                         {req.urgency}
                       </span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
+
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${
                           req.status === 'FULFILLED'
@@ -364,57 +343,183 @@ export default function RoomRequestsPage() {
                       >
                         {req.status}
                       </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="text-text font-medium">{req.requestedByName}</div>
-                      <div className="text-[10px] text-text-muted">
-                        {new Date(req.createdAt).toLocaleDateString([], {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-surface-muted/50 border border-border/60">
+                    <div className="min-w-0">
+                      <div className="font-bold text-xs text-text truncate">{req.productName}</div>
+                      <div className="font-mono text-[10px] text-text-muted">{req.productSku}</div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="text-xs text-text-muted block text-[10px]">Qty Needed</span>
+                      <span className="text-sm font-extrabold text-accent tabular-nums">
+                        {req.quantity}{' '}
+                        <span className="text-[10px] font-normal uppercase text-text-muted">{req.productUnit}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 pt-1 text-xs">
+                    <div className="text-[11px] text-text-muted">
+                      <span>By <strong>{req.requestedByName}</strong></span>
+                      <span className="mx-1">•</span>
+                      <span>{new Date(req.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+                    </div>
+
+                    {req.status === 'PENDING' ? (
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          className="h-8 px-3 text-xs font-semibold"
+                          onClick={() => {
+                            setSelectedWarehouseId(warehouses[0]?.id || '');
+                            setFulfillingRequest(req);
+                          }}
+                        >
+                          <Check className="w-3.5 h-3.5 mr-1" />
+                          <span>{language === 'kh' ? 'បញ្ជូនចេញ' : 'Fulfill'}</span>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 px-2 text-danger hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                          onClick={() => rejectMutation.mutate(req.id)}
+                          isLoading={rejectMutation.isPending}
+                        >
+                          <XCircle className="w-3.5 h-3.5" />
+                        </Button>
                       </div>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {req.status === 'PENDING' ? (
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Button
-                            size="sm"
-                            variant="primary"
-                            className="h-7 px-2.5 text-[11px]"
-                            onClick={() => {
-                              setSelectedWarehouseId(warehouses[0]?.id || '');
-                              setFulfillingRequest(req);
-                            }}
-                          >
-                            <Check className="w-3.5 h-3.5" />
-                            <span>{language === 'kh' ? 'បញ្ជូនចេញ' : 'Fulfill'}</span>
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 px-2 text-[11px] text-danger hover:bg-rose-50 dark:hover:bg-rose-950/40"
-                            onClick={() => rejectMutation.mutate(req.id)}
-                            isLoading={rejectMutation.isPending}
-                          >
-                            <XCircle className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      ) : req.status === 'FULFILLED' ? (
-                        <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium inline-flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>Dispatched</span>
-                        </span>
-                      ) : (
-                        <span className="text-[11px] text-text-muted italic">Rejected</span>
-                      )}
-                    </td>
+                    ) : req.status === 'FULFILLED' ? (
+                      <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold inline-flex items-center gap-1">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Dispatched to room</span>
+                      </span>
+                    ) : (
+                      <span className="text-xs text-text-muted italic">Request Rejected</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-surface-muted text-text-muted font-semibold border-b border-border">
+                  <tr>
+                    <th className="px-4 py-3">Request #</th>
+                    <th className="px-4 py-3">Room / Operatory</th>
+                    <th className="px-4 py-3">Item Requested</th>
+                    <th className="px-4 py-3 text-right">Quantity</th>
+                    <th className="px-4 py-3 text-center">Urgency</th>
+                    <th className="px-4 py-3 text-center">Status</th>
+                    <th className="px-4 py-3">Requested By</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredRequests.map((req) => (
+                    <tr key={req.id} className="hover:bg-surface-muted/50 transition-colors">
+                      <td className="px-4 py-3 font-mono font-semibold text-text">
+                        {req.requestNumber}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="font-semibold text-text">{req.room}</div>
+                        {req.notes && (
+                          <div className="text-[10px] text-text-muted italic truncate max-w-[200px]">
+                            &ldquo;{req.notes}&rdquo;
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="font-semibold text-text">{req.productName}</div>
+                        <div className="font-mono text-[10px] text-text-muted">{req.productSku}</div>
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums font-bold text-text">
+                        {req.quantity}{' '}
+                        <span className="text-[10px] font-normal text-text-muted uppercase">
+                          {req.productUnit}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
+                            req.urgency === 'URGENT'
+                              ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                              : req.urgency === 'HIGH'
+                              ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                              : 'bg-surface-muted text-text-muted border border-border'
+                          }`}
+                        >
+                          {req.urgency}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            req.status === 'FULFILLED'
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                              : req.status === 'REJECTED'
+                              ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 animate-pulse'
+                          }`}
+                        >
+                          {req.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-text font-medium">{req.requestedByName}</div>
+                        <div className="text-[10px] text-text-muted">
+                          {new Date(req.createdAt).toLocaleDateString([], {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {req.status === 'PENDING' ? (
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Button
+                              size="sm"
+                              variant="primary"
+                              className="h-7 px-2.5 text-[11px]"
+                              onClick={() => {
+                                setSelectedWarehouseId(warehouses[0]?.id || '');
+                                setFulfillingRequest(req);
+                              }}
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              <span>{language === 'kh' ? 'បញ្ជូនចេញ' : 'Fulfill'}</span>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 px-2 text-[11px] text-danger hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                              onClick={() => rejectMutation.mutate(req.id)}
+                              isLoading={rejectMutation.isPending}
+                            >
+                              <XCircle className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        ) : req.status === 'FULFILLED' ? (
+                          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium inline-flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>Dispatched</span>
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-text-muted italic">Rejected</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 

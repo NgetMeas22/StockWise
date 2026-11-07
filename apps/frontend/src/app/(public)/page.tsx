@@ -274,7 +274,7 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 text-xs">
+                <div className="flex flex-wrap items-center gap-1.5 text-xs">
                   <span className="px-2.5 py-1 rounded-md bg-accent text-white font-semibold">Treatment Plans</span>
                   <span className="px-2.5 py-1 rounded-md bg-surface-muted text-text-muted font-medium hover:text-text">Dental Chart</span>
                   <span className="px-2.5 py-1 rounded-md bg-surface-muted text-text-muted font-medium hover:text-text">Material Usage</span>

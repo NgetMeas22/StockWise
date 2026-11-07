@@ -218,77 +218,135 @@ export default function PurchaseOrdersPage() {
             }
           />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="px-4 py-3">{t('purchases.poNumber')}</th>
-                  <th className="px-4 py-3">{t('purchases.supplier')}</th>
-                  <th className="px-4 py-3">Destination</th>
-                  <th className="px-4 py-3">{t('purchases.orderDate')}</th>
-                  <th className="px-4 py-3">{t('purchases.expectedDate')}</th>
-                  {canViewCost && <th className="px-4 py-3 text-right">{t('purchases.totalCost')}</th>}
-                  <th className="px-4 py-3 text-center">{t('common.status')}</th>
-                  <th className="px-4 py-3 text-right">{t('common.actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {orders.map((po) => (
-                  <tr key={po.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="px-4 py-3">
+          <>
+            {/* Mobile Card List View (< md) */}
+            <div className="md:hidden divide-y divide-border">
+              {orders.map((po) => (
+                <div key={`m-${po.id}`} className="p-4 space-y-3 hover:bg-surface-muted/30 transition-colors">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
                       <Link
                         href={`/app/purchases/${po.id}`}
-                        className="font-bold text-accent hover:underline block"
+                        className="font-bold text-sm text-accent hover:underline block leading-snug"
                       >
                         {po.poNumber}
                       </Link>
-                    </td>
-
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5 font-medium text-text">
-                        <Truck className="w-3.5 h-3.5 text-text-muted" />
+                      <div className="flex items-center gap-1.5 text-xs text-text font-medium mt-1">
+                        <Truck className="w-3.5 h-3.5 text-text-muted shrink-0" />
                         <span>{po.supplierName}</span>
                       </div>
-                    </td>
+                    </div>
+                    <div className="shrink-0">
+                      {getStatusBadge(po.status)}
+                    </div>
+                  </div>
 
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5 text-text-muted">
-                        <Building2 className="w-3.5 h-3.5" />
-                        <span>{po.warehouseName}</span>
-                      </div>
-                    </td>
+                  <div className="flex items-center gap-1.5 text-xs text-text-muted">
+                    <Building2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>Destination: <strong className="text-text">{po.warehouseName}</strong></span>
+                  </div>
 
-                    <td className="px-4 py-3 tabular-nums text-text-muted text-xs">
-                      {new Date(po.orderDate).toLocaleDateString()}
-                    </td>
-
-                    <td className="px-4 py-3 tabular-nums text-text-muted text-xs">
-                      {po.expectedDate ? new Date(po.expectedDate).toLocaleDateString() : '—'}
-                    </td>
+                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/60 text-xs">
+                    <div>
+                      <span className="text-[10px] text-text-muted block">Order Date</span>
+                      <span className="font-medium text-text tabular-nums">
+                        {new Date(po.orderDate).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                    </div>
 
                     {canViewCost && (
-                      <td className="px-4 py-3 text-right tabular-nums font-bold text-text text-xs">
-                        {po.totalCost ? `$${Number(po.totalCost).toFixed(2)}` : '—'}
-                      </td>
+                      <div className="text-right">
+                        <span className="text-[10px] text-text-muted block">Total Cost</span>
+                        <span className="font-bold text-accent tabular-nums text-sm">
+                          {po.totalCost ? `$${Number(po.totalCost).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'}
+                        </span>
+                      </div>
                     )}
 
-                    <td className="px-4 py-3 text-center">
-                      {getStatusBadge(po.status)}
-                    </td>
+                    <Link href={`/app/purchases/${po.id}`}>
+                      <Button variant="outline" size="sm" className="h-8 text-xs font-semibold px-3">
+                        <Eye className="w-3.5 h-3.5 mr-1" />
+                        <span>{t('common.view')}</span>
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-                    <td className="px-4 py-3 text-right">
-                      <Link href={`/app/purchases/${po.id}`}>
-                        <Button variant="outline" size="sm" className="h-7 text-xs">
-                          <Eye className="w-3 h-3 mr-1" />
-                          <span>{t('common.view')}</span>
-                        </Button>
-                      </Link>
-                    </td>
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
+                    <th className="px-4 py-3">{t('purchases.poNumber')}</th>
+                    <th className="px-4 py-3">{t('purchases.supplier')}</th>
+                    <th className="px-4 py-3">Destination</th>
+                    <th className="px-4 py-3">{t('purchases.orderDate')}</th>
+                    <th className="px-4 py-3">{t('purchases.expectedDate')}</th>
+                    {canViewCost && <th className="px-4 py-3 text-right">{t('purchases.totalCost')}</th>}
+                    <th className="px-4 py-3 text-center">{t('common.status')}</th>
+                    <th className="px-4 py-3 text-right">{t('common.actions')}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {orders.map((po) => (
+                    <tr key={po.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="px-4 py-3">
+                        <Link
+                          href={`/app/purchases/${po.id}`}
+                          className="font-bold text-accent hover:underline block"
+                        >
+                          {po.poNumber}
+                        </Link>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1.5 font-medium text-text">
+                          <Truck className="w-3.5 h-3.5 text-text-muted" />
+                          <span>{po.supplierName}</span>
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1.5 text-text-muted">
+                          <Building2 className="w-3.5 h-3.5" />
+                          <span>{po.warehouseName}</span>
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3 tabular-nums text-text-muted text-xs">
+                        {new Date(po.orderDate).toLocaleDateString()}
+                      </td>
+
+                      <td className="px-4 py-3 tabular-nums text-text-muted text-xs">
+                        {po.expectedDate ? new Date(po.expectedDate).toLocaleDateString() : '—'}
+                      </td>
+
+                      {canViewCost && (
+                        <td className="px-4 py-3 text-right tabular-nums font-bold text-text text-xs">
+                          {po.totalCost ? `$${Number(po.totalCost).toFixed(2)}` : '—'}
+                        </td>
+                      )}
+
+                      <td className="px-4 py-3 text-center">
+                        {getStatusBadge(po.status)}
+                      </td>
+
+                      <td className="px-4 py-3 text-right">
+                        <Link href={`/app/purchases/${po.id}`}>
+                          <Button variant="outline" size="sm" className="h-7 text-xs">
+                            <Eye className="w-3 h-3 mr-1" />
+                            <span>{t('common.view')}</span>
+                          </Button>
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {/* Pagination Footer */}

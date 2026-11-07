@@ -22,6 +22,7 @@ function CatalogContent() {
   const pageParam = Number(searchParams.get('page')) || 1;
 
   const [searchInput, setSearchInput] = useState(qParam);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const { data: categoriesData } = useQuery({
     queryKey: ['public-categories'],
@@ -118,10 +119,30 @@ function CatalogContent() {
         </div>
       </div>
 
+      {/* Mobile Filter Toggle Button */}
+      <div className="lg:hidden mt-4">
+        <button
+          type="button"
+          onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+          className="w-full flex items-center justify-between p-3 rounded-lg border border-border bg-surface text-xs font-semibold text-text shadow-2xs hover:bg-surface-muted transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-accent" />
+            <span>{mobileFiltersOpen ? 'Hide Filters' : 'Show Filters & Categories'}</span>
+            {(categoryParam || brandParam) && (
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-accent text-white">
+                Active
+              </span>
+            )}
+          </div>
+          <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${mobileFiltersOpen ? 'rotate-90' : ''}`} />
+        </button>
+      </div>
+
       {/* Main Grid: Sidebar Filters + Products */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 pt-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 pt-4 lg:pt-8">
         {/* Left Filter Panel */}
-        <aside className="lg:col-span-1 space-y-6">
+        <aside className={`${mobileFiltersOpen ? 'block' : 'hidden lg:block'} lg:col-span-1 space-y-6`}>
           <div className="bg-surface p-5 rounded-[8px] border border-border shadow-xs">
             <div className="flex items-center justify-between pb-3 border-b border-border mb-4">
               <span className="text-xs font-bold uppercase tracking-wider text-text flex items-center gap-1.5">

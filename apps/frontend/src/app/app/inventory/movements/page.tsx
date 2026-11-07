@@ -263,109 +263,184 @@ export default function StockMovementsPage() {
             description="No inventory movement records match your search criteria."
           />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[950px] text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="px-4 py-3 min-w-[120px]">Seq / Time</th>
-                  <th className="px-4 py-3 min-w-[100px]">Type</th>
-                  <th className="px-4 py-3 min-w-[180px]">{t('products.productName')}</th>
-                  <th className="px-4 py-3 min-w-[140px]">Warehouse</th>
-                  <th className="px-4 py-3 text-right min-w-[90px]">Delta</th>
-                  <th className="px-4 py-3 text-right min-w-[110px]">Balance After</th>
-                  {canViewCost && <th className="px-4 py-3 text-right min-w-[90px]">Unit Cost</th>}
-                  <th className="px-4 py-3 min-w-[140px]">Actor / Reason</th>
-                  <th className="px-4 py-3 text-right min-w-[80px] pr-5">{t('common.actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {movements.map((m) => {
-                  const deltaNum = Number(m.quantityDelta);
+          <>
+            {/* Mobile Card List View (< md) */}
+            <div className="md:hidden divide-y divide-border">
+              {movements.map((m) => {
+                const deltaNum = Number(m.quantityDelta);
 
-                  return (
-                    <tr key={m.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="px-4 py-3">
-                        <div className="font-bold text-text tabular-nums">#{m.seq}</div>
-                        <div className="text-[10px] text-text-muted tabular-nums">
-                          {new Date(m.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}{' '}
-                          {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </div>
-                      </td>
-
-                      <td className="px-4 py-3">
+                return (
+                  <div key={`m-${m.id}`} className="p-4 space-y-2.5 hover:bg-surface-muted/30 transition-colors">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-xs text-text font-mono">#{m.seq}</span>
                         {getMovementTypeBadge(m.movementType)}
-                      </td>
+                      </div>
+                      <span className="text-[11px] text-text-muted tabular-nums">
+                        {new Date(m.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}{' '}
+                        {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
 
-                      <td className="px-4 py-3">
-                        <div className="font-semibold text-text truncate max-w-[160px]" title={m.productName}>
-                          {m.productName}
-                        </div>
-                        <div className="text-[10px] text-text-muted">{m.productSku}</div>
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-text">{m.warehouseName || m.warehouseId}</div>
-                        <div className="text-[10px] text-text-muted">{m.warehouseId.slice(0, 8)}</div>
-                      </td>
-
-                      <td className={`px-4 py-3 text-right tabular-nums font-bold text-xs ${
-                        deltaNum > 0 ? 'text-ok' : 'text-danger'
-                      }`}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-bold text-xs text-text truncate leading-snug">{m.productName}</div>
+                        <div className="text-[10px] text-text-muted font-mono">{m.productSku}</div>
+                      </div>
+                      <div
+                        className={`text-sm font-extrabold tabular-nums px-2.5 py-1 rounded-lg shrink-0 ${
+                          deltaNum > 0
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                            : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                        }`}
+                      >
                         {deltaNum > 0 ? `+${m.quantityDelta}` : m.quantityDelta}
-                      </td>
+                      </div>
+                    </div>
 
-                      <td className="px-4 py-3 text-right tabular-nums font-medium text-text text-xs">
-                        {m.quantityAfter}
-                      </td>
+                    <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/50 text-[11px] text-text-muted">
+                      <div>
+                        <span>Wh: <strong>{m.warehouseName || m.warehouseId.slice(0, 8)}</strong></span>
+                        <span className="mx-1">•</span>
+                        <span>Bal after: <strong className="text-text font-mono">{m.quantityAfter}</strong></span>
+                      </div>
 
-                      {canViewCost && (
-                        <td className="px-4 py-3 text-right tabular-nums text-xs text-text-muted font-medium">
-                          {m.unitCost ? `$${Number(m.unitCost).toFixed(2)}` : '—'}
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={() => setDetailMovement(m)}
+                          title="Inspect Details"
+                          className="p-1.5 text-text-muted hover:text-text rounded hover:bg-surface-muted transition-colors"
+                        >
+                          <Info className="w-4 h-4" />
+                        </button>
+
+                        {!m.reversesMovementId && (
+                          <Can permission="inventory:adjust">
+                            <button
+                              onClick={() => {
+                                setReversalTarget(m);
+                                setReversalReason('');
+                                setReversalError(null);
+                              }}
+                              title="Reverse this movement"
+                              className="p-1.5 text-text-muted hover:text-danger rounded hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                            >
+                              <RotateCcw className="w-4 h-4 text-danger" />
+                            </button>
+                          </Can>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full min-w-[950px] text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
+                    <th className="px-4 py-3 min-w-[120px]">Seq / Time</th>
+                    <th className="px-4 py-3 min-w-[100px]">Type</th>
+                    <th className="px-4 py-3 min-w-[180px]">{t('products.productName')}</th>
+                    <th className="px-4 py-3 min-w-[140px]">Warehouse</th>
+                    <th className="px-4 py-3 text-right min-w-[90px]">Delta</th>
+                    <th className="px-4 py-3 text-right min-w-[110px]">Balance After</th>
+                    {canViewCost && <th className="px-4 py-3 text-right min-w-[90px]">Unit Cost</th>}
+                    <th className="px-4 py-3 min-w-[140px]">Actor / Reason</th>
+                    <th className="px-4 py-3 text-right min-w-[80px] pr-5">{t('common.actions')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {movements.map((m) => {
+                    const deltaNum = Number(m.quantityDelta);
+
+                    return (
+                      <tr key={m.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                        <td className="px-4 py-3">
+                          <div className="font-bold text-text tabular-nums">#{m.seq}</div>
+                          <div className="text-[10px] text-text-muted tabular-nums">
+                            {new Date(m.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}{' '}
+                            {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
                         </td>
-                      )}
 
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-text truncate max-w-[120px]">
-                          {m.performerName || m.performedBy}
-                        </div>
-                        <div className="text-[10px] text-text-muted truncate max-w-[120px]" title={m.reason}>
-                          {m.reasonCode}
-                        </div>
-                      </td>
+                        <td className="px-4 py-3">
+                          {getMovementTypeBadge(m.movementType)}
+                        </td>
 
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => setDetailMovement(m)}
-                            title="Inspect Details"
-                            className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                          >
-                            <Info className="w-3.5 h-3.5" />
-                          </button>
+                        <td className="px-4 py-3">
+                          <div className="font-semibold text-text truncate max-w-[160px]" title={m.productName}>
+                            {m.productName}
+                          </div>
+                          <div className="text-[10px] text-text-muted">{m.productSku}</div>
+                        </td>
 
-                          {!m.reversesMovementId && (
-                            <Can permission="inventory:adjust">
-                              <button
-                                onClick={() => {
-                                  setReversalTarget(m);
-                                  setReversalReason('');
-                                  setReversalError(null);
-                                }}
-                                title="Reverse this movement"
-                                className="p-1.5 text-text-muted hover:text-danger rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                              >
-                                <RotateCcw className="w-3.5 h-3.5" />
-                              </button>
-                            </Can>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-text">{m.warehouseName || m.warehouseId}</div>
+                          <div className="text-[10px] text-text-muted">{m.warehouseId.slice(0, 8)}</div>
+                        </td>
+
+                        <td className={`px-4 py-3 text-right tabular-nums font-bold text-xs ${
+                          deltaNum > 0 ? 'text-ok' : 'text-danger'
+                        }`}>
+                          {deltaNum > 0 ? `+${m.quantityDelta}` : m.quantityDelta}
+                        </td>
+
+                        <td className="px-4 py-3 text-right tabular-nums font-medium text-text text-xs">
+                          {m.quantityAfter}
+                        </td>
+
+                        {canViewCost && (
+                          <td className="px-4 py-3 text-right tabular-nums text-xs text-text-muted font-medium">
+                            {m.unitCost ? `$${Number(m.unitCost).toFixed(2)}` : '—'}
+                          </td>
+                        )}
+
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-text truncate max-w-[120px]">
+                            {m.performerName || m.performedBy}
+                          </div>
+                          <div className="text-[10px] text-text-muted truncate max-w-[120px]" title={m.reason}>
+                            {m.reasonCode}
+                          </div>
+                        </td>
+
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => setDetailMovement(m)}
+                              title="Inspect Details"
+                              className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            >
+                              <Info className="w-3.5 h-3.5" />
+                            </button>
+
+                            {!m.reversesMovementId && (
+                              <Can permission="inventory:adjust">
+                                <button
+                                  onClick={() => {
+                                    setReversalTarget(m);
+                                    setReversalReason('');
+                                    setReversalError(null);
+                                  }}
+                                  title="Reverse this movement"
+                                  className="p-1.5 text-text-muted hover:text-danger rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                >
+                                  <RotateCcw className="w-3.5 h-3.5" />
+                                </button>
+                              </Can>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {/* Pagination Footer */}

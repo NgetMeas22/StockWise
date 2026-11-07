@@ -230,93 +230,188 @@ export default function SuppliersPage() {
             }
           />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="px-4 py-3">{t('suppliers.supplierName')}</th>
-                  <th className="px-4 py-3">{t('suppliers.contactPerson')}</th>
-                  <th className="px-4 py-3">{t('suppliers.email')} & {t('suppliers.phone')}</th>
-                  <th className="px-4 py-3">{t('suppliers.address')}</th>
-                  <th className="px-4 py-3 text-center">{t('common.status')}</th>
-                  <th className="px-4 py-3 text-right">{t('common.actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {suppliers.map((s) => (
-                  <tr key={s.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="font-semibold text-text">{s.name}</div>
+          <>
+            {/* Mobile Card List View (< md) */}
+            <div className="md:hidden divide-y divide-border">
+              {suppliers.map((s) => (
+                <div key={`m-${s.id}`} className="p-4 space-y-2.5 hover:bg-surface-muted/30 transition-colors">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-bold text-sm text-text leading-snug">{s.name}</div>
                       {s.notes && (
-                        <div className="text-[10px] text-text-muted line-clamp-1">{s.notes}</div>
+                        <div className="text-[11px] text-text-muted line-clamp-1 mt-0.5">{s.notes}</div>
                       )}
-                    </td>
-
-                    <td className="px-4 py-3 text-text">
-                      {s.contactPerson || <span className="text-text-muted">—</span>}
-                    </td>
-
-                    <td className="px-4 py-3">
-                      <div className="space-y-0.5">
-                        {s.email && (
-                          <div className="flex items-center gap-1.5 text-text-muted hover:text-text">
-                            <Mail className="w-3 h-3 text-text-muted" />
-                            <a href={`mailto:${s.email}`} className="truncate max-w-[160px]">
-                              {s.email}
-                            </a>
-                          </div>
-                        )}
-                        {s.phone && (
-                          <div className="flex items-center gap-1.5 text-text-muted">
-                            <Phone className="w-3 h-3 text-text-muted" />
-                            <span>{s.phone}</span>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-
-                    <td className="px-4 py-3 text-text-muted max-w-xs truncate" title={s.address || ''}>
-                      {s.address || '—'}
-                    </td>
-
-                    <td className="px-4 py-3 text-center">
+                    </div>
+                    <div className="shrink-0">
                       {s.status === SupplierStatus.ACTIVE ? (
                         <Badge variant="success">Active</Badge>
                       ) : (
                         <Badge variant="neutral">Inactive</Badge>
                       )}
-                    </td>
+                    </div>
+                  </div>
 
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Can permission="suppliers:manage">
-                          <button
-                            onClick={() => openEditModal(s)}
-                            title={t('suppliers.editSupplier')}
-                            className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
+                  {s.contactPerson && (
+                    <div className="text-xs text-text flex items-center gap-1.5 font-medium">
+                      <span className="text-text-muted">Contact:</span>
+                      <span>{s.contactPerson}</span>
+                    </div>
+                  )}
 
-                          <button
-                            onClick={() => setToggleTarget(s)}
-                            title={s.status === SupplierStatus.ACTIVE ? t('suppliers.deactivate') : t('suppliers.activate')}
-                            className="p-1.5 text-text-muted hover:text-danger rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                          >
-                            {s.status === SupplierStatus.ACTIVE ? (
-                              <XCircle className="w-3.5 h-3.5 text-danger" />
-                            ) : (
-                              <CheckCircle className="w-3.5 h-3.5 text-ok" />
-                            )}
-                          </button>
-                        </Can>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted">
+                    {s.email && (
+                      <div className="flex items-center gap-1.5">
+                        <Mail className="w-3.5 h-3.5 text-accent shrink-0" />
+                        <a href={`mailto:${s.email}`} className="text-accent hover:underline truncate max-w-[200px]">
+                          {s.email}
+                        </a>
                       </div>
-                    </td>
+                    )}
+                    {s.phone && (
+                      <div className="flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5 text-text-muted shrink-0" />
+                        <a href={`tel:${s.phone}`} className="text-text hover:text-accent font-mono">
+                          {s.phone}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  {s.address && (
+                    <div className="text-[11px] text-text-muted truncate" title={s.address}>
+                      {s.address}
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/50">
+                    <Can permission="suppliers:manage">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEditModal(s)}
+                        className="h-8 text-xs font-semibold px-3"
+                      >
+                        <Edit2 className="w-3.5 h-3.5 mr-1" />
+                        <span>{t('suppliers.editSupplier')}</span>
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setToggleTarget(s)}
+                        className={`h-8 text-xs px-2.5 ${
+                          s.status === SupplierStatus.ACTIVE
+                            ? 'text-danger hover:bg-rose-50 dark:hover:bg-rose-950/30'
+                            : 'text-ok hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
+                        }`}
+                      >
+                        {s.status === SupplierStatus.ACTIVE ? (
+                          <>
+                            <XCircle className="w-3.5 h-3.5 mr-1" />
+                            <span>Deactivate</span>
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="w-3.5 h-3.5 mr-1" />
+                            <span>Activate</span>
+                          </>
+                        )}
+                      </Button>
+                    </Can>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
+                    <th className="px-4 py-3">{t('suppliers.supplierName')}</th>
+                    <th className="px-4 py-3">{t('suppliers.contactPerson')}</th>
+                    <th className="px-4 py-3">{t('suppliers.email')} & {t('suppliers.phone')}</th>
+                    <th className="px-4 py-3">{t('suppliers.address')}</th>
+                    <th className="px-4 py-3 text-center">{t('common.status')}</th>
+                    <th className="px-4 py-3 text-right">{t('common.actions')}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {suppliers.map((s) => (
+                    <tr key={s.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="font-semibold text-text">{s.name}</div>
+                        {s.notes && (
+                          <div className="text-[10px] text-text-muted line-clamp-1">{s.notes}</div>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3 text-text">
+                        {s.contactPerson || <span className="text-text-muted">—</span>}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <div className="space-y-0.5">
+                          {s.email && (
+                            <div className="flex items-center gap-1.5 text-text-muted hover:text-text">
+                              <Mail className="w-3 h-3 text-text-muted" />
+                              <a href={`mailto:${s.email}`} className="truncate max-w-[160px]">
+                                {s.email}
+                              </a>
+                            </div>
+                          )}
+                          {s.phone && (
+                            <div className="flex items-center gap-1.5 text-text-muted">
+                              <Phone className="w-3 h-3 text-text-muted" />
+                              <span>{s.phone}</span>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3 text-text-muted max-w-xs truncate" title={s.address || ''}>
+                        {s.address || '—'}
+                      </td>
+
+                      <td className="px-4 py-3 text-center">
+                        {s.status === SupplierStatus.ACTIVE ? (
+                          <Badge variant="success">Active</Badge>
+                        ) : (
+                          <Badge variant="neutral">Inactive</Badge>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Can permission="suppliers:manage">
+                            <button
+                              onClick={() => openEditModal(s)}
+                              title={t('suppliers.editSupplier')}
+                              className="p-1.5 text-text-muted hover:text-text rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+
+                            <button
+                              onClick={() => setToggleTarget(s)}
+                              title={s.status === SupplierStatus.ACTIVE ? t('suppliers.deactivate') : t('suppliers.activate')}
+                              className="p-1.5 text-text-muted hover:text-danger rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            >
+                              {s.status === SupplierStatus.ACTIVE ? (
+                                <XCircle className="w-3.5 h-3.5 text-danger" />
+                              ) : (
+                                <CheckCircle className="w-3.5 h-3.5 text-ok" />
+                              )}
+                            </button>
+                          </Can>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {/* Pagination Footer */}

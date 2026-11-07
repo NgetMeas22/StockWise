@@ -151,75 +151,122 @@ export default function AuditLogsPage() {
             description="Audit events are automatically recorded upon every system action."
           />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
-                  <th className="px-4 py-3">Seq #</th>
-                  <th className="px-4 py-3">Timestamp</th>
-                  <th className="px-4 py-3">Action</th>
-                  <th className="px-4 py-3">{t('admin.targetEntity')}</th>
-                  <th className="px-4 py-3">{t('admin.actorIdentity')}</th>
-                  <th className="px-4 py-3">IP Address</th>
-                  <th className="px-4 py-3 text-right">Inspect</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="px-4 py-3 font-mono text-[11px] text-text-muted">
-                      #{log.seq}
-                    </td>
-
-                    <td className="px-4 py-3 font-mono text-[11px] text-text whitespace-nowrap">
-                      {new Date(log.createdAt).toLocaleDateString()}{' '}
-                      <span className="text-text-muted">
-                        {new Date(log.createdAt).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          second: '2-digit',
-                        })}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-3">
+          <>
+            {/* Mobile Card List View (< md) */}
+            <div className="md:hidden divide-y divide-border">
+              {logs.map((log) => (
+                <div key={`m-${log.id}`} className="p-4 space-y-2 hover:bg-surface-muted/30 transition-colors">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs text-text-muted font-bold">#{log.seq}</span>
                       <span className="font-mono font-semibold text-[11px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
                         {log.action}
                       </span>
-                    </td>
+                    </div>
+                    <span className="text-[11px] font-mono text-text-muted">
+                      {new Date(log.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}{' '}
+                      {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
 
-                    <td className="px-4 py-3">
+                  <div className="flex items-center justify-between gap-3 text-xs">
+                    <div>
+                      <span className="text-[10px] text-text-muted block">Target Entity</span>
                       <span className="font-medium text-text">{log.entityType}</span>
-                      <span className="block font-mono text-[10px] text-text-muted truncate max-w-[140px]" title={log.entityId || ''}>
-                        {log.entityId}
-                      </span>
-                    </td>
+                      <span className="text-[10px] font-mono text-text-muted block truncate max-w-[180px]">{log.entityId}</span>
+                    </div>
 
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-text">{log.actorName || 'System'}</div>
-                      <div className="font-mono text-[10px] text-text-muted truncate max-w-[140px]">
-                        {log.actorUserId || 'Internal System'}
-                      </div>
-                    </td>
+                    <div className="text-right">
+                      <span className="text-[10px] text-text-muted block">Actor</span>
+                      <span className="font-medium text-text">{log.actorName || 'System'}</span>
+                      <span className="text-[10px] font-mono text-text-muted block">{log.ip || 'Local'}</span>
+                    </div>
+                  </div>
 
-                    <td className="px-4 py-3 font-mono text-[11px] text-text-muted">
-                      {log.ip || '—'}
-                    </td>
+                  <div className="flex items-center justify-end pt-1">
+                    <button
+                      onClick={() => setInspectLog(log)}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold text-accent hover:bg-accent-soft border border-accent/20 transition-colors"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Inspect JSON</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => setInspectLog(log)}
-                        title="View JSON State"
-                        className="p-1.5 text-text-muted hover:text-accent rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50 text-text-muted font-semibold uppercase tracking-wider text-[11px]">
+                    <th className="px-4 py-3">Seq #</th>
+                    <th className="px-4 py-3">Timestamp</th>
+                    <th className="px-4 py-3">Action</th>
+                    <th className="px-4 py-3">{t('admin.targetEntity')}</th>
+                    <th className="px-4 py-3">{t('admin.actorIdentity')}</th>
+                    <th className="px-4 py-3">IP Address</th>
+                    <th className="px-4 py-3 text-right">Inspect</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {logs.map((log) => (
+                    <tr key={log.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="px-4 py-3 font-mono text-[11px] text-text-muted">
+                        #{log.seq}
+                      </td>
+
+                      <td className="px-4 py-3 font-mono text-[11px] text-text whitespace-nowrap">
+                        {new Date(log.createdAt).toLocaleDateString()}{' '}
+                        <span className="text-text-muted">
+                          {new Date(log.createdAt).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                          })}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <span className="font-mono font-semibold text-[11px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                          {log.action}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <span className="font-medium text-text">{log.entityType}</span>
+                        <span className="block font-mono text-[10px] text-text-muted truncate max-w-[140px]" title={log.entityId || ''}>
+                          {log.entityId}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-text">{log.actorName || 'System'}</div>
+                        <div className="font-mono text-[10px] text-text-muted truncate max-w-[140px]">
+                          {log.actorUserId || 'Internal System'}
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3 font-mono text-[11px] text-text-muted">
+                        {log.ip || '—'}
+                      </td>
+
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => setInspectLog(log)}
+                          title="View JSON State"
+                          className="p-1.5 text-text-muted hover:text-accent rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {/* Pagination Footer */}

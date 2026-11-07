@@ -291,46 +291,93 @@ export default function ReportsPage() {
                 description={t('reports.noLowStockDesc')}
               />
             ) : (
-              <div className="overflow-x-auto border border-border rounded-[6px]">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-border bg-surface-muted text-text-muted uppercase font-semibold text-[11px]">
-                      <th className="px-4 py-3">{t('products.sku')}</th>
-                      <th className="px-4 py-3">{t('products.productName')}</th>
-                      <th className="px-4 py-3">{t('products.category')}</th>
-                      <th className="px-4 py-3 text-right">{t('reports.currentStock')}</th>
-                      <th className="px-4 py-3 text-right">{t('reports.reorderThreshold')}</th>
-                      <th className="px-4 py-3 text-right">{t('reports.suggestedReplenishment')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {lowStockData.map((item, idx) => {
-                      const onHand = Number(item.quantity_on_hand || 0);
-                      const reorder = Number(item.reorder_level || 0);
-                      const deficit = Math.max(0, reorder - onHand);
+              <>
+                {/* Mobile Card List View (< md) */}
+                <div className="md:hidden divide-y divide-border border border-border rounded-[8px] overflow-hidden">
+                  {lowStockData.map((item, idx) => {
+                    const onHand = Number(item.quantity_on_hand || 0);
+                    const reorder = Number(item.reorder_level || 0);
+                    const deficit = Math.max(0, reorder - onHand);
 
-                      return (
-                        <tr key={idx} className="hover:bg-amber-500/10 transition-colors">
-                          <td className="px-4 py-3 font-semibold text-text">
-                            {item.sku}
-                          </td>
-                          <td className="px-4 py-3 font-medium text-text">{item.name}</td>
-                          <td className="px-4 py-3 text-text-muted">{item.category_name}</td>
-                          <td className="px-4 py-3 text-right tabular-nums font-bold text-amber-600 dark:text-amber-400">
-                            {onHand} <span className="text-[10px] font-medium uppercase">{item.unit}</span>
-                          </td>
-                          <td className="px-4 py-3 text-right tabular-nums text-text-muted">
-                            {reorder} <span className="text-[10px] uppercase">{item.unit}</span>
-                          </td>
-                          <td className="px-4 py-3 text-right tabular-nums font-semibold text-accent">
-                            +{deficit + 10} <span className="text-[10px] uppercase">{item.unit}</span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                    return (
+                      <div key={`m-low-${idx}`} className="p-3.5 space-y-2 bg-surface hover:bg-amber-500/5 transition-colors">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="font-bold text-xs text-text leading-snug">{item.name}</div>
+                            <div className="text-[10px] text-text-muted font-mono mt-0.5">{item.sku}</div>
+                          </div>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap shrink-0">
+                            Low Stock
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/50 text-xs">
+                          <div>
+                            <span className="text-[10px] text-text-muted block">Available</span>
+                            <span className="font-bold text-amber-500 tabular-nums">
+                              {onHand} {item.unit}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-text-muted block">Safety Threshold</span>
+                            <span className="font-medium text-text-muted tabular-nums">
+                              {reorder} {item.unit}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-[10px] text-text-muted block">Suggested</span>
+                            <span className="font-bold text-accent tabular-nums">
+                              +{deficit + 10} {item.unit}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Desktop Table View (>= md) */}
+                <div className="hidden md:block overflow-x-auto border border-border rounded-[6px]">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-border bg-surface-muted text-text-muted uppercase font-semibold text-[11px]">
+                        <th className="px-4 py-3">{t('products.sku')}</th>
+                        <th className="px-4 py-3">{t('products.productName')}</th>
+                        <th className="px-4 py-3">{t('products.category')}</th>
+                        <th className="px-4 py-3 text-right">{t('reports.currentStock')}</th>
+                        <th className="px-4 py-3 text-right">{t('reports.reorderThreshold')}</th>
+                        <th className="px-4 py-3 text-right">{t('reports.suggestedReplenishment')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {lowStockData.map((item, idx) => {
+                        const onHand = Number(item.quantity_on_hand || 0);
+                        const reorder = Number(item.reorder_level || 0);
+                        const deficit = Math.max(0, reorder - onHand);
+
+                        return (
+                          <tr key={idx} className="hover:bg-amber-500/10 transition-colors">
+                            <td className="px-4 py-3 font-semibold text-text">
+                              {item.sku}
+                            </td>
+                            <td className="px-4 py-3 font-medium text-text">{item.name}</td>
+                            <td className="px-4 py-3 text-text-muted">{item.category_name}</td>
+                            <td className="px-4 py-3 text-right tabular-nums font-bold text-amber-600 dark:text-amber-400">
+                              {onHand} <span className="text-[10px] font-medium uppercase">{item.unit}</span>
+                            </td>
+                            <td className="px-4 py-3 text-right tabular-nums text-text-muted">
+                              {reorder} <span className="text-[10px] uppercase">{item.unit}</span>
+                            </td>
+                            <td className="px-4 py-3 text-right tabular-nums font-semibold text-accent">
+                              +{deficit + 10} <span className="text-[10px] uppercase">{item.unit}</span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
         )}
@@ -347,36 +394,69 @@ export default function ReportsPage() {
                 description={t('reports.noOutOfStockDesc')}
               />
             ) : (
-              <div className="overflow-x-auto border border-border rounded-[6px]">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-border bg-surface-muted text-text-muted uppercase font-semibold text-[11px]">
-                      <th className="px-4 py-3">{t('products.sku')}</th>
-                      <th className="px-4 py-3">{t('products.productName')}</th>
-                      <th className="px-4 py-3">{t('products.category')}</th>
-                      <th className="px-4 py-3 text-right">{t('products.stockOnHand')}</th>
-                      <th className="px-4 py-3 text-right">{t('products.reorderLevel')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {outOfStockData.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-rose-500/10 transition-colors">
-                        <td className="px-4 py-3 font-semibold text-text">
-                          {item.sku}
-                        </td>
-                        <td className="px-4 py-3 font-medium text-text">{item.name}</td>
-                        <td className="px-4 py-3 text-text-muted">{item.category_name}</td>
-                        <td className="px-4 py-3 text-right tabular-nums font-bold text-rose-600 dark:text-rose-400">
-                          0 <span className="text-[10px] font-medium uppercase">{item.unit}</span>
-                        </td>
-                        <td className="px-4 py-3 text-right tabular-nums text-text-muted">
-                          {item.reorder_level} <span className="text-[10px] uppercase">{item.unit}</span>
-                        </td>
+              <>
+                {/* Mobile Card List View (< md) */}
+                <div className="md:hidden divide-y divide-border border border-border rounded-[8px] overflow-hidden">
+                  {outOfStockData.map((item, idx) => (
+                    <div key={`m-out-${idx}`} className="p-3.5 space-y-2 bg-surface hover:bg-rose-500/5 transition-colors">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="font-bold text-xs text-text leading-snug">{item.name}</div>
+                          <div className="text-[10px] text-text-muted font-mono mt-0.5">{item.sku}</div>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 whitespace-nowrap shrink-0">
+                          Out of Stock
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/50 text-xs">
+                        <div>
+                          <span className="text-[10px] text-text-muted block">Category</span>
+                          <span className="font-medium text-text">{item.category_name || 'General'}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] text-text-muted block">Reorder Level</span>
+                          <span className="font-bold text-amber-500 tabular-nums">
+                            {item.reorder_level} {item.unit}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View (>= md) */}
+                <div className="hidden md:block overflow-x-auto border border-border rounded-[6px]">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-border bg-surface-muted text-text-muted uppercase font-semibold text-[11px]">
+                        <th className="px-4 py-3">{t('products.sku')}</th>
+                        <th className="px-4 py-3">{t('products.productName')}</th>
+                        <th className="px-4 py-3">{t('products.category')}</th>
+                        <th className="px-4 py-3 text-right">{t('products.stockOnHand')}</th>
+                        <th className="px-4 py-3 text-right">{t('products.reorderLevel')}</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {outOfStockData.map((item, idx) => (
+                        <tr key={idx} className="hover:bg-rose-500/10 transition-colors">
+                          <td className="px-4 py-3 font-semibold text-text">
+                            {item.sku}
+                          </td>
+                          <td className="px-4 py-3 font-medium text-text">{item.name}</td>
+                          <td className="px-4 py-3 text-text-muted">{item.category_name}</td>
+                          <td className="px-4 py-3 text-right tabular-nums font-bold text-rose-600 dark:text-rose-400">
+                            0 <span className="text-[10px] font-medium uppercase">{item.unit}</span>
+                          </td>
+                          <td className="px-4 py-3 text-right tabular-nums text-text-muted">
+                            {item.reorder_level} <span className="text-[10px] uppercase">{item.unit}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
         )}

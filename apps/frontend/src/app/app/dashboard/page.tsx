@@ -115,7 +115,7 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -202,7 +202,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Controls (Pic 1 Style) */}
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center justify-between sm:justify-end gap-3">
               <div className="flex items-center gap-3 text-xs font-semibold">
                 <button
                   type="button"
@@ -406,7 +406,59 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          <div className="overflow-x-auto flex-1">
+          {/* Mobile Card List View (< sm) */}
+          <div className="sm:hidden divide-y divide-border flex-1">
+            {summary?.lowStockItems && summary.lowStockItems.length > 0 ? (
+              summary.lowStockItems.slice(0, 5).map((item: any, idx: number) => {
+                const itemId = item.productId || item.id || item.sku || `low-stock-m-${idx}`;
+                const qtyOnHand = item.quantityOnHand ?? item.totalOnHand ?? 0;
+                return (
+                  <div key={itemId} className="p-3.5 space-y-2.5 hover:bg-surface-muted/40 transition-colors">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-bold text-text text-xs truncate leading-snug">{item.name}</div>
+                        <div className="text-[10px] text-text-muted font-mono mt-0.5">{item.sku}</div>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap shrink-0">
+                        Low Stock
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 pt-1">
+                      <div className="flex items-center gap-3 text-xs">
+                        <div>
+                          <span className="text-[10px] text-text-muted block">Available</span>
+                          <span className="font-bold text-amber-500 tabular-nums">
+                            {Number(qtyOnHand).toLocaleString(undefined, { maximumFractionDigits: 2 })} {item.unit}
+                          </span>
+                        </div>
+                        <div className="h-6 w-px bg-border" />
+                        <div>
+                          <span className="text-[10px] text-text-muted block">Reorder At</span>
+                          <span className="font-medium text-text-muted tabular-nums">
+                            {Number(item.reorderLevel).toLocaleString(undefined, { maximumFractionDigits: 2 })} {item.unit}
+                          </span>
+                        </div>
+                      </div>
+
+                      <Link href={`/app/purchases/new?productId=${item.productId || item.id || ''}`}>
+                        <Button size="sm" variant="outline" className="text-xs h-8 px-3 font-semibold shadow-2xs">
+                          Restock
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="p-6 text-center text-xs text-text-muted">
+                All inventory items are currently above safety thresholds.
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table View (>= sm) */}
+          <div className="hidden sm:block overflow-x-auto flex-1">
             <table className="w-full text-left text-xs">
               <thead className="bg-surface-muted text-text-muted font-semibold border-b border-border">
                 <tr>
@@ -473,7 +525,50 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          <div className="overflow-x-auto flex-1">
+          {/* Mobile Card List View (< sm) */}
+          <div className="sm:hidden divide-y divide-border flex-1">
+            {summary?.recentMovements && summary.recentMovements.length > 0 ? (
+              summary.recentMovements.slice(0, 5).map((m: any, idx: number) => {
+                const delta = Number(m.quantityDelta);
+                const movementId = m.id || m.seq || `mov-m-${idx}`;
+                const prodName = m.productName || m.product?.name || 'Item';
+                const prodSku = m.productSku || m.product?.sku || '';
+                return (
+                  <div key={movementId} className="p-3.5 flex items-center justify-between gap-3 hover:bg-surface-muted/40 transition-colors">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border border-border bg-surface-muted text-text">
+                          {m.movementType}
+                        </span>
+                        <span className="text-[10px] text-text-muted tabular-nums">
+                          {new Date(m.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                        </span>
+                      </div>
+                      <div className="font-semibold text-text text-xs truncate mt-1 leading-snug">{prodName}</div>
+                      {prodSku && <div className="text-[10px] text-text-muted font-mono">{prodSku}</div>}
+                    </div>
+
+                    <div
+                      className={`text-sm font-extrabold tabular-nums px-2.5 py-1 rounded-lg shrink-0 ${
+                        delta > 0
+                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                          : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                      }`}
+                    >
+                      {delta > 0 ? `+${delta}` : delta}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="p-6 text-center text-xs text-text-muted">
+                No stock movements recorded yet.
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table View (>= sm) */}
+          <div className="hidden sm:block overflow-x-auto flex-1">
             <table className="w-full text-left text-xs">
               <thead className="bg-surface-muted text-text-muted font-semibold border-b border-border">
                 <tr>

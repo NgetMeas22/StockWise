@@ -278,36 +278,37 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Main Content Area */}
       <div className="flex-1 lg:pl-64 flex flex-col min-h-screen">
         {/* Top Header Bar */}
-        <header className="h-16 bg-surface border-b border-border sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-3">
+        <header className="h-16 bg-surface border-b border-border sticky top-0 z-30 flex items-center justify-between px-3 sm:px-6 gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-1.5 rounded-md text-text-muted hover:bg-surface-muted transition-colors"
+              className="lg:hidden p-1.5 rounded-md text-text-muted hover:bg-surface-muted transition-colors shrink-0"
               aria-label="Open sidebar menu"
             >
               <Menu className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-2 text-xs text-text-muted font-medium">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-text-muted font-medium min-w-0">
               <span className="hidden sm:inline font-bold text-accent">Dental Systems</span>
               <ChevronRight className="hidden sm:inline w-3.5 h-3.5 text-text-muted/60" />
-              <span className="text-text font-semibold capitalize">
+              <span className="text-text font-semibold capitalize truncate max-w-[110px] sm:max-w-none">
                 {pathname.split('/')[2]?.replace('-', ' ') || t('nav.dashboard')}
               </span>
             </div>
           </div>
 
           {/* Right Controls: Language, Theme, Notifications, User */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {/* Language Switcher Dropdown */}
             <div className="relative">
               <button
                 onClick={() => setShowLangDropdown((prev) => !prev)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] border border-border bg-surface text-xs font-medium text-text hover:bg-surface-muted transition-colors"
+                className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-[6px] border border-border bg-surface text-xs font-medium text-text hover:bg-surface-muted transition-colors"
                 title="Change Language"
                 aria-label="Change Language"
               >
                 <Languages className="w-3.5 h-3.5 text-accent" />
-                <span className="font-semibold">{language === 'kh' ? 'ភាសាខ្មែរ' : 'EN'}</span>
+                <span className="font-semibold hidden sm:inline">{language === 'kh' ? 'ភាសាខ្មែរ' : 'EN'}</span>
+                <span className="font-semibold sm:hidden">{language === 'kh' ? 'KH' : 'EN'}</span>
               </button>
 
               {showLangDropdown && (
@@ -316,7 +317,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     className="fixed inset-0 z-40"
                     onClick={() => setShowLangDropdown(false)}
                   />
-                  <div className="absolute right-0 mt-1.5 w-36 bg-surface border border-border rounded-[8px] shadow-card py-1 z-50 text-xs animate-in zoom-in-95 duration-100">
+                  <div className="absolute right-0 mt-1.5 w-36 max-w-[calc(100vw-1.5rem)] bg-surface border border-border rounded-[8px] shadow-card py-1 z-50 text-xs animate-in zoom-in-95 duration-100">
                     {languages.map((l) => (
                       <button
                         key={l.code}
@@ -345,7 +346,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               onClick={toggleTheme}
               title={resolvedTheme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               aria-label="Toggle color theme"
-              className="p-2 rounded-[6px] border border-border bg-surface text-text-muted hover:text-text hover:bg-surface-muted transition-colors"
+              className="p-1.5 sm:p-2 rounded-[6px] border border-border bg-surface text-text-muted hover:text-text hover:bg-surface-muted transition-colors"
             >
               {resolvedTheme === 'dark' ? (
                 <Sun className="w-4 h-4 text-amber-400" />
@@ -358,13 +359,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="relative">
               <button
                 onClick={() => setShowNotificationsDropdown((prev) => !prev)}
-                className="p-2 rounded-[6px] border border-border bg-surface text-text-muted hover:text-text hover:bg-surface-muted transition-colors relative"
+                className="p-1.5 sm:p-2 rounded-[6px] border border-border bg-surface text-text-muted hover:text-text hover:bg-surface-muted transition-colors relative"
                 title="System Notifications"
                 aria-label="View recent notifications"
               >
                 <Bell className="w-4 h-4" />
                 {toasts.length > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-accent animate-pulse" />
+                  <span className="absolute top-1 sm:top-1.5 right-1 sm:right-1.5 w-2 h-2 rounded-full bg-accent animate-pulse" />
                 )}
               </button>
 
@@ -374,7 +375,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     className="fixed inset-0 z-40"
                     onClick={() => setShowNotificationsDropdown(false)}
                   />
-                  <div className="absolute right-0 mt-1.5 w-80 bg-surface border border-border rounded-[8px] shadow-card p-3 z-50 text-xs animate-in zoom-in-95 duration-100">
+                  <div className="absolute right-0 mt-1.5 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] bg-surface border border-border rounded-[8px] shadow-card p-3 z-50 text-xs animate-in zoom-in-95 duration-100">
                     <div className="flex items-center justify-between pb-2 border-b border-border font-semibold text-text">
                       <span>Notifications & Alerts</span>
                       <span className="text-[10px] text-text-muted font-mono">
@@ -411,14 +412,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Vertical Divider */}
-            <div className="h-6 w-px bg-border mx-1 hidden sm:block" />
+            <div className="h-6 w-px bg-border mx-0.5 sm:mx-1 hidden sm:block" />
 
             {/* Admin / User Profile Avatar Pill & Dropdown */}
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setShowUserDropdown((prev) => !prev)}
-                className="flex items-center gap-2 p-1 pl-1.5 sm:pr-2.5 rounded-full border border-border bg-surface hover:bg-surface-muted hover:border-accent/40 transition-all text-xs focus:outline-none shadow-2xs group"
+                className="flex items-center gap-1.5 sm:gap-2 p-1 pl-1 sm:pl-1.5 sm:pr-2.5 rounded-full border border-border bg-surface hover:bg-surface-muted hover:border-accent/40 transition-all text-xs focus:outline-none shadow-2xs group"
                 title="Account Menu"
                 aria-label="Account Menu"
               >
@@ -459,7 +460,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     className="fixed inset-0 z-40"
                     onClick={() => setShowUserDropdown(false)}
                   />
-                  <div className="absolute right-0 mt-2 w-72 bg-surface border border-border rounded-xl shadow-xl py-2 z-50 text-xs animate-in zoom-in-95 duration-100">
+                  <div className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] bg-surface border border-border rounded-xl shadow-xl py-2 z-50 text-xs animate-in zoom-in-95 duration-100">
                     {/* User Card Header */}
                     <div className="px-4 py-3 border-b border-border flex items-center gap-3 bg-surface-muted/40">
                       {user?.avatarUrl ? (

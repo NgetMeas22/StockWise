@@ -289,155 +289,260 @@ export default function ProductsPage() {
             }
           />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[1050px] text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-border bg-surface-muted/60 text-text font-bold uppercase tracking-wider text-[10px]">
-                  <th className="px-4 py-3.5 min-w-[220px]">{t('products.productName')}</th>
-                  <th className="px-4 py-3.5 min-w-[160px]">SKU Code / Barcode</th>
-                  <th className="px-4 py-3.5 min-w-[130px]">{t('products.category')}</th>
-                  <th className="px-4 py-3.5 text-right min-w-[140px]">{t('products.stockLevel')}</th>
-                  <th className="px-4 py-3.5 text-right min-w-[110px]">{t('products.reorderLevel')}</th>
-                  {canViewCost && <th className="px-4 py-3.5 text-right min-w-[90px]">{t('products.costPrice')}</th>}
-                  <th className="px-4 py-3.5 text-right min-w-[90px]">{t('products.sellingPrice')}</th>
-                  <th className="px-4 py-3.5 text-center min-w-[100px]">{t('common.status')}</th>
-                  <th className="px-4 py-3.5 text-right min-w-[90px] pr-5">{t('common.actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {products.map((p) => {
-                  const qty = Number(p.totalQuantityOnHand || 0);
-                  const reorder = Number(p.reorderLevel || 0);
+          <>
+            {/* Mobile Responsive Cards View (< md) */}
+            <div className="md:hidden divide-y divide-border">
+              {products.map((p) => {
+                const qty = Number(p.totalQuantityOnHand || 0);
+                const reorder = Number(p.reorderLevel || 0);
 
-                  return (
-                    <tr
-                      key={p.id}
-                      className="hover:bg-surface-muted/50 transition-colors group"
-                    >
-                      {/* Product Name & Brand */}
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg border border-border bg-surface-muted flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
-                            {p.imageUrl ? (
-                              <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <Package className="w-4 h-4 text-accent" />
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <Link
-                              href={`/app/products/${p.id}`}
-                              className="font-bold text-text hover:text-accent truncate block transition-colors leading-tight"
-                            >
-                              {p.name}
-                            </Link>
-                            {p.brand && (
-                              <span className="text-[10px] text-text-muted block mt-0.5">{p.brand}</span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* SKU / Barcode */}
-                      <td className="px-4 py-3">
-                        <div className="font-semibold text-text text-xs tracking-tight">{p.sku}</div>
-                        {p.barcode && (
-                          <div className="text-[10px] text-text-muted mt-0.5 tracking-tight">{p.barcode}</div>
-                        )}
-                      </td>
-
-                      {/* Category */}
-                      <td className="px-4 py-3">
-                        <span className="px-2 py-0.5 rounded-[4px] bg-surface-muted border border-border text-text text-[11px] font-medium">
-                          {p.categoryName || 'Uncategorized'}
-                        </span>
-                      </td>
-
-                      {/* Stock Level with Pill Badge */}
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <span className="font-semibold text-text tabular-nums text-xs">
-                            {qty} <span className="text-[10px] font-medium text-text-muted uppercase">{p.unit}</span>
-                          </span>
-                          <StockBadge quantity={qty} reorderLevel={reorder} />
-                        </div>
-                      </td>
-
-                      {/* Reorder Level */}
-                      <td className="px-4 py-3 text-right tabular-nums text-xs">
-                        <span className="font-medium text-text-muted">{reorder}</span>{' '}
-                        <span className="text-[10px] text-text-muted uppercase">{p.unit}</span>
-                      </td>
-
-                      {/* Cost Price */}
-                      {canViewCost && (
-                        <td className="px-4 py-3 text-right text-xs tabular-nums text-text-muted font-medium">
-                          {p.costPrice ? `$${Number(p.costPrice).toFixed(2)}` : '—'}
-                        </td>
-                      )}
-
-                      {/* Selling Price */}
-                      <td className="px-4 py-3 text-right text-xs tabular-nums font-semibold text-text">
-                        ${Number(p.sellingPrice).toFixed(2)}
-                      </td>
-
-                      {/* Status */}
-                      <td className="px-4 py-3 text-center">
-                        {p.status === 'ARCHIVED' ? (
-                          <Badge variant="neutral">{t('common.archived')}</Badge>
-                        ) : p.isPublished ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            Published
-                          </span>
+                return (
+                  <div key={p.id} className="p-4 space-y-3 hover:bg-surface-muted/30 transition-colors">
+                    {/* Row 1: Image + Name + Brand + Status */}
+                    <div className="flex items-start gap-3">
+                      <div className="w-12 h-12 rounded-lg border border-border bg-surface-muted flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+                        {p.imageUrl ? (
+                          <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                            Draft
+                          <Package className="w-5 h-5 text-accent" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <Link
+                            href={`/app/products/${p.id}`}
+                            className="font-bold text-text text-sm hover:text-accent truncate block leading-snug"
+                          >
+                            {p.name}
+                          </Link>
+                          {p.status === 'ARCHIVED' ? (
+                            <Badge variant="neutral" className="text-[10px] shrink-0">{t('common.archived')}</Badge>
+                          ) : p.isPublished ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                              Published
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
+                              Draft
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-text-muted">
+                          <span className="font-mono font-semibold text-text">{p.sku}</span>
+                          {p.brand && <span>· {p.brand}</span>}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Row 2: Category & Pricing */}
+                    <div className="flex items-center justify-between text-xs pt-1 border-t border-border/60">
+                      <span className="px-2 py-0.5 rounded bg-surface-muted border border-border text-[11px] font-medium text-text-muted">
+                        {p.categoryName || 'Uncategorized'}
+                      </span>
+                      <div className="flex items-center gap-3">
+                        {canViewCost && p.costPrice !== undefined && (
+                          <span className="text-[11px] text-text-muted">
+                            Cost: <span className="font-mono font-medium">${Number(p.costPrice).toFixed(2)}</span>
                           </span>
                         )}
-                      </td>
+                        <span className="font-bold text-text font-mono text-sm">
+                          ${Number(p.sellingPrice).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
 
-                      {/* Actions */}
-                      <td className="px-4 py-3 text-right pr-5">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Link href={`/app/products/${p.id}`}>
-                            <button
-                              title="View Details"
-                              className="p-1.5 text-text-muted hover:text-text rounded-md hover:bg-surface-muted transition-colors"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                            </button>
+                    {/* Row 3: Stock Status & Actions */}
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-text tabular-nums text-xs">
+                          {qty} <span className="text-[10px] text-text-muted uppercase">{p.unit}</span>
+                        </span>
+                        <StockBadge quantity={qty} reorderLevel={reorder} />
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <Link href={`/app/products/${p.id}`}>
+                          <Button size="sm" variant="outline" className="h-7 text-xs px-2.5">
+                            <Eye className="w-3.5 h-3.5 mr-1" />
+                            <span>View</span>
+                          </Button>
+                        </Link>
+                        <Can permission="products:update">
+                          <Link href={`/app/products/${p.id}/edit`}>
+                            <Button size="sm" variant="outline" className="h-7 text-xs px-2.5">
+                              <Edit2 className="w-3.5 h-3.5 mr-1" />
+                              <span>Edit</span>
+                            </Button>
                           </Link>
+                        </Can>
+                        <Can permission="products:archive">
+                          <button
+                            title={p.status === 'ARCHIVED' ? 'Restore Product' : 'Archive Product'}
+                            onClick={() => setArchiveTarget(p)}
+                            className="p-1.5 text-text-muted hover:text-danger rounded-md hover:bg-surface-muted transition-colors"
+                          >
+                            <Archive className="w-3.5 h-3.5" />
+                          </button>
+                        </Can>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
-                          <Can permission="products:update">
-                            <Link href={`/app/products/${p.id}/edit`}>
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full min-w-[1050px] text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-border bg-surface-muted/60 text-text font-bold uppercase tracking-wider text-[10px]">
+                    <th className="px-4 py-3.5 min-w-[220px]">{t('products.productName')}</th>
+                    <th className="px-4 py-3.5 min-w-[160px]">SKU Code / Barcode</th>
+                    <th className="px-4 py-3.5 min-w-[130px]">{t('products.category')}</th>
+                    <th className="px-4 py-3.5 text-right min-w-[140px]">{t('products.stockLevel')}</th>
+                    <th className="px-4 py-3.5 text-right min-w-[110px]">{t('products.reorderLevel')}</th>
+                    {canViewCost && <th className="px-4 py-3.5 text-right min-w-[90px]">{t('products.costPrice')}</th>}
+                    <th className="px-4 py-3.5 text-right min-w-[90px]">{t('products.sellingPrice')}</th>
+                    <th className="px-4 py-3.5 text-center min-w-[100px]">{t('common.status')}</th>
+                    <th className="px-4 py-3.5 text-right min-w-[90px] pr-5">{t('common.actions')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {products.map((p) => {
+                    const qty = Number(p.totalQuantityOnHand || 0);
+                    const reorder = Number(p.reorderLevel || 0);
+
+                    return (
+                      <tr
+                        key={p.id}
+                        className="hover:bg-surface-muted/50 transition-colors group"
+                      >
+                        {/* Product Name & Brand */}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-lg border border-border bg-surface-muted flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+                              {p.imageUrl ? (
+                                <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <Package className="w-4 h-4 text-accent" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <Link
+                                href={`/app/products/${p.id}`}
+                                className="font-bold text-text hover:text-accent truncate block transition-colors leading-tight"
+                              >
+                                {p.name}
+                              </Link>
+                              {p.brand && (
+                                <span className="text-[10px] text-text-muted block mt-0.5">{p.brand}</span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* SKU / Barcode */}
+                        <td className="px-4 py-3">
+                          <div className="font-semibold text-text text-xs tracking-tight">{p.sku}</div>
+                          {p.barcode && (
+                            <div className="text-[10px] text-text-muted mt-0.5 tracking-tight">{p.barcode}</div>
+                          )}
+                        </td>
+
+                        {/* Category */}
+                        <td className="px-4 py-3">
+                          <span className="px-2 py-0.5 rounded-[4px] bg-surface-muted border border-border text-text text-[11px] font-medium">
+                            {p.categoryName || 'Uncategorized'}
+                          </span>
+                        </td>
+
+                        {/* Stock Level with Pill Badge */}
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <span className="font-semibold text-text tabular-nums text-xs">
+                              {qty} <span className="text-[10px] font-medium text-text-muted uppercase">{p.unit}</span>
+                            </span>
+                            <StockBadge quantity={qty} reorderLevel={reorder} />
+                          </div>
+                        </td>
+
+                        {/* Reorder Level */}
+                        <td className="px-4 py-3 text-right tabular-nums text-xs">
+                          <span className="font-medium text-text-muted">{reorder}</span>{' '}
+                          <span className="text-[10px] text-text-muted uppercase">{p.unit}</span>
+                        </td>
+
+                        {/* Cost Price */}
+                        {canViewCost && (
+                          <td className="px-4 py-3 text-right text-xs tabular-nums text-text-muted font-medium">
+                            {p.costPrice ? `$${Number(p.costPrice).toFixed(2)}` : '—'}
+                          </td>
+                        )}
+
+                        {/* Selling Price */}
+                        <td className="px-4 py-3 text-right text-xs tabular-nums font-semibold text-text">
+                          ${Number(p.sellingPrice).toFixed(2)}
+                        </td>
+
+                        {/* Status */}
+                        <td className="px-4 py-3 text-center">
+                          {p.status === 'ARCHIVED' ? (
+                            <Badge variant="neutral">{t('common.archived')}</Badge>
+                          ) : p.isPublished ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                              Published
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                              Draft
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Actions */}
+                        <td className="px-4 py-3 text-right pr-5">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Link href={`/app/products/${p.id}`}>
                               <button
-                                title="Edit Product"
+                                title="View Details"
                                 className="p-1.5 text-text-muted hover:text-text rounded-md hover:bg-surface-muted transition-colors"
                               >
-                                <Edit2 className="w-3.5 h-3.5" />
+                                <Eye className="w-3.5 h-3.5" />
                               </button>
                             </Link>
-                          </Can>
 
-                          <Can permission="products:archive">
-                            <button
-                              title={p.status === 'ARCHIVED' ? 'Restore Product' : 'Archive Product'}
-                              onClick={() => setArchiveTarget(p)}
-                              className="p-1.5 text-text-muted hover:text-danger rounded-md hover:bg-surface-muted transition-colors"
-                            >
-                              <Archive className="w-3.5 h-3.5" />
-                            </button>
-                          </Can>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                            <Can permission="products:update">
+                              <Link href={`/app/products/${p.id}/edit`}>
+                                <button
+                                  title="Edit Product"
+                                  className="p-1.5 text-text-muted hover:text-text rounded-md hover:bg-surface-muted transition-colors"
+                                >
+                                  <Edit2 className="w-3.5 h-3.5" />
+                                </button>
+                              </Link>
+                            </Can>
+
+                            <Can permission="products:archive">
+                              <button
+                                title={p.status === 'ARCHIVED' ? 'Restore Product' : 'Archive Product'}
+                                onClick={() => setArchiveTarget(p)}
+                                className="p-1.5 text-text-muted hover:text-danger rounded-md hover:bg-surface-muted transition-colors"
+                              >
+                                <Archive className="w-3.5 h-3.5" />
+                              </button>
+                            </Can>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {/* Pagination Controls */}
