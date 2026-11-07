@@ -32,8 +32,18 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           </Link>
 
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-text-muted">
-            <Link href="/" className="hover:text-accent transition-colors">Home</Link>
-            <Link href="/catalog" className="hover:text-accent transition-colors">Browse Catalog</Link>
+            <Link href="/" className="hover:text-accent transition-colors">
+              {language === 'kh' ? 'ទំព័រដើម' : 'Home'}
+            </Link>
+            <Link href="/catalog" className="hover:text-accent transition-colors">
+              {language === 'kh' ? 'កាតាឡុកទំនិញ' : 'Browse Catalog'}
+            </Link>
+            <Link href="/features" className="hover:text-accent transition-colors">
+              {language === 'kh' ? 'មុខងារ' : 'Features'}
+            </Link>
+            <Link href="/pricing" className="hover:text-accent transition-colors">
+              {language === 'kh' ? 'តម្លៃសេវា' : 'Pricing'}
+            </Link>
           </nav>
 
           <div className="flex items-center gap-2.5">

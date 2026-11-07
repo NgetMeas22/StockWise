@@ -125,24 +125,13 @@ function ToastCard({ toast, onRemove }: { toast: ToastItem; onRemove: (id: strin
       {duration > 0 && (
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-surface-muted/60 overflow-hidden">
           <div
-            className={`h-full ${getProgressColor(toast.type)} transition-all`}
+            className={`h-full ${getProgressColor(toast.type)} animate-toast-progress`}
             style={{
-              animation: `toastCountdown ${duration}ms linear forwards`,
+              animationDuration: `${duration}ms`,
             }}
           />
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes toastCountdown {
-          from {
-            width: 100%;
-          }
-          to {
-            width: 0%;
-          }
-        }
-      `}</style>
     </div>
   );
 }

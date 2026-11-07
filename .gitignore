@@ -39,3 +39,9 @@ test-results/
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Large media files
+*.mp4
+*.mov
+*.avi
+*.mkv

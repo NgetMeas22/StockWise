@@ -10,9 +10,13 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction):
     return next();
   }
 
-  // Login endpoint establishes a new session and must never be blocked by an existing session's CSRF token
+  // Login & recovery endpoints establish a new session and must never be blocked by an existing session's CSRF token
   const url = req.originalUrl || req.url || '';
-  if (url.includes('/auth/login')) {
+  if (
+    url.includes('/auth/login') ||
+    url.includes('/auth/forgot-password') ||
+    url.includes('/auth/reset-password')
+  ) {
     return next();
   }
 

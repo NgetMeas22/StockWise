@@ -172,6 +172,38 @@ export class AuthController {
     }
   }
 
+  public async forgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { email } = req.body;
+      const result = await authService.requestPasswordReset(
+        email,
+        req.ip,
+        req.headers['user-agent'] as string | undefined,
+        req.requestId
+      );
+      sendSuccess(res, result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public async resetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { email, code, newPassword } = req.body;
+      const result = await authService.resetPasswordWithCode(
+        email,
+        code,
+        newPassword,
+        req.ip,
+        req.headers['user-agent'] as string | undefined,
+        req.requestId
+      );
+      sendSuccess(res, result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   public async changePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { currentPassword, newPassword } = req.body;

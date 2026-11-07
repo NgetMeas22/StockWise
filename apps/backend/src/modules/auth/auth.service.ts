@@ -347,6 +347,129 @@ export class AuthService {
       avatarUrl: updated.avatarKey ? `/api/v1/public/images/${updated.avatarKey}` : null,
     };
   }
+
+  public async requestPasswordReset(
+    email: string,
+    ip?: string,
+    userAgent?: string,
+    requestId?: string | number | null
+  ) {
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    if (!user || !user.isActive) {
+      // Return success anyway to avoid user enumeration
+      return {
+        message: 'If that email address exists in our system, a 6-digit reset code has been sent.',
+      };
+    }
+
+    // 6-digit verification code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 15 * 60 * 1000; // 15 minutes
+
+    await prisma.appSetting.upsert({
+      where: { key: `pwd_reset_${normalizedEmail}` },
+      update: {
+        value: { code, expiresAt, attempts: 0 },
+        updatedBy: user.id,
+      },
+      create: {
+        key: `pwd_reset_${normalizedEmail}`,
+        value: { code, expiresAt, attempts: 0 },
+        updatedBy: user.id,
+      },
+    });
+
+    await writeAuditLog({
+      actorUserId: user.id,
+      action: 'PASSWORD_RESET_REQUESTED',
+      entityType: 'USER',
+      entityId: user.id,
+      ip,
+      userAgent,
+      requestId,
+    });
+
+    return {
+      message: 'If that email address exists in our system, a 6-digit reset code has been sent.',
+      devCode: env.NODE_ENV !== 'production' ? code : undefined,
+    };
+  }
+
+  public async resetPasswordWithCode(
+    email: string,
+    code: string,
+    newPass: string,
+    ip?: string,
+    userAgent?: string,
+    requestId?: string | number | null
+  ) {
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    if (!user || !user.isActive) {
+      throw new ValidationError('Invalid or expired verification code');
+    }
+
+    const resetRecord = await prisma.appSetting.findUnique({
+      where: { key: `pwd_reset_${normalizedEmail}` },
+    });
+
+    if (!resetRecord || !resetRecord.value) {
+      throw new ValidationError('No active password reset request found for this email');
+    }
+
+    const data = resetRecord.value as { code?: string; expiresAt?: number; attempts?: number };
+    if (!data.code || !data.expiresAt || Date.now() > data.expiresAt) {
+      await prisma.appSetting.delete({ where: { key: `pwd_reset_${normalizedEmail}` } }).catch(() => {});
+      throw new ValidationError('Verification code has expired. Please request a new one.');
+    }
+
+    if (data.code !== code.trim()) {
+      // Increment attempt counter
+      await prisma.appSetting.update({
+        where: { key: `pwd_reset_${normalizedEmail}` },
+        data: { value: { ...data, attempts: (data.attempts || 0) + 1 } },
+      });
+      throw new ValidationError('Incorrect verification code. Please check and try again.');
+    }
+
+    // Code matches: update password
+    const passwordHash = await hashPassword(newPass);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        mustChangePassword: false,
+        failedLoginCount: 0,
+        lockedUntil: null,
+        passwordChangedAt: new Date(),
+      },
+    });
+
+    // Cleanup reset record
+    await prisma.appSetting.delete({ where: { key: `pwd_reset_${normalizedEmail}` } }).catch(() => {});
+
+    // Invalidate existing sessions
+    await prisma.session.updateMany({
+      where: { userId: user.id, revokedAt: null },
+      data: { revokedAt: new Date(), revokedReason: 'PASSWORD_RESET' },
+    });
+
+    await writeAuditLog({
+      actorUserId: user.id,
+      action: 'PASSWORD_RESET_COMPLETED',
+      entityType: 'USER',
+      entityId: user.id,
+      ip,
+      userAgent,
+      requestId,
+    });
+
+    return {
+      success: true,
+      message: 'Your password has been successfully reset. You can now log in.',
+    };
+  }
 }
 
 export const authService = new AuthService();

@@ -23,6 +23,20 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email('Invalid email address'),
+});
+
+export const resetPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email('Invalid email address'),
+  code: z.string().trim().min(6, 'Verification code must be 6 digits').max(6, 'Verification code must be 6 digits'),
+  newPassword: z
+    .string()
+    .min(10, 'Password must be at least 10 characters long')
+    .regex(/[A-Za-z]/, 'Password must contain letters')
+    .regex(/[0-9]/, 'Password must contain numbers'),
+});
+
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
   newPassword: z

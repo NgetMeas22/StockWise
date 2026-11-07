@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../../lib/auth-context';
-import { Package, Lock, Mail, AlertCircle, ArrowRight, Sun, Moon, Globe } from 'lucide-react';
+import { Package, Lock, Mail, AlertCircle, ArrowRight, Sun, Moon, Globe, Eye, EyeOff } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { FormField } from '../../../components/ui/FormField';
@@ -17,6 +17,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -108,19 +109,42 @@ export default function LoginPage() {
               </div>
             </FormField>
 
-            <FormField label={t('auth.password')} required>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-semibold text-text">
+                  {t('auth.password')} <span className="text-danger">*</span>
+                </label>
+                <Link
+                  href="/forgot"
+                  className="text-xs text-accent hover:underline font-medium transition-colors"
+                >
+                  {language === 'kh' ? 'ភ្លេចលេខសម្ងាត់?' : 'Forgot Password?'}
+                </Link>
+              </div>
               <div className="relative">
                 <Lock className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
                 <Input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
                   placeholder="••••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 pr-10"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text p-1 transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
               </div>
-            </FormField>
+            </div>
 
             <Button
               type="submit"

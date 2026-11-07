@@ -27,7 +27,15 @@ export function validate(options: ValidationOptions) {
           field: e.path.join('.'),
           message: e.message,
         }));
-        return next(new ValidationError('Request validation failed', formatted));
+        const fieldDetails = formatted
+          .map((e) => (e.field ? `${e.field}: ${e.message}` : e.message))
+          .join(', ');
+        return next(
+          new ValidationError(
+            fieldDetails ? `Validation failed (${fieldDetails})` : 'Request validation failed',
+            formatted
+          )
+        );
       }
       next(err);
     }

@@ -30,6 +30,7 @@ import {
   Bell,
   CheckCircle2,
   AlertCircle,
+  ClipboardList,
 } from 'lucide-react';
 import { Can } from '../../components/auth/Can';
 import { Badge } from '../../components/ui/Badge';
@@ -83,6 +84,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       label: t('nav.inventory'),
       href: '/app/inventory',
       icon: Package,
+      permission: 'inventory:read' as const,
+    },
+    {
+      label: t('nav.requests') || (language === 'kh' ? 'សំណើសម្ភារបន្ទប់' : 'Room Requests'),
+      href: '/app/requests',
+      icon: ClipboardList,
       permission: 'inventory:read' as const,
     },
     {

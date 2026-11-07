@@ -357,7 +357,7 @@ export default function CategoriesPage() {
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setShowModal(false)}>
-              {t('actions.cancel')}
+              {t('common.cancel') || 'Cancel'}
             </Button>
             <Button
               onClick={handleFormSubmit}
@@ -442,7 +442,7 @@ export default function CategoriesPage() {
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setArchiveTarget(null)}>
-              {t('actions.cancel')}
+              {t('common.cancel') || 'Cancel'}
             </Button>
             <Button
               variant={archiveTarget?.status === 'ARCHIVED' ? 'primary' : 'danger'}

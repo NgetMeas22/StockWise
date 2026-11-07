@@ -17,6 +17,7 @@ router.get('/', requirePermission('products:read'), validate({ query: pagination
 router.post('/', requirePermission('products:create'), validate({ body: createProductSchema }), productsController.createProduct);
 router.get('/:id', requirePermission('products:read'), productsController.getProduct);
 router.patch('/:id', requirePermission('products:update'), validate({ body: updateProductSchema }), productsController.updateProduct);
+router.put('/:id', requirePermission('products:update'), validate({ body: updateProductSchema }), productsController.updateProduct);
 router.delete('/:id', requirePermission('products:archive'), productsController.archiveProduct);
 router.post('/:id/restore', requirePermission('products:archive'), productsController.restoreProduct);
 router.post('/:id/image', requirePermission('products:update'), upload.single('image'), productsController.uploadImage);
