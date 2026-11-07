@@ -32,6 +32,10 @@ import {
   CheckCircle2,
   AlertCircle,
   ClipboardList,
+  User,
+  ChevronDown,
+  KeyRound,
+  ShieldCheck,
 } from 'lucide-react';
 import { Can } from '../../components/auth/Can';
 import { Badge } from '../../components/ui/Badge';
@@ -49,6 +53,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
 
   if (isLoading) {
     return (
@@ -283,7 +288,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2 text-xs text-text-muted font-medium">
-              <span className="hidden sm:inline">StockWise</span>
+              <span className="hidden sm:inline font-bold text-accent">Dental Systems</span>
               <ChevronRight className="hidden sm:inline w-3.5 h-3.5 text-text-muted/60" />
               <span className="text-text font-semibold capitalize">
                 {pathname.split('/')[2]?.replace('-', ' ') || t('nav.dashboard')}
@@ -405,22 +410,139 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               )}
             </div>
 
-            {/* Role Badge */}
-            {role && (
-              <Badge variant="default" className="font-mono text-[10px] uppercase hidden sm:inline-flex">
-                {role}
-              </Badge>
-            )}
+            {/* Vertical Divider */}
+            <div className="h-6 w-px bg-border mx-1 hidden sm:block" />
 
-            {/* Sign Out Button */}
-            <button
-              onClick={() => setShowLogoutConfirm(true)}
-              title={t('nav.signOut')}
-              aria-label={t('nav.signOut')}
-              className="p-2 rounded-[6px] text-text-muted hover:text-danger hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+            {/* Admin / User Profile Avatar Pill & Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowUserDropdown((prev) => !prev)}
+                className="flex items-center gap-2 p-1 pl-1.5 sm:pr-2.5 rounded-full border border-border bg-surface hover:bg-surface-muted hover:border-accent/40 transition-all text-xs focus:outline-none shadow-2xs group"
+                title="Account Menu"
+                aria-label="Account Menu"
+              >
+                {/* Profile Picture */}
+                {user?.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.fullName || 'Admin'}
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-accent/40 shadow-2xs shrink-0"
+                  />
+                ) : (
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-accent text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                    {user?.fullName?.charAt(0) || 'A'}
+                  </div>
+                )}
+
+                {/* Name & Role (Desktop) */}
+                <div className="hidden sm:flex flex-col text-left leading-tight min-w-0 pr-0.5">
+                  <span className="font-bold text-text text-xs truncate max-w-[120px] group-hover:text-accent transition-colors">
+                    {user?.fullName || 'Administrator'}
+                  </span>
+                  <span className="text-[10px] text-accent font-semibold tracking-wide uppercase">
+                    {role || 'ADMIN'}
+                  </span>
+                </div>
+
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-text-muted transition-transform duration-200 ${
+                    showUserDropdown ? 'rotate-180 text-accent' : ''
+                  }`}
+                />
+              </button>
+
+              {/* User Dropdown Menu */}
+              {showUserDropdown && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowUserDropdown(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-72 bg-surface border border-border rounded-xl shadow-xl py-2 z-50 text-xs animate-in zoom-in-95 duration-100">
+                    {/* User Card Header */}
+                    <div className="px-4 py-3 border-b border-border flex items-center gap-3 bg-surface-muted/40">
+                      {user?.avatarUrl ? (
+                        <img
+                          src={user.avatarUrl}
+                          alt={user.fullName || 'User'}
+                          className="w-10 h-10 rounded-full object-cover border border-accent/30 shrink-0 shadow-xs"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-accent/10 text-accent font-bold text-sm flex items-center justify-center shrink-0 border border-accent/20">
+                          {user?.fullName?.charAt(0) || 'A'}
+                        </div>
+                      )}
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-bold text-text truncate text-xs">
+                          {user?.fullName || 'Administrator'}
+                        </span>
+                        <span className="text-[11px] text-text-muted truncate">
+                          {user?.email || 'admin@dentalsystems.local'}
+                        </span>
+                        <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-accent-soft text-accent self-start uppercase">
+                          {role || 'STAFF'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Navigation Menu Items */}
+                    <div className="py-1">
+                      <Link
+                        href="/app/profile"
+                        onClick={() => setShowUserDropdown(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 hover:bg-surface-muted text-text font-medium transition-colors"
+                      >
+                        <User className="w-4 h-4 text-text-muted" />
+                        <span>{t('nav.profile') || 'My Profile'}</span>
+                      </Link>
+
+                      <Link
+                        href="/app/settings?tab=account"
+                        onClick={() => setShowUserDropdown(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 hover:bg-surface-muted text-text font-medium transition-colors"
+                      >
+                        <KeyRound className="w-4 h-4 text-text-muted" />
+                        <span>Change Name & Password</span>
+                      </Link>
+
+                      <Link
+                        href="/app/settings"
+                        onClick={() => setShowUserDropdown(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 hover:bg-surface-muted text-text font-medium transition-colors"
+                      >
+                        <Settings className="w-4 h-4 text-text-muted" />
+                        <span>{t('nav.settings') || 'Settings & Warehouses'}</span>
+                      </Link>
+
+                      <Link
+                        href="/app/requests"
+                        onClick={() => setShowUserDropdown(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 hover:bg-surface-muted text-text font-medium transition-colors"
+                      >
+                        <ClipboardList className="w-4 h-4 text-text-muted" />
+                        <span>Operatory Room Requests</span>
+                      </Link>
+                    </div>
+
+                    {/* Sign Out Button */}
+                    <div className="pt-1 border-t border-border">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowUserDropdown(false);
+                          setShowLogoutConfirm(true);
+                        }}
+                        className="w-full flex items-center gap-2.5 px-4 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-danger font-semibold transition-colors text-left"
+                      >
+                        <LogOut className="w-4 h-4 text-danger" />
+                        <span>{t('nav.signOut') || 'Sign Out'}</span>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </header>
 
@@ -434,7 +556,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         onClose={() => setShowLogoutConfirm(false)}
         onConfirm={logout}
         title={t('nav.signOut')}
-        message="Are you sure you want to end your current session and sign out of StockWise IMS?"
+        message="Are you sure you want to end your current session and sign out of Dental Systems?"
         confirmLabel={t('nav.signOut')}
         cancelLabel={t('common.cancel')}
         variant="primary"

@@ -428,10 +428,10 @@ export default function DashboardPage() {
                           <div className="text-[10px] text-text-muted">{item.sku}</div>
                         </td>
                         <td className="px-4 py-3 text-right tabular-nums font-bold text-amber-500">
-                          {qtyOnHand} <span className="text-[10px] font-medium text-text-muted uppercase">{item.unit}</span>
+                          {Number(qtyOnHand).toLocaleString(undefined, { maximumFractionDigits: 2 })} <span className="text-[10px] font-medium text-text-muted uppercase">{item.unit}</span>
                         </td>
                         <td className="px-4 py-3 text-right tabular-nums text-text-muted">
-                          {item.reorderLevel} <span className="text-[10px] text-text-muted uppercase">{item.unit}</span>
+                          {Number(item.reorderLevel).toLocaleString(undefined, { maximumFractionDigits: 2 })} <span className="text-[10px] text-text-muted uppercase">{item.unit}</span>
                         </td>
                         <td className="px-4 py-3 text-right">
                           <Link href={`/app/purchases/new?productId=${item.productId || item.id || ''}`}>

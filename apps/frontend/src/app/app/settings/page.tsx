@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../../../lib/api-client';
 import { WarehouseDTO } from '@stockwise/shared';
+import { useAuth } from '../../../lib/auth-context';
 import { Can } from '../../../components/auth/Can';
 import { Button } from '../../../components/ui/Button';
 import { Badge } from '../../../components/ui/Badge';
@@ -36,6 +37,20 @@ import {
   Clock,
   Shield,
   Layers,
+  User,
+  KeyRound,
+  Lock,
+  Eye,
+  EyeOff,
+  Upload,
+  Trash2,
+  ShieldCheck,
+  Mail,
+  Phone,
+  Copy,
+  CheckCheck,
+  AlertCircle,
+  Camera,
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -59,7 +74,193 @@ export default function SettingsPage() {
     setHexInput(customColor);
   }, [customColor]);
 
-  const [activeTab, setActiveTab] = useState<'appearance' | 'language' | 'notifications' | 'system' | 'warehouses'>('appearance');
+  const { user, role, permissions, refetchUser } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [activeTab, setActiveTab] = useState<'account' | 'appearance' | 'language' | 'notifications' | 'system' | 'warehouses'>('account');
+
+  // Account & Profile States
+  const [fullName, setFullName] = useState(user?.fullName || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [copiedId, setCopiedId] = useState(false);
+
+  // Password States
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setFullName(user.fullName || '');
+      setEmail(user.email || '');
+      setPhone(user.phone || '');
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam && ['account', 'appearance', 'language', 'notifications', 'system', 'warehouses'].includes(tabParam)) {
+        setActiveTab(tabParam as any);
+      }
+    }
+  }, []);
+
+  // Update Profile Details Mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: async (body: { fullName: string; email: string; phone?: string | null }) => {
+      return apiRequest('/auth/profile', {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      });
+    },
+    onSuccess: async () => {
+      await refetchUser();
+      toast.success('Account updated', 'Your profile details have been saved successfully.');
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to update account.');
+    },
+  });
+
+  const handleProfileSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fullName.trim()) {
+      toast.error('Validation error', 'Full name is required.');
+      return;
+    }
+    if (!email.trim()) {
+      toast.error('Validation error', 'Email address is required.');
+      return;
+    }
+
+    updateProfileMutation.mutate({
+      fullName: fullName.trim(),
+      email: email.trim().toLowerCase(),
+      phone: phone.trim() ? phone.trim() : null,
+    });
+  };
+
+  // Avatar Upload Mutation
+  const uploadAvatarMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      return apiRequest('/auth/profile/avatar', {
+        method: 'POST',
+        body: formData,
+      });
+    },
+    onSuccess: async () => {
+      await refetchUser();
+      toast.success('Avatar updated', 'Your new profile photo has been saved.');
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to upload photo.');
+    },
+  });
+
+  // Avatar Remove Mutation
+  const removeAvatarMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest('/auth/profile/avatar', {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: async () => {
+      await refetchUser();
+      toast.success('Avatar removed', 'Profile photo reset to default.');
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to remove avatar.');
+    },
+  });
+
+  const handleAvatarFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('File too large', 'Avatar image must be under 5MB.');
+        return;
+      }
+      uploadAvatarMutation.mutate(file);
+    }
+  };
+
+  // Change Password Mutation
+  const changePasswordMutation = useMutation({
+    mutationFn: (body: any) =>
+      apiRequest('/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => {
+      toast.success(t('toasts.passwordChanged') || 'Password changed successfully.');
+      setPasswordError(null);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    },
+    onError: (err: any) => {
+      const msg = err.message || 'Failed to update password.';
+      setPasswordError(msg);
+      toast.error(msg);
+    },
+  });
+
+  const handleChangePassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError(null);
+
+    if (!currentPassword) {
+      setPasswordError('Current password is required');
+      return;
+    }
+    if (newPassword.length < 12) {
+      setPasswordError('New password must be at least 12 characters long');
+      return;
+    }
+    if (!/[A-Z]/.test(newPassword)) {
+      setPasswordError('New password must contain at least one uppercase letter');
+      return;
+    }
+    if (!/[a-z]/.test(newPassword)) {
+      setPasswordError('New password must contain at least one lowercase letter');
+      return;
+    }
+    if (!/[0-9]/.test(newPassword)) {
+      setPasswordError('New password must contain at least one number');
+      return;
+    }
+    if (!/[^A-Za-z0-9]/.test(newPassword)) {
+      setPasswordError('New password must contain at least one special character');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New password and confirmation do not match');
+      return;
+    }
+
+    changePasswordMutation.mutate({
+      currentPassword,
+      newPassword,
+    });
+  };
+
+  const copyUserId = () => {
+    if (user?.id) {
+      navigator.clipboard.writeText(user.id);
+      setCopiedId(true);
+      toast.success('Copied to clipboard', 'User ID copied.');
+      setTimeout(() => setCopiedId(false), 2000);
+    }
+  };
 
   // App Settings State (from backend API)
   const [currencyCode, setCurrencyCode] = useState('USD');
@@ -240,6 +441,18 @@ export default function SettingsPage() {
       {/* Tabs */}
       <div className="flex items-center gap-1 sm:gap-2 border-b border-border overflow-x-auto pb-px">
         <button
+          onClick={() => setActiveTab('account')}
+          className={`px-3 py-2 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${
+            activeTab === 'account'
+              ? 'border-accent text-accent'
+              : 'border-transparent text-text-muted hover:text-text'
+          }`}
+        >
+          <User className="w-4 h-4" />
+          <span>{t('settings.accountTab') || 'Account & Security'}</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('appearance')}
           className={`px-3 py-2 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${
             activeTab === 'appearance'
@@ -300,6 +513,313 @@ export default function SettingsPage() {
         </button>
       </div>
 
+      {/* Tab 0: Account & Security */}
+      {activeTab === 'account' && (
+        <div className="space-y-6">
+          {/* Section 1: Profile & Personal Details */}
+          <div className="bg-surface rounded-[12px] border border-border p-6 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+              <div>
+                <h2 className="text-base font-bold text-text flex items-center gap-2">
+                  <User className="w-5 h-5 text-accent" />
+                  <span>Profile & Personal Details</span>
+                </h2>
+                <p className="text-xs text-text-muted mt-1">
+                  Update your display name, official email address, and profile photo.
+                </p>
+              </div>
+
+              {/* User ID & Role Pill */}
+              <div className="flex items-center gap-2 self-start sm:self-auto">
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-accent-soft text-accent border border-accent/20 uppercase">
+                  {role || 'ADMIN'}
+                </span>
+                <button
+                  type="button"
+                  onClick={copyUserId}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border bg-surface-muted text-[10px] font-mono text-text-muted hover:text-text hover:border-accent/40 transition-colors"
+                  title="Copy User ID"
+                >
+                  {copiedId ? (
+                    <>
+                      <CheckCheck className="w-3 h-3 text-ok" />
+                      <span>Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3" />
+                      <span>ID: {user?.id?.slice(0, 8)}...</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Profile Avatar Upload Row */}
+            <div className="flex flex-col sm:flex-row items-center gap-6 p-4 rounded-xl bg-surface-muted/40 border border-border">
+              <div className="relative group">
+                {user?.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.fullName || 'Admin'}
+                    className="w-20 h-20 rounded-full object-cover border-2 border-accent/40 shadow-sm"
+                  />
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-accent text-white font-bold text-2xl flex items-center justify-center border-2 border-accent/30 shadow-sm">
+                    {user?.fullName?.charAt(0) || 'A'}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-0 right-0 p-1.5 rounded-full bg-surface border border-border text-text hover:text-accent shadow-sm hover:scale-105 transition-all"
+                  title="Change avatar"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="flex-1 text-center sm:text-left space-y-1.5">
+                <h3 className="text-sm font-bold text-text">Profile Picture</h3>
+                <p className="text-xs text-text-muted leading-relaxed">
+                  Upload a professional headshot or clinical avatar (JPEG, PNG, WebP up to 5MB).
+                </p>
+                <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleAvatarFile}
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    isLoading={uploadAvatarMutation.isPending}
+                    loadingText="Uploading..."
+                    className="text-xs flex items-center gap-1.5"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload New Photo</span>
+                  </Button>
+
+                  {user?.avatarUrl && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => removeAvatarMutation.mutate()}
+                      isLoading={removeAvatarMutation.isPending}
+                      className="text-xs text-danger hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-1.5"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Remove</span>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Profile Form (Name, Email, Phone) */}
+            <form onSubmit={handleProfileSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField label="Full Name" required hint="Your official display name across audit logs">
+                  <div className="relative">
+                    <User className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Input
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="e.g. Dr. Sokha Chan"
+                      className="pl-9 text-xs"
+                      required
+                    />
+                  </div>
+                </FormField>
+
+                <FormField label="Email Address" required hint="Used for system login & notifications">
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="admin@dentalsystems.local"
+                      className="pl-9 text-xs"
+                      required
+                    />
+                  </div>
+                </FormField>
+
+                <FormField label="Phone Number" hint="Optional mobile number for emergency alerts">
+                  <div className="relative">
+                    <Phone className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+855 12 345 678"
+                      className="pl-9 text-xs"
+                    />
+                  </div>
+                </FormField>
+
+                <FormField label="Role & Access Tier">
+                  <div className="h-9 px-3 rounded-[6px] border border-border bg-surface-muted/60 flex items-center justify-between text-xs text-text">
+                    <span className="font-semibold uppercase tracking-wider text-accent">{role || 'ADMIN'}</span>
+                    <span className="text-[10px] text-text-muted">Managed by Super Administrator</span>
+                  </div>
+                </FormField>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button
+                  type="submit"
+                  isLoading={updateProfileMutation.isPending}
+                  loadingText="Saving Details..."
+                  className="flex items-center gap-2 text-xs"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Save Profile Details</span>
+                </Button>
+              </div>
+            </form>
+          </div>
+
+          {/* Section 2: Password & Security Credentials */}
+          <div className="bg-surface rounded-[12px] border border-border p-6 shadow-sm space-y-6">
+            <div className="border-b border-border pb-4">
+              <h2 className="text-base font-bold text-text flex items-center gap-2">
+                <KeyRound className="w-5 h-5 text-accent" />
+                <span>Change Password</span>
+              </h2>
+              <p className="text-xs text-text-muted mt-1">
+                Ensure your credentials remain robust and protected according to HIPAA & ISO-27001 guidelines.
+              </p>
+            </div>
+
+            {passwordError && (
+              <div className="p-3.5 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-danger text-xs flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span className="font-medium">{passwordError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <FormField label="Current Password" required hint="Enter your existing active password">
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Input
+                    type={showCurrentPassword ? 'text' : 'password'}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="pl-9 pr-10 text-xs"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors"
+                  >
+                    {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </FormField>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField label="New Password" required hint="Must be at least 12 characters long">
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Input
+                      type={showNewPassword ? 'text' : 'password'}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="••••••••••••"
+                      className="pl-9 pr-10 text-xs"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors"
+                    >
+                      {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </FormField>
+
+                <FormField label="Confirm New Password" required hint="Re-type your new password to verify">
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="••••••••••••"
+                      className="pl-9 pr-10 text-xs"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </FormField>
+              </div>
+
+              {/* Password Quality Requirements Checklist */}
+              <div className="p-3.5 rounded-xl bg-surface-muted/50 border border-border space-y-2 text-xs">
+                <span className="font-semibold text-text text-[11px] uppercase tracking-wider block">
+                  Password Requirements:
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                  <div className={`flex items-center gap-1.5 ${newPassword.length >= 12 ? 'text-ok font-semibold' : 'text-text-muted'}`}>
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Minimum 12 characters ({newPassword.length}/12)</span>
+                  </div>
+                  <div className={`flex items-center gap-1.5 ${/[A-Z]/.test(newPassword) ? 'text-ok font-semibold' : 'text-text-muted'}`}>
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>At least 1 uppercase letter (A-Z)</span>
+                  </div>
+                  <div className={`flex items-center gap-1.5 ${/[a-z]/.test(newPassword) ? 'text-ok font-semibold' : 'text-text-muted'}`}>
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>At least 1 lowercase letter (a-z)</span>
+                  </div>
+                  <div className={`flex items-center gap-1.5 ${/[0-9]/.test(newPassword) ? 'text-ok font-semibold' : 'text-text-muted'}`}>
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>At least 1 number (0-9)</span>
+                  </div>
+                  <div className={`flex items-center gap-1.5 ${/[^A-Za-z0-9]/.test(newPassword) ? 'text-ok font-semibold' : 'text-text-muted'}`}>
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>At least 1 special character (!@#$%^&*)</span>
+                  </div>
+                  <div className={`flex items-center gap-1.5 ${newPassword && newPassword === confirmPassword ? 'text-ok font-semibold' : 'text-text-muted'}`}>
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Passwords match perfectly</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button
+                  type="submit"
+                  isLoading={changePasswordMutation.isPending}
+                  loadingText="Updating Password..."
+                  className="flex items-center gap-2 text-xs"
+                >
+                  <Lock className="w-4 h-4" />
+                  <span>Update Password</span>
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Tab 1: Appearance */}
       {activeTab === 'appearance' && (
         <div className="space-y-6">
@@ -308,7 +828,7 @@ export default function SettingsPage() {
             <div>
               <h2 className="text-base font-semibold text-text">{t('settings.themeLabel')}</h2>
               <p className="text-xs text-text-muted mt-0.5">
-                Choose how StockWise appears to you. Auto switch follows your operating system.
+                Choose how Dental Systems appears to you. Auto switch follows your operating system.
               </p>
             </div>
 

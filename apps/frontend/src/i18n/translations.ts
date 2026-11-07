@@ -345,6 +345,7 @@ export const translations: Record<Language, TranslationDict> = {
     settings: {
       title: 'System Settings',
       subtitle: 'Configure global business rules, appearance, language, notifications, and warehouse facilities.',
+      accountTab: 'Account & Security',
       appearanceTab: 'Appearance',
       languageTab: 'Language & Region',
       notificationsTab: 'Notifications',
@@ -782,6 +783,7 @@ export const translations: Record<Language, TranslationDict> = {
     settings: {
       title: 'ការកំណត់ប្រព័ន្ធ',
       subtitle: 'កំណត់រចនាសម្ព័ន្ធអាជីវកម្ម រូបរាង ភាសា ការជូនដំណឹង និងទីតាំងឃ្លាំងស្តុកទំនិញ។',
+      accountTab: 'គណនី & លេខសម្ងាត់',
       appearanceTab: 'រូបរាង',
       languageTab: 'ភាសា & តំបន់',
       notificationsTab: 'ការជូនដំណឹង',
