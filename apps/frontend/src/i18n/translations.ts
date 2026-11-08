@@ -630,6 +630,7 @@ export const translations: Record<Language, TranslationDict> = {
       operationMode: 'ទម្រង់ប្រតិបត្តិការ',
       receiveMode: 'ទទួលចូល',
       issueMode: 'បញ្ចេញក្រៅ',
+      
       setCountMode: 'កំណត់ចំនួន',
       recentTerminalEntries: 'កំណត់ត្រាស្ថានីយថ្មីៗក្នុងវគ្គនេះ',
     },
